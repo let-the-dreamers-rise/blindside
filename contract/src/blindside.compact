@@ -1,0 +1,224 @@
+// Blindside: a real-world hidden-target tag game.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Every player hunts exactly one other player. Tagging in real life is settled here by a
+// zero-knowledge proof: the hunter shows they hold their target's surrendered code and the
+// hidden edge that points at them, without revealing either on chain. The pot is escrowed and
+// paid only to the player who can prove they are the last one standing.
+//
+// The hunter-to-target map lives as UTXO-style notes in a Merkle tree. A tag spends two notes
+// (hunter -> victim, victim -> next) and creates one (hunter -> next), so the chain sees two
+// unlinkable nullifiers and one new leaf, never who tagged whom.
+//
+// What this version does NOT hide: the organizer builds the cycle, so the organizer knows the
+// map. That is stated on the landing page, in the README and in the deck. Removing it is next.
+
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+export enum Phase { lobby, live, finished, timedOut, cancelled }
+
+// A hidden note: "the holder hunts `target`". `rand` makes the leaf and its nullifier unlinkable.
+export struct Edge {
+  target: Bytes<32>;
+  rand: Bytes<32>;
+}
+
+// What a tagged player hands over: their tag token plus the opening of their own outgoing note,
+// so the hunter can inherit it. Useless to anyone who does not already hold an edge to them.
+export struct Surrender {
+  tagToken: Bytes<32>;
+  target: Bytes<32>;
+  rand: Bytes<32>;
+}
+
+// ---------------------------------------------------------------- public ledger
+
+export ledger phase: Phase;
+export ledger hostCommit: Bytes<32>;
+export ledger entryFee: Uint<128>;
+export ledger maxPlayers: Uint<16>;
+export ledger deadline: Uint<64>;              // fixed at deploy, shown before anyone pays
+export ledger pot: Uint<128>;                  // tracked here: unshieldedBalance is frozen per tx
+export ledger playerCount: Counter;
+export ledger aliveCount: Counter;
+export ledger tagCount: Counter;
+export ledger players: Set<Bytes<32>>;         // pseudonymous commitments, never names
+export ledger payouts: Map<Bytes<32>, Bytes<32>>;   // bound at join: a stolen phone cannot redirect
+export ledger edges: HistoricMerkleTree<8, Bytes<32>>;
+export ledger spent: Set<Bytes<32>>;
+export ledger deadDrops: Map<Bytes<32>, Surrender>; // published by players who quit
+
+// ---------------------------------------------------------------- private state
+
+witness hostSecret(): Bytes<32>;
+witness playerSecret(): Bytes<32>;
+witness myEdge(): Edge;
+witness edgePath(leaf: Bytes<32>): MerkleTreePath<8, Bytes<32>>;
+witness surrendered(): Surrender;
+witness freshRand(): Bytes<32>;
+
+constructor(fee: Uint<128>, cap: Uint<16>, hostC: Bytes<32>, endsAt: Uint<64>) {
+  phase = Phase.lobby;
+  entryFee = disclose(fee);
+  maxPlayers = disclose(cap);
+  hostCommit = disclose(hostC);
+  deadline = disclose(endsAt);
+}
+
+// ---------------------------------------------------------------- helpers
+
+// These five are pure, and exported so the app and the tests hash exactly the way the circuit
+// does instead of reimplementing it and drifting.
+export circuit tagTokenOf(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "blindside:tag:v1"), sk]);
+}
+
+export circuit playerOf(kt: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "blindside:player:v1"), kt]);
+}
+
+export circuit leafOf(hunter: Bytes<32>, e: Edge): Bytes<32> {
+  return persistentHash<Vector<4, Bytes<32>>>(
+    [pad(32, "blindside:edge:v1"), hunter, e.target, e.rand]);
+}
+
+export circuit nullifierOf(e: Edge): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "blindside:null:v1"), e.rand]);
+}
+
+export circuit refundNullifierOf(c: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "blindside:refund:v1"), c]);
+}
+
+export circuit hostCommitmentOf(sk: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "blindside:host:v1"), sk]);
+}
+
+circuit payoutOf(c: Bytes<32>): Either<ContractAddress, UserAddress> {
+  return right<ContractAddress, UserAddress>(UserAddress { bytes: payouts.lookup(disclose(c)) });
+}
+
+circuit assertHost(): [] {
+  assert(hostCommitmentOf(hostSecret()) == hostCommit, "Only the host can do that");
+}
+
+// Proves a note exists in the tree (any historic root) and has not been spent.
+// Returns its nullifier; the caller decides whether to spend it.
+circuit liveEdge(hunter: Bytes<32>, e: Edge): Bytes<32> {
+  const leaf = leafOf(hunter, e);
+  const path = edgePath(leaf);
+  assert(edges.checkRoot(disclose(merkleTreePathRoot<8, Bytes<32>>(path))), "Code out of date");
+  assert(path.leaf == leaf, "Unknown code");
+  const n = disclose(nullifierOf(e));
+  assert(!spent.member(n), "That code was already used");
+  return n;
+}
+
+// ---------------------------------------------------------------- lifecycle
+
+export circuit join(c: Bytes<32>, payout: Bytes<32>): [] {
+  assert(phase == Phase.lobby, "The game has already started");
+  assert(blockTimeLt(deadline), "This game has expired");
+  assert(playerCount.lessThan(maxPlayers as Uint<64>), "This game is full");
+  const cc = disclose(c);
+  assert(!players.member(cc), "Already joined");
+  receiveUnshielded(nativeToken(), entryFee);
+  pot = (pot + entryFee) as Uint<128>;
+  players.insert(cc);
+  payouts.insert(cc, disclose(payout));
+  playerCount.increment(1);
+}
+
+// The host inserts the shuffled cycle as 16 leaves: the real edges plus random padding, so the
+// count of real players is not readable from the tree.
+export circuit startGame(leaves: Vector<16, Bytes<32>>): [] {
+  assertHost();
+  assert(phase == Phase.lobby, "The game has already started");
+  assert(blockTimeLt(deadline), "This game has expired");
+  assert(!playerCount.lessThan(3), "Need at least three players");
+  for (const leaf of leaves) {
+    edges.insert(disclose(leaf));
+  }
+  aliveCount.increment(playerCount.read() as Uint<16>);
+  phase = Phase.live;
+}
+
+export circuit tag(): [] {
+  assert(phase == Phase.live, "The game is not running");
+  const me = playerOf(tagTokenOf(playerSecret()));
+  const mine = myEdge();
+  const s = surrendered();
+  assert(playerOf(s.tagToken) == mine.target, "That is not your target");
+
+  const victimEdge = Edge { target: s.target, rand: s.rand };
+  const n1 = liveEdge(me, mine);              // hunter -> victim
+  const n2 = liveEdge(mine.target, victimEdge);  // victim -> next
+  spent.insert(n1);
+  spent.insert(n2);
+
+  // The hunter inherits the victim's target under fresh randomness, so nobody can link the
+  // new note to either spent one.
+  edges.insert(disclose(leafOf(me, Edge { target: s.target, rand: freshRand() })));
+  aliveCount.decrement(1);
+  tagCount.increment(1);
+  if (aliveCount.lessThan(2)) {
+    phase = Phase.finished;
+  }
+}
+
+export circuit claimVictory(): [] {
+  assert(phase == Phase.finished, "The game is not over");
+  const me = playerOf(tagTokenOf(playerSecret()));
+  const mine = myEdge();
+  assert(mine.target == me, "Only the last player standing can claim");
+  spent.insert(liveEdge(me, mine));
+  const amount = pot;
+  pot = 0;                                    // state settled before the transfer
+  sendUnshielded(nativeToken(), amount, payoutOf(me));
+}
+
+// ---------------------------------------------------------------- always-exit paths
+//
+// Without these, one player who refuses to surrender, loses their phone, drops out or never
+// claims freezes the money forever, and the escrow becomes a trap. Refunds go to everyone who
+// joined, alive or tagged, so refusing to surrender can never win the pot: the worst a refuser
+// achieves is a draw in which they get their own fee back. The alternative, letting the host
+// eliminate people, would let the host hand the pot to a friend.
+
+// A player who quits publishes their own surrender bundle. Only their hunter holds an edge to
+// them, so only their hunter can use it. Cost, stated in the UI: it reveals their target.
+export circuit resign(): [] {
+  assert(phase == Phase.live, "The game is not running");
+  const kt = tagTokenOf(playerSecret());
+  const me = playerOf(kt);
+  const mine = myEdge();
+  liveEdge(me, mine);                         // proves the quitter is a live player
+  deadDrops.insert(disclose(me),
+                   disclose(Surrender { tagToken: kt, target: mine.target, rand: mine.rand }));
+}
+
+export circuit openRefunds(): [] {
+  assert(phase == Phase.lobby || phase == Phase.live || phase == Phase.finished,
+         "Refunds are already open");
+  assert(!blockTimeLt(deadline), "The deadline has not passed yet");
+  phase = Phase.timedOut;
+}
+
+export circuit cancel(): [] {
+  assertHost();
+  assert(phase == Phase.lobby, "The game has already started");
+  phase = Phase.cancelled;
+}
+
+export circuit refund(): [] {
+  assert(phase == Phase.timedOut || phase == Phase.cancelled, "Refunds are not open");
+  const me = playerOf(tagTokenOf(playerSecret()));
+  assert(players.member(disclose(me)), "You are not in this game");
+  const n = disclose(refundNullifierOf(me));
+  assert(!spent.member(n), "Already refunded");
+  spent.insert(n);
+  pot = (pot - entryFee) as Uint<128>;         // exact: the pot is entryFee * playerCount
+  sendUnshielded(nativeToken(), entryFee, payoutOf(me));
+}

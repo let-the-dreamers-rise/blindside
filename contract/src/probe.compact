@@ -1,0 +1,77 @@
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+// Throwaway file: exercises every construct the real contract needs so the compiler,
+// not guesswork, settles the syntax. Deleted once blindside.compact compiles.
+
+export enum Phase { lobby, live, finished, timedOut, cancelled }
+
+export struct Edge {
+  target: Bytes<32>;
+  rand: Bytes<32>;
+}
+
+export ledger phase: Phase;
+export ledger entryFee: Uint<128>;
+export ledger maxPlayers: Uint<16>;
+export ledger deadline: Uint<64>;
+export ledger pot: Uint<128>;
+export ledger players: Set<Bytes<32>>;
+export ledger payouts: Map<Bytes<32>, Bytes<32>>;
+export ledger drops: Map<Bytes<32>, Edge>;
+export ledger edges: HistoricMerkleTree<8, Bytes<32>>;
+export ledger spent: Set<Bytes<32>>;
+export ledger playerCount: Counter;
+
+witness playerSecret(): Bytes<32>;
+witness myEdge(): Edge;
+witness edgePath(leaf: Bytes<32>): MerkleTreePath<8, Bytes<32>>;
+
+constructor(fee: Uint<128>, cap: Uint<16>) {
+  phase = Phase.lobby;
+  entryFee = disclose(fee);
+  maxPlayers = disclose(cap);
+}
+
+export circuit probeJoin(c: Bytes<32>, payout: Bytes<32>): [] {
+  assert(phase == Phase.lobby, "started");
+  assert(playerCount.lessThan(maxPlayers as Uint<64>), "full");
+  receiveUnshielded(nativeToken(), entryFee);
+  pot = (pot + entryFee) as Uint<128>;
+  players.insert(disclose(c));
+  payouts.insert(disclose(c), disclose(payout));
+  playerCount.increment(1);
+}
+
+export circuit probeStart(leaves: Vector<4, Bytes<32>>, endsAt: Uint<64>): [] {
+  for (const leaf of leaves) {
+    edges.insert(disclose(leaf));
+  }
+  deadline = disclose(endsAt);
+  phase = Phase.live;
+}
+
+export circuit probeSpend(): [] {
+  const e = myEdge();
+  const leaf = persistentHash<Vector<3, Bytes<32>>>([pad(32, "probe:leaf"), e.target, e.rand]);
+  const path = edgePath(leaf);
+  assert(edges.checkRoot(disclose(merkleTreePathRoot<8, Bytes<32>>(path))), "unknown root");
+  assert(path.leaf == leaf, "wrong leaf");
+  const n = disclose(persistentHash<Vector<2, Bytes<32>>>([pad(32, "probe:null"), e.rand]));
+  assert(!spent.member(n), "already spent");
+  spent.insert(n);
+  drops.insert(disclose(e.target), disclose(Edge { target: e.target, rand: e.rand }));
+}
+
+export circuit probeTimeout(): [] {
+  assert(!blockTimeLt(deadline), "too early");
+  phase = Phase.timedOut;
+}
+
+export circuit probePay(c: Bytes<32>): [] {
+  const amount = pot;
+  pot = 0;
+  sendUnshielded(nativeToken(), amount,
+                 right<ContractAddress, UserAddress>(UserAddress { bytes: payouts.lookup(disclose(c)) }));
+}

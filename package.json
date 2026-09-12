@@ -1,0 +1,26 @@
+{
+  "name": "blindside",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "compact": "pnpm --filter @blindside/contract compact",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "25.5.0",
+    "typescript": "6.0.2",
+    "vitest": "4.1.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
+    }
+  }
+}
