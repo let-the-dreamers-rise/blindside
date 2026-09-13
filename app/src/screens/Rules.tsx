@@ -16,7 +16,7 @@ const PLAYING: readonly Rule[] = [
   },
   {
     title: "You are tagged when you say you are",
-    body: "There is no photo to argue about and no referee. When someone tags you, you show them your code. Handing it over is the surrender: it is your decision, made with your own phone, and nobody can take it from you.",
+    body: "There is no photo to argue about and no referee. When someone tags you, you say your five words. Saying them is the surrender: it is your decision, made out loud, and nobody can take it from you. They work anywhere a voice or a message goes, so a game does not have to be one building.",
   },
   {
     title: "Nowhere that matters is in play",

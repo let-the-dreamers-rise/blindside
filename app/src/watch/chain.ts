@@ -40,6 +40,8 @@ export type PublicGame = {
   readonly tags: number;
   readonly pot: bigint;
   readonly entryFee: bigint;
+  /** Unix seconds, fixed at deploy. Nobody, the organizer included, can move it. */
+  readonly deadline: bigint;
   readonly spent: readonly string[];
   readonly commitments: readonly string[];
   readonly leaves: number;
@@ -98,6 +100,7 @@ export const readGame = async (
     tags: Number(current.tagCount),
     pot: current.pot,
     entryFee: current.entryFee,
+    deadline: current.deadline,
     spent: [...current.spent].map(hex),
     commitments: [...current.players].map(hex),
     leaves: Number(current.edges.firstFree()),

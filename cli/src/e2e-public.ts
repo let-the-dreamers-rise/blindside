@@ -5,25 +5,19 @@
 //   pnpm --filter @blindside/cli public preview
 // SPDX-License-Identifier: Apache-2.0
 
-import { PUBLIC_NETWORKS, isPublicNetwork, publicConfig } from "./config.ts";
+import { useNetwork } from "@blindside/chain";
 import { runFullGame } from "./game-run.ts";
-import { loadOrCreateSeed } from "./public-wallet.ts";
+import { publicNetworkFromArgv } from "./network-arg.ts";
+import { loadOrCreateSeed } from "./seed-file.ts";
 
 // Small enough that one faucet grant covers a whole game several times over.
 const ENTRY_FEE = 1_000_000n;
 
-const requested = process.argv[2] ?? "preview";
-if (!isPublicNetwork(requested)) {
-  console.error(
-    `\n  Unknown network "${requested}". Try one of: ${Object.keys(PUBLIC_NETWORKS).join(", ")}\n`,
-  );
-  process.exit(1);
-}
+const network = publicNetworkFromArgv();
 
 await runFullGame({
-  config: publicConfig(requested),
-  seed: loadOrCreateSeed(requested),
-  network: requested,
+  network: useNetwork(network),
+  seed: loadOrCreateSeed(network.id),
   entryFee: ENTRY_FEE,
 });
 

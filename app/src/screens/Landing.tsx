@@ -11,8 +11,8 @@ export const Landing = () => (
     </h1>
 
     <p className="lede">
-      Blindside is the tag game your school or office already plays, with two things it has never
-      had: a prize pot nobody can run off with, and a target list nobody can leak.
+      Blindside is the tag game your school, office or group chat already plays, with two things it
+      has never had: a prize pot nobody can run off with, and a target list nobody can leak.
     </p>
 
     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "28px 0 36px" }}>
@@ -39,11 +39,14 @@ export const Landing = () => (
           </li>
           <li>
             <span>02</span>
-            <div>You are given one target, sealed. Only your phone can open it.</div>
+            <div>You are given one target, sealed. Only five words you know can open it.</div>
           </li>
           <li>
             <span>03</span>
-            <div>Tag them in real life. They show you their code, you scan it, and you inherit their target.</div>
+            <div>
+              Get them. They say their five words: in a corridor, down a phone, in a message.
+              You type what you heard and you inherit their target.
+            </div>
           </li>
           <li>
             <span>04</span>
@@ -52,6 +55,38 @@ export const Landing = () => (
         </ol>
       </section>
 
+      <section className="card">
+        <h2>Five words, not a scan</h2>
+        <p>
+          A tag needs 96 bytes of your target's hidden note. Nobody reads 96 bytes out loud, so the
+          bytes are published where everybody can see them and useless to all of them. The key is
+          five words, and the only person who can say them is the person being tagged.
+        </p>
+        <ol className="words">
+          <li>
+            <span className="mono">1</span>marble
+          </li>
+          <li>
+            <span className="mono">2</span>anchor
+          </li>
+          <li>
+            <span className="mono">3</span>velvet
+          </li>
+          <li>
+            <span className="mono">4</span>ridge
+          </li>
+          <li>
+            <span className="mono">5</span>often
+          </li>
+        </ol>
+        <p className="note" style={{ marginTop: 18 }}>
+          Which means a game is not limited to people who can stand next to each other. Overhearing
+          the words gets a stranger nothing: a tag also needs your hunter's own secret.
+        </p>
+      </section>
+    </div>
+
+    <div className="grid two" style={{ marginTop: 18 }}>
       <section className="card">
         <h2>What the chain sees</h2>
         <p>

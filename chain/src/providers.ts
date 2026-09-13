@@ -6,12 +6,12 @@ import * as Rx from "rxjs";
 import { httpClientProofProvider } from "@midnight-ntwrk/midnight-js-http-client-proof-provider";
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
 import { levelPrivateStateProvider } from "@midnight-ntwrk/midnight-js-level-private-state-provider";
-import { NodeZkConfigProvider } from "@midnight-ntwrk/midnight-js-node-zk-config-provider";
+import type { ZKConfigProvider } from "@midnight-ntwrk/midnight-js-types";
 import type {
   MidnightProvider,
   WalletProvider,
 } from "@midnight-ntwrk/midnight-js/types";
-import { type Config, contractConfig } from "./config.ts";
+import type { ChainEndpoints } from "./networks.ts";
 import { signTransactionIntents } from "./signing.ts";
 import type { WalletContext } from "./wallet.ts";
 
@@ -26,6 +26,7 @@ export type BlindsideCircuits =
   | "refund";
 
 export const PRIVATE_STATE_ID = "blindsidePrivateState";
+export const PRIVATE_STATE_STORE = "blindside-private-state";
 
 export const createWalletAndMidnightProvider = async (
   ctx: WalletContext,
@@ -63,23 +64,30 @@ export const createWalletAndMidnightProvider = async (
   };
 };
 
-export const configureProviders = async (ctx: WalletContext, config: Config) => {
+/**
+ * The provider set midnight-js needs, for a wallet and a chain.
+ *
+ * The ZK artifacts are passed in rather than located here: a command line run reads them from
+ * disk, a browser fetches them over HTTP, and nothing else about this differs.
+ */
+export const configureProviders = async (
+  ctx: WalletContext,
+  endpoints: ChainEndpoints,
+  zkConfigProvider: ZKConfigProvider<BlindsideCircuits>,
+) => {
   const walletAndMidnightProvider = await createWalletAndMidnightProvider(ctx);
-  const zkConfigProvider = new NodeZkConfigProvider<BlindsideCircuits>(
-    contractConfig.zkConfigPath,
-  );
   const accountId = walletAndMidnightProvider.getCoinPublicKey();
   const storagePassword = `${Buffer.from(accountId, "hex").toString("base64")}!`;
 
   return {
     privateStateProvider: levelPrivateStateProvider<typeof PRIVATE_STATE_ID>({
-      privateStateStoreName: contractConfig.privateStateStoreName,
+      privateStateStoreName: PRIVATE_STATE_STORE,
       accountId,
       privateStoragePasswordProvider: () => storagePassword,
     }),
-    publicDataProvider: indexerPublicDataProvider(config.indexer, config.indexerWS),
+    publicDataProvider: indexerPublicDataProvider(endpoints.indexer, endpoints.indexerWS),
     zkConfigProvider,
-    proofProvider: httpClientProofProvider(config.proofServer, zkConfigProvider),
+    proofProvider: httpClientProofProvider(endpoints.proofServer, zkConfigProvider),
     walletProvider: walletAndMidnightProvider,
     midnightProvider: walletAndMidnightProvider,
   };

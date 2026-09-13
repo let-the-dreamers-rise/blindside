@@ -2,14 +2,12 @@
 // machine. Bring it up with `pnpm --filter @blindside/cli stack:up` first.
 // SPDX-License-Identifier: Apache-2.0
 
-import { StandaloneConfig } from "./config.ts";
+import { GENESIS_MINT_WALLET_SEED, LOCAL_NETWORK, useNetwork } from "@blindside/chain";
 import { runFullGame } from "./game-run.ts";
-import { GENESIS_MINT_WALLET_SEED } from "./wallet.ts";
 
 await runFullGame({
-  config: new StandaloneConfig(),
+  network: useNetwork(LOCAL_NETWORK),
   seed: GENESIS_MINT_WALLET_SEED,
-  network: "standalone",
   entryFee: 10n,
 });
 

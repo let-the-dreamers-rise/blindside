@@ -3,11 +3,11 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ChainPanel } from "../components/ChainPanel.tsx";
 import { ExitsPanel } from "../components/ExitsPanel.tsx";
-import { TagCodeQR } from "../components/TagCodeQR.tsx";
+import { TypeTheirWords, YourWords } from "../components/WordCode.tsx";
 import { SandboxRunner, type Snapshot } from "../sandbox/engine.ts";
 
 const STEPS = [
-  "Checking their code",
+  "Checking their words",
   "Proving the tag",
   "Settling",
 ] as const;
@@ -22,6 +22,7 @@ export const Sandbox = () => {
   const [snapshot, setSnapshot] = useState<Snapshot>(() => game.snapshot());
   const [revealed, setRevealed] = useState(false);
   const [step, setStep] = useState<number | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
 
   const refresh = useCallback(() => setSnapshot(game.snapshot()), [game]);
 
@@ -38,15 +39,26 @@ export const Sandbox = () => {
     [refresh],
   );
 
-  const onTag = useCallback(async () => {
-    await runSteps(() => game.tagYourTarget());
-    setRevealed(false);
-    window.setTimeout(() => {
-      if (game.botMove()) {
-        refresh();
+  const onTag = useCallback(
+    async (spoken: string) => {
+      // Checked before the theatre starts: wrong words should fail immediately, the way they
+      // would if you typed them into a phone and nothing happened.
+      const wrong = game.wouldRefuse(spoken);
+      if (wrong !== null) {
+        setProblem(wrong);
+        return;
       }
-    }, 1400);
-  }, [game, refresh, runSteps]);
+      setProblem(null);
+      await runSteps(() => game.tagYourTarget(spoken));
+      setRevealed(false);
+      window.setTimeout(() => {
+        if (game.botMove()) {
+          refresh();
+        }
+      }, 1400);
+    },
+    [game, refresh, runSteps],
+  );
 
   const onClaim = useCallback(async () => {
     await runSteps(() => game.claim());
@@ -62,7 +74,7 @@ export const Sandbox = () => {
     [refresh],
   );
 
-  const code = useMemo(() => game.yourCode(), [game, snapshot]);
+  const theirWords = useMemo(() => snapshot.theirWords, [snapshot]);
 
   return (
     <main>
@@ -135,18 +147,34 @@ export const Sandbox = () => {
                     {snapshot.yourTarget}
                   </p>
                   <p className="note">
-                    Only this device can read that name. It was sealed to your key when the game
-                    started.
+                    Only this device can read that name. It was sealed to words only you know,
+                    inside a bundle everybody can see.
                   </p>
-                  <button
-                    onClick={onTag}
-                    disabled={step !== null}
-                    style={{ marginTop: 16 }}
-                  >
-                    {step === null
-                      ? `I tagged ${snapshot.yourTarget}`
-                      : STEPS[step]}
-                  </button>
+
+                  <p style={{ marginTop: 18 }}>
+                    Tag them, then ask them for their five words. Say it down a phone if you like:
+                    the game does not care where you are.
+                  </p>
+                  <TypeTheirWords
+                    label={`I tagged ${snapshot.yourTarget}`}
+                    busy={step === null ? null : (STEPS[step] ?? null)}
+                    problem={problem}
+                    onSubmit={(spoken) => void onTag(spoken)}
+                  />
+
+                  {theirWords === null ? null : (
+                    <details style={{ marginTop: 18 }}>
+                      <summary className="mono">
+                        this is a sandbox: show me what they would say
+                      </summary>
+                      <p className="mono" style={{ marginTop: 10 }}>
+                        {theirWords.join(" ")}
+                      </p>
+                      <p className="note" style={{ marginTop: 8 }}>
+                        In a real game you never see this. You hear it, from them, once.
+                      </p>
+                    </details>
+                  )}
                 </>
               ) : (
                 <div className="envelope">
@@ -161,11 +189,13 @@ export const Sandbox = () => {
 
               <hr style={{ border: 0, borderTop: "1px solid var(--paper-line)", margin: "24px 0" }} />
 
-              <h2>Your code</h2>
+              <h2>Your words</h2>
               <p className="note" style={{ marginBottom: 14 }}>
-                Show this only when someone has genuinely tagged you.
+                Five words, yours alone. Saying them is what agreeing to be tagged means.
               </p>
-              {code === null ? null : <TagCodeQR value={code} label="tag code" />}
+              {snapshot.yourWords === null ? null : (
+                <YourWords words={snapshot.yourWords} />
+              )}
             </>
           )}
         </section>

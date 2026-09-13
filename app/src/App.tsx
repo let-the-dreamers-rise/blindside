@@ -18,6 +18,9 @@ const Watch = lazy(async () => ({
 const Rules = lazy(async () => ({
   default: (await import("./screens/Rules.tsx")).Rules,
 }));
+const Live = lazy(async () => ({
+  default: (await import("./screens/Live.tsx")).Live,
+}));
 
 const currentRoute = (): string => window.location.hash || "#/";
 
@@ -63,6 +66,13 @@ export const App = () => {
     return (
       <Suspense fallback={<Loading what="Loading..." />}>
         <Rules />
+      </Suspense>
+    );
+  }
+  if (route.startsWith("#/live")) {
+    return (
+      <Suspense fallback={<Loading what="Loading the wallet..." />}>
+        <Live />
       </Suspense>
     );
   }

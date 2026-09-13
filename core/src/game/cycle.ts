@@ -1,39 +1,47 @@
-// The host's job: turn a lobby into one secret cycle, and tell each player only their own part.
+// The organizer's job: turn a lobby into one secret cycle, and publish it so that each player
+// can read only their own part of it.
 // SPDX-License-Identifier: Apache-2.0
 
 import { randomBytes } from "@noble/hashes/utils";
 import { pureCircuits } from "@blindside/contract";
-import { seal, unseal } from "../crypto/box.js";
-import { fromHex, sanitizeName, toHex } from "../crypto/bundle.js";
+import { sanitizeName } from "../crypto/text.js";
+import {
+  type Assignment,
+  type SealedItem,
+  sealAssignment,
+  sealNothing,
+} from "./sealed.js";
 
 export const LEAF_SLOTS = 16;
-const ENVELOPE_PADDING_BYTES = 160;
 
+/** What a player hands the organizer when they join. Every field of it is public. */
 export type PlayerCard = {
   readonly commitment: Uint8Array;
-  readonly encPublicKey: Uint8Array;
+  /** Derived from the five words this player will say if they are tagged. */
+  readonly wordPublicKey: Uint8Array;
+  /** Sealed by the player, to themselves. The organizer carries it without ever opening it. */
+  readonly sealedTagToken: SealedItem;
   readonly name: string;
 };
 
-export type Assignment = {
+export type PlacedAssignment = Assignment & {
   readonly player: Uint8Array;
-  readonly target: Uint8Array;
-  readonly rand: Uint8Array;
-  readonly targetName: string;
 };
 
 export type StartPlan = {
-  readonly assignments: readonly Assignment[];
+  readonly assignments: readonly PlacedAssignment[];
   readonly leaves: readonly Uint8Array[];
-  readonly envelopes: readonly Uint8Array[];
+  /** Everything anybody needs, sealed and shuffled. Safe to paste anywhere. */
+  readonly items: readonly SealedItem[];
 };
 
 export type Rng = (length: number) => Uint8Array;
 
 /**
  * Builds a single cycle over every player, so following targets from anyone reaches everyone and
- * comes back. Leaves and envelopes are padded to a fixed count and shuffled independently, so the
- * tree does not reveal how many people are playing and envelope order says nothing about the map.
+ * comes back. Leaves and sealed items are padded to a fixed count and shuffled independently, so
+ * the tree does not reveal how many people are playing and the published bundle says nothing
+ * about who is in it.
  */
 export const buildStartPlan = (
   cards: readonly PlayerCard[],
@@ -57,6 +65,7 @@ export const buildStartPlan = (
       target: target.commitment,
       rand: rng(32),
       targetName: sanitizeName(target.name),
+      generation: 0,
     };
   });
 
@@ -66,79 +75,28 @@ export const buildStartPlan = (
       rand: assignment.rand,
     }),
   );
-  const padding = Array.from(
-    { length: LEAF_SLOTS - realLeaves.length },
-    () => rng(32),
+  const leafPadding = Array.from({ length: LEAF_SLOTS - realLeaves.length }, () =>
+    rng(32),
   );
 
-  const envelopes = order.map((card, index) => {
+  const sealedAssignments = order.map((card, index) => {
     const assignment = assignments[index];
     if (assignment === undefined) {
       throw new Error("unreachable: assignment missing");
     }
-    return seal(card.encPublicKey, encodeEnvelope(assignment));
+    return sealAssignment(card.wordPublicKey, assignment);
   });
-  const envelopePadding = Array.from(
-    { length: LEAF_SLOTS - envelopes.length },
-    () => rng(ENVELOPE_PADDING_BYTES),
+  const tagTokens = order.map((card) => card.sealedTagToken);
+  const itemPadding = Array.from(
+    { length: (LEAF_SLOTS - cards.length) * 2 },
+    () => sealNothing(rng),
   );
 
   return {
     assignments,
-    leaves: shuffle([...realLeaves, ...padding], rng),
-    envelopes: shuffle([...envelopes, ...envelopePadding], rng),
+    leaves: shuffle([...realLeaves, ...leafPadding], rng),
+    items: shuffle([...sealedAssignments, ...tagTokens, ...itemPadding], rng),
   };
-};
-
-/** A player opens every envelope and keeps the one that is theirs. */
-export const findMyEnvelope = (
-  encSecretKey: Uint8Array,
-  envelopes: readonly Uint8Array[],
-): Omit<Assignment, "player"> | null => {
-  for (const envelope of envelopes) {
-    const opened = unseal(encSecretKey, envelope);
-    if (opened !== null) {
-      const decoded = decodeEnvelope(opened);
-      if (decoded !== null) {
-        return decoded;
-      }
-    }
-  }
-  return null;
-};
-
-const encodeEnvelope = (assignment: Assignment): Uint8Array =>
-  new TextEncoder().encode(
-    JSON.stringify({
-      tg: toHex(assignment.target),
-      r: toHex(assignment.rand),
-      n: assignment.targetName,
-    }),
-  );
-
-const decodeEnvelope = (
-  bytes: Uint8Array,
-): Omit<Assignment, "player"> | null => {
-  try {
-    const parsed: unknown = JSON.parse(new TextDecoder().decode(bytes));
-    if (
-      typeof parsed !== "object" ||
-      parsed === null ||
-      !("tg" in parsed) ||
-      !("r" in parsed) ||
-      !("n" in parsed)
-    ) {
-      return null;
-    }
-    const { tg, r, n } = parsed as { tg: string; r: string; n: string };
-    return {
-      target: fromHex(tg),
-      rand: fromHex(r),
-      targetName: sanitizeName(n),
-    };
-  } catch {
-    return null;
-  }
 };
 
 /** Fisher-Yates with real randomness; never sorts by a random comparator. */

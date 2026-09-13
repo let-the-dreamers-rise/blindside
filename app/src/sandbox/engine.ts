@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { BlindsideGame, Player, hex } from "@blindside/contract";
+import { readWordCode, wordCodeText, wordsFrom } from "@blindside/core";
 
 export const CAST = ["You", "Riya", "Sam", "Nina", "Dev"] as const;
 
@@ -21,6 +22,10 @@ export type Snapshot = {
   readonly tags: number;
   readonly pot: bigint;
   readonly yourTarget: string | null;
+  /** The five words this player would say if somebody tagged them. */
+  readonly yourWords: readonly string[] | null;
+  /** What the target would say. A real game only ever hears this out loud. */
+  readonly theirWords: readonly string[] | null;
   readonly youAreOut: boolean;
   readonly youWon: boolean;
   readonly claimed: boolean;
@@ -98,26 +103,48 @@ export class SandboxRunner {
     );
   }
 
-  /** The code the player would show on their own screen. */
-  yourCode(): string | null {
-    if (!this.alive(this.you)) {
-      return null;
-    }
-    const surrender = this.game.surrenderOf(this.you);
-    return hex(surrender.tagToken);
-  }
-
-  tagYourTarget(): void {
+  /**
+   * Why these words would not tag anybody, or null if they would.
+   *
+   * A real game learns this the same way: the words either open something in the published
+   * bundle or they do not, and no name is ever compared against a list.
+   */
+  wouldRefuse(spoken: string): string | null {
     const target = this.targetOf(this.you);
     if (target === null) {
-      return;
+      return "You are not hunting anybody.";
     }
+    const heard = readWordCode(spoken);
+    if (heard === null) {
+      return "That is not five words from the list.";
+    }
+    if (wordCodeText(heard) !== wordCodeText(wordsFrom(target.sk))) {
+      return "Those words belong to somebody who is not your target.";
+    }
+    return null;
+  }
+
+  /**
+   * Tags the player's target, but only if the words typed in are the ones that target would
+   * have said. This is the whole handover: in a real game nothing else passes between the two
+   * phones, which is why a tag works down a phone line as well as it does in a corridor.
+   *
+   * Returns a reason it did not happen, or null when it did.
+   */
+  tagYourTarget(spoken: string): string | null {
+    const refusal = this.wouldRefuse(spoken);
+    const target = this.targetOf(this.you);
+    if (refusal !== null || target === null) {
+      return refusal ?? "You are not hunting anybody.";
+    }
+
     const before = this.nullifierCount();
     this.game.tag(this.you, target);
     this.say(
       "Someone was tagged.",
       `The chain gained ${this.nullifierCount() - before} spent notes and one new note. It did not learn who.`,
     );
+    return null;
   }
 
   /** One bot tags its target, so the game moves while you are not looking. */
@@ -213,6 +240,8 @@ export class SandboxRunner {
       tags: Number(state.tagCount),
       pot: state.pot,
       yourTarget: target === null ? null : this.nameOf(target.commitment),
+      yourWords: youAreOut ? null : [...wordsFrom(this.you.sk)],
+      theirWords: target === null ? null : [...wordsFrom(target.sk)],
       youAreOut,
       youWon: phase === "finished" && !youAreOut,
       claimed: this.claimed,

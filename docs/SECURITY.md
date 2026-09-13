@@ -18,12 +18,15 @@ What Blindside protects, what it does not, and who has to be trusted.
 
 | Threat | Result |
 |---|---|
-| Claiming a tag that never happened | Blocked. A tag needs the victim's tag token, which only they can hand over. |
-| Using a code photographed off a screen | Blocked. The proof also needs the hunter's own secret and their note pointing at that victim. |
+| Claiming a tag that never happened | Blocked. A tag needs the victim's tag token, which is sealed to words only they know. |
+| Overhearing the five words | Gets a stranger nothing. The proof also needs the hunter's own secret and their note pointing at that victim. |
+| Guessing a player's five words | 55 bits behind Argon2id at 19 MiB and two passes. One guess costs about a third of a second and a burst of memory; a targeted search is roughly 10^14 core-years. |
+| Reading the published bundle | It is ciphertext and padding, all of it the same length. It does not say who is playing or how many. |
 | Replaying a code | Blocked by nullifiers, and by the hunter's note being replaced after each tag. |
 | Tagging someone who is not your target | Blocked: "That is not your target". |
 | Organizer steals the pot | Impossible. No circuit pays the organizer. The only ways money leaves are the winner's claim and per-player refunds. |
-| Organizer fakes a tag | Impossible. They hold no player's secret and no player's tag token. |
+| Organizer fakes a tag | Impossible. They hold no player's secret, and every tag token is sealed by its own player to a key derived from words the organizer has never heard. |
+| Organizer reopens what they sealed | Impossible. They seal each assignment to a public key and never hold the secret half, which exists only once its owner says their words. |
 | Organizer redirects a payout | Impossible. Payout addresses are bound at join, not supplied at claim. |
 | Stolen phone | Cannot redirect money, for the same reason. Can impersonate that player in the game. |
 | One player refuses to surrender | Cannot win the pot. At the deadline every player, tagged or alive, takes their own fee back. |
@@ -48,7 +51,10 @@ What Blindside protects, what it does not, and who has to be trusted.
 ## Handling secrets
 
 - A player's secret and tag token never leave the device and are never sent to any server.
-- Everything else on the device is derived from that one secret, so the keycard backup is one QR.
+- Everything else on the device is derived from that one secret, including the five words, so the
+  keycard backup is one QR and there is never a second thing to keep.
+- The key those words unlock is derived on demand and held only for as long as the tab is open. It
+  is never written down and never sent anywhere.
 - Proving happens either in the wallet or against a proof server the player controls. The app
   warns if a prover URL is not local.
 - Nothing secret is ever logged.

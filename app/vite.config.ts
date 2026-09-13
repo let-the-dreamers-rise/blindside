@@ -9,6 +9,9 @@ export default defineConfig({
   // Relative asset paths, so the same build works from a project page, a subdirectory, or a
   // host that serves it from somewhere other than the root.
   base: "./",
+  // The wallet packages expect Node's Buffer. Without this the dev server treats "buffer" as a
+  // builtin and externalizes it, which the build does not.
+  resolve: { alias: { buffer: "buffer/" } },
   server: { host: true, port: 5173 },
   build: { target: "esnext" },
   esbuild: { target: "esnext" },

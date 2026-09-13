@@ -1,29 +1,25 @@
 {
-  "name": "@blindside/cli",
+  "name": "@blindside/chain",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
-    "stack:up": "docker compose -f standalone.yml up -d",
-    "stack:down": "docker compose -f standalone.yml down",
-    "local": "tsx src/e2e-local.ts",
-    "address": "tsx src/public-address.ts",
-    "public": "tsx src/e2e-public.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@blindside/chain": "workspace:*",
-    "@blindside/contract": "workspace:*",
-    "@blindside/core": "workspace:*",
-    "@midnight-ntwrk/compact-js": "2.5.1",
-    "@midnight-ntwrk/compact-runtime": "0.16.0",
     "@midnight-ntwrk/ledger-v8": "^8.0.0",
     "@midnight-ntwrk/midnight-js": "^4.0.4",
     "@midnight-ntwrk/midnight-js-http-client-proof-provider": "^4.0.4",
     "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "^4.0.4",
     "@midnight-ntwrk/midnight-js-level-private-state-provider": "^4.0.4",
-    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "^4.0.4",
+    "@midnight-ntwrk/midnight-js-network-id": "^4.0.4",
+    "@midnight-ntwrk/midnight-js-types": "^4.0.4",
     "@midnight-ntwrk/wallet-sdk-address-format": "^3.0.0",
     "@midnight-ntwrk/wallet-sdk-dust-wallet": "^3.0.0",
     "@midnight-ntwrk/wallet-sdk-facade": "^3.0.0",

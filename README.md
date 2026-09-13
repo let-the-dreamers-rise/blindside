@@ -2,14 +2,19 @@
 
 **Everyone has a target. Nobody knows who has them.**
 
-Blindside is a real-world hidden-target tag game on [Midnight](https://midnight.network). You are
-secretly assigned one other player to tag. When you tag them in real life they show you a one-time
-code; a zero-knowledge proof settles the tag on chain without revealing who tagged whom, and you
-inherit their target. The last player standing proves it and the contract pays out the pot.
+Blindside is a hidden-target tag game on [Midnight](https://midnight.network). You are secretly
+assigned one other player to tag. When you get them, they say **five words** out loud; those words
+are the only key that opens their half of the game, a zero-knowledge proof settles the tag on chain
+without revealing who tagged whom, and you inherit their target. The last player standing proves it
+and the contract pays out the pot.
 
 The genre is Senior Assassin, office Killer, campus Assassins. Millions of people play it every
 year over group chats and spreadsheets, with the prize money moving through the organizer's
 personal payment app.
+
+**The handover is five spoken words, so a game is not limited to people who can stand next to each
+other.** Say them in a corridor, down a phone, on a video call, in a direct message. That is the
+difference between a game one campus can play and a game a Discord server can play.
 
 ## What this does that an app with a database cannot
 
@@ -18,9 +23,13 @@ personal payment app.
    a resign path mean one stubborn or absent player cannot lock the money up forever.
 2. **The chain never learns who tagged whom.** Tags are proofs over hidden notes. The public feed
    says "someone was tagged, 11 remain", and that is all it can say.
-3. **Tags nobody can fake, payouts nobody can redirect.** A tag needs the victim's surrendered code
-   *and* the hunter's own secret, so a photographed screen is useless to anyone else. The payout
-   address is fixed when you join, so a stolen phone cannot send the pot somewhere new.
+3. **Tags nobody can fake, payouts nobody can redirect.** A tag needs the victim's five words *and*
+   the hunter's own secret and their own note, so overhearing the words gets a stranger nothing.
+   The payout address is fixed when you join, so a stolen phone cannot send the pot somewhere new.
+4. **No server of its own.** After the game starts the organizer publishes one line of text: every
+   player's sealed part of the game, shuffled and padded. It can go in the group chat, because it
+   is entirely ciphertext. Players read their own target out of it, and a hunter opens their
+   victim's half with the words they just heard. Nothing has to be passed between two phones.
 
 ## What this version does not do
 
@@ -33,6 +42,15 @@ Stated plainly, because a privacy product that overclaims is worse than one that
   alternative, letting the organizer eliminate people, would let them hand the pot to a friend.
 - **Sixteen players per game** in this version.
 - **Testnet only.** Real money needs mainnet and a legal review first.
+
+## The handover, in one paragraph
+
+A tag needs 96 bytes of the victim's private note. Nobody can read 96 bytes aloud, so the bytes are
+published as ciphertext and the **key** is what gets said. Five words from the 2048-word BIP-39
+list are 55 bits; the key is derived from them with Argon2id at 19 MiB, so a legitimate hunter pays
+one derivation, around a third of a second, and anybody guessing pays it 36 quadrillion times. The
+organizer seals each player's target to that key and cannot open it again, because the key exists
+nowhere until its owner says the words.
 
 ## How the game maps onto the cryptography
 
@@ -99,11 +117,12 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Piece | State |
 |---|---|
 | Compact contract, 8 circuits | Compiles on 0.31.1 |
-| Contract tests | 43 passing, 94% statement coverage |
-| Crypto and game core tests | 34 passing, 98% statement coverage |
-| Browser tests | 7 passing on a phone viewport |
+| Contract tests | 50 passing, 94% statement coverage |
+| Crypto and game core tests | 53 passing, 97% statement coverage |
+| Browser tests | 12 passing on a phone viewport |
 | Full game on a local chain | Deployed, played and paid out |
-| Mobile web app | Sandbox and evidence pages shipped |
+| Spoken-word handover | Shipped: sandbox, chain runner and tests |
+| Mobile web app | Sandbox, rules, evidence and spectator pages shipped |
 | Escrow on the public testnet | Next |
 | Real game with real players | Planned before submission |
 
@@ -129,9 +148,14 @@ contract/src/witnesses.ts        private state, never leaves the device
 contract/src/simulator.ts        one ledger, many identities; shared by the tests
                                  and by the browser sandbox
 contract/src/test/               lifecycle, rejections, privacy, always-exit
-core/src/crypto/                 sealed target envelopes, tag code encoding
+core/src/crypto/words.ts         the five words, and reading back what was heard
+core/src/crypto/lock.ts          Argon2id: what turns five words into a key
+core/src/game/sealed.ts          the two sealed items a player is made of
 core/src/game/cycle.ts           the host's shuffle: one cycle, padded and sealed
+core/src/game/bundle.ts          one line of text that carries a whole game
 core/src/errors.ts               contract assertions turned into game rules
+chain/src/                       wallet, providers and signing, shared by the CLI
+                                 and the browser console
 app/src/                         the mobile web client, sandbox and evidence
 cli/src/e2e-local.ts             a whole game against a local Midnight chain
 ```

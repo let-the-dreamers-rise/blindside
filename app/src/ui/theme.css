@@ -252,6 +252,18 @@ button.danger {
   padding-left: 0;
 }
 
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid var(--paper-line);
+  border-radius: 8px;
+  color: var(--paper);
+  text-decoration: none;
+  font-family: var(--serif);
+}
+
 .rules {
   margin: 16px 0 0;
 }
@@ -343,6 +355,32 @@ input.mono {
   max-width: 280px;
   height: auto;
   margin: 0 auto;
+}
+
+.words {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.words li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--paper-line);
+  border-radius: 6px;
+  background: var(--paper-raised, transparent);
+  font-size: 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+.words li .mono {
+  color: var(--paper-dim);
+  font-size: 0.75rem;
 }
 
 .qr {

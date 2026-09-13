@@ -7,7 +7,7 @@ import { explain } from "../errors.js";
 describe("explaining failures", () => {
   it.each([
     ["failed assert: That is not your target", "Wrong person"],
-    ["failed assert: Code out of date", "That code is stale"],
+    ["failed assert: Code out of date", "That is an old note"],
     ["failed assert: That code was already used", "Already used"],
     ["failed assert: This game is full", "Game is full"],
     ["failed assert: The game has already started", "Too late to join"],

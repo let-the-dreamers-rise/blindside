@@ -12,6 +12,10 @@ test-results/
 .vite/
 .turbo/
 
+# A local chain's private state store: rebuilt on every run, never shared.
+midnight-level-db/
+zk/
+
 # Wallet and player secrets must never be committed.
 *.seed
 *.keycard

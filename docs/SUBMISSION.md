@@ -45,8 +45,19 @@ it replaces. The chain gains two opaque values and one leaf. Winning is a self-l
 player's note points at themselves, and proving it is live is the claim.
 
 A tag needs three things held by two people: the victim's tag token, which only they can produce;
-the hunter's own secret; and the hunter's note proving this victim is their target. A code
-photographed off a screen is one of three, so it is useless.
+the hunter's own secret; and the hunter's note proving this victim is their target. Words overheard
+across a room are one of three, so they are useless to a stranger.
+
+The handover is the part that decides whether anybody plays. A tag needs 96 bytes of the victim's
+hidden note, which nobody can read out loud, so the design inverts it: the bytes are published as
+ciphertext and the key is what gets said. Five words from the BIP-39 list are 55 bits, derived into
+a key with Argon2id at 19 MiB, so one legitimate hunter pays a third of a second and a guesser pays
+it 36 quadrillion times. The organizer seals each player's target to that key and cannot open it
+again, because the secret half exists nowhere until its owner says the words.
+
+That is what makes the game work over a phone line, a video call or a direct message, rather than
+only between people standing next to each other. Presence was never what made a tag real. Consent
+was.
 
 ## Engineering
 

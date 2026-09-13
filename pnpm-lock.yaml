@@ -27,15 +27,63 @@ importers:
 
   app:
     dependencies:
+      '@blindside/chain':
+        specifier: workspace:*
+        version: link:../chain
       '@blindside/contract':
         specifier: workspace:*
         version: link:../contract
       '@blindside/core':
         specifier: workspace:*
         version: link:../core
+      '@midnight-ntwrk/compact-js':
+        specifier: 2.5.1
+        version: 2.5.1
       '@midnight-ntwrk/compact-runtime':
         specifier: 0.16.0
         version: 0.16.0
+      '@midnight-ntwrk/ledger-v8':
+        specifier: 8.1.2
+        version: 8.1.2
+      '@midnight-ntwrk/midnight-js':
+        specifier: 4.1.1
+        version: 4.1.1
+      '@midnight-ntwrk/midnight-js-fetch-zk-config-provider':
+        specifier: 4.1.1
+        version: 4.1.1
+      '@midnight-ntwrk/midnight-js-http-client-proof-provider':
+        specifier: 4.1.1
+        version: 4.1.1
+      '@midnight-ntwrk/midnight-js-indexer-public-data-provider':
+        specifier: 4.1.1
+        version: 4.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@midnight-ntwrk/midnight-js-level-private-state-provider':
+        specifier: 4.1.1
+        version: 4.1.1
+      '@midnight-ntwrk/midnight-js-network-id':
+        specifier: ^4.0.4
+        version: 4.1.1
+      '@midnight-ntwrk/wallet-sdk-address-format':
+        specifier: ^3.0.0
+        version: 3.1.2
+      '@midnight-ntwrk/wallet-sdk-dust-wallet':
+        specifier: ^3.0.0
+        version: 3.0.0(ws@8.21.3)
+      '@midnight-ntwrk/wallet-sdk-facade':
+        specifier: ^3.0.0
+        version: 3.0.0(ws@8.21.3)
+      '@midnight-ntwrk/wallet-sdk-hd':
+        specifier: ^3.0.0
+        version: 3.0.2
+      '@midnight-ntwrk/wallet-sdk-shielded':
+        specifier: ^2.0.0
+        version: 2.1.0(ws@8.21.3)
+      '@midnight-ntwrk/wallet-sdk-unshielded-wallet':
+        specifier: ^2.0.0
+        version: 2.1.0(ws@8.21.3)
+      buffer:
+        specifier: 6.0.3
+        version: 6.0.3
       qrcode:
         specifier: 1.5.4
         version: 1.5.4
@@ -45,6 +93,9 @@ importers:
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
     devDependencies:
       '@playwright/test':
         specifier: 1.50.1
@@ -71,8 +122,63 @@ importers:
         specifier: 3.4.1
         version: 3.4.1(vite@6.0.7(@types/node@25.5.0)(lightningcss@1.33.0)(tsx@4.23.13))
 
+  chain:
+    dependencies:
+      '@midnight-ntwrk/ledger-v8':
+        specifier: 8.1.2
+        version: 8.1.2
+      '@midnight-ntwrk/midnight-js':
+        specifier: ^4.0.4
+        version: 4.1.1
+      '@midnight-ntwrk/midnight-js-http-client-proof-provider':
+        specifier: ^4.0.4
+        version: 4.1.1
+      '@midnight-ntwrk/midnight-js-indexer-public-data-provider':
+        specifier: ^4.0.4
+        version: 4.1.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@midnight-ntwrk/midnight-js-level-private-state-provider':
+        specifier: ^4.0.4
+        version: 4.1.1
+      '@midnight-ntwrk/midnight-js-network-id':
+        specifier: ^4.0.4
+        version: 4.1.1
+      '@midnight-ntwrk/midnight-js-types':
+        specifier: ^4.0.4
+        version: 4.1.1
+      '@midnight-ntwrk/wallet-sdk-address-format':
+        specifier: ^3.0.0
+        version: 3.1.2
+      '@midnight-ntwrk/wallet-sdk-dust-wallet':
+        specifier: ^3.0.0
+        version: 3.0.0(ws@8.21.3)
+      '@midnight-ntwrk/wallet-sdk-facade':
+        specifier: ^3.0.0
+        version: 3.0.0(ws@8.21.3)
+      '@midnight-ntwrk/wallet-sdk-hd':
+        specifier: ^3.0.0
+        version: 3.0.2
+      '@midnight-ntwrk/wallet-sdk-shielded':
+        specifier: ^2.0.0
+        version: 2.1.0(ws@8.21.3)
+      '@midnight-ntwrk/wallet-sdk-unshielded-wallet':
+        specifier: ^2.0.0
+        version: 2.1.0(ws@8.21.3)
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
+    devDependencies:
+      '@types/node':
+        specifier: 25.5.0
+        version: 25.5.0
+      typescript:
+        specifier: 6.0.2
+        version: 6.0.2
+
   cli:
     dependencies:
+      '@blindside/chain':
+        specifier: workspace:*
+        version: link:../chain
       '@blindside/contract':
         specifier: workspace:*
         version: link:../contract
@@ -168,6 +274,9 @@ importers:
       '@noble/hashes':
         specifier: 1.7.1
         version: 1.7.1
+      '@scure/bip39':
+        specifier: 2.4.0
+        version: 2.4.0
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -641,6 +750,9 @@ packages:
 
   '@midnight-ntwrk/midnight-js-contracts@4.1.1':
     resolution: {integrity: sha512-vHeKyaj9RXTx+Cep3YpIRgg2EWkzibO4gxI7k/rYpXmGXc3waetrR5sb9FPR7v9SUX00/zf/sYbLp1NZhwZbjg==}
+
+  '@midnight-ntwrk/midnight-js-fetch-zk-config-provider@4.1.1':
+    resolution: {integrity: sha512-d9vPAXjCvbe3KdPDBwp8Cp4HXwdo9jfCjeyJjJPfIDHCctXrIQ7btu+CqY1+bgV05FHVMOBLjJ9TS2tc2xdwrw==}
 
   '@midnight-ntwrk/midnight-js-http-client-proof-provider@4.1.1':
     resolution: {integrity: sha512-Q2VNRTvuWlf3MbjV7C3asuLHeFwtZMdh6t5Z+u8c8RDpejW9GhKaSjlJ2zgJII5ckE8/cocPEDwt3GKBebGHWA==}
@@ -2540,6 +2652,14 @@ snapshots:
       '@midnight-ntwrk/midnight-js-protocol': 4.1.1
       '@midnight-ntwrk/midnight-js-types': 4.1.1
       '@midnight-ntwrk/midnight-js-utils': 4.1.1
+
+  '@midnight-ntwrk/midnight-js-fetch-zk-config-provider@4.1.1':
+    dependencies:
+      '@midnight-ntwrk/midnight-js-types': 4.1.1
+      '@midnight-ntwrk/midnight-js-utils': 4.1.1
+      cross-fetch: 4.1.0
+    transitivePeerDependencies:
+      - encoding
 
   '@midnight-ntwrk/midnight-js-http-client-proof-provider@4.1.1':
     dependencies:

@@ -70,6 +70,32 @@ export const Evidence = () => (
     </section>
 
     <section className="card" style={{ marginTop: 18 }}>
+      <h2>How the three tags happened</h2>
+      <p>
+        Nothing was scanned and nothing was passed between two devices. The organizer published one
+        line of text, and each tag was somebody saying five words that opened their own half of it.
+      </p>
+      <div className="tally" style={{ marginTop: 12 }}>
+        <div>
+          <strong>{run.sealedItems}</strong>
+          sealed items published
+        </div>
+        <div>
+          <strong>{run.bundleCharacters.toLocaleString("en-GB")}</strong>
+          characters of ciphertext
+        </div>
+        <div>
+          <strong>{run.handover}</strong>
+          per tag
+        </div>
+      </div>
+      <p className="note" style={{ marginTop: 16 }}>
+        Every item is the same length whatever it holds, and a game publishes a fixed number of
+        them whoever is playing, so the bundle says nothing about who is in the game or how many.
+      </p>
+    </section>
+
+    <section className="card" style={{ marginTop: 18 }}>
       <h2>Every step</h2>
       <p className="note">
         Each row is one transaction: a proof built on this machine, submitted to the node, and

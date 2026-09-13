@@ -19,32 +19,32 @@ const MAP: ReadonlyArray<readonly [RegExp, PlayerFacingError]> = [
     /not your target/i,
     {
       title: "Wrong person",
-      detail: "That code belongs to someone who is not your target.",
-      action: "Check your target card, then scan again.",
+      detail: "Those words belong to someone who is not your target.",
+      action: "Check your target card, then ask them again.",
     },
   ],
   [
     /Code out of date/i,
     {
-      title: "That code is stale",
-      detail: "They tagged someone else after showing you this code, so it no longer works.",
-      action: "Ask them to show their code again, freshly.",
+      title: "That is an old note",
+      detail: "They tagged somebody after you heard their words, so what those words open has moved on.",
+      action: "Get the latest bundle from your organizer and try again.",
     },
   ],
   [
     /already used/i,
     {
       title: "Already used",
-      detail: "This code has already been spent.",
-      action: "Ask for a fresh code.",
+      detail: "That note has already been spent.",
+      action: "Somebody got there first. Check the board.",
     },
   ],
   [
     /Unknown code/i,
     {
-      title: "Not a code from this game",
-      detail: "Nothing in this game matches what was scanned.",
-      action: "Make sure you are both in the same game, then scan again.",
+      title: "Not from this game",
+      detail: "Nothing in this game opens with those words.",
+      action: "Make sure you are both in the same game, then ask them again.",
     },
   ],
   [
@@ -124,7 +124,7 @@ const MAP: ReadonlyArray<readonly [RegExp, PlayerFacingError]> = [
     {
       title: "Not your game",
       detail: "This device never joined this game.",
-      action: "Switch to the device you joined with, or restore your keycard.",
+      action: "Switch to the device you joined with, or restore your secret.",
     },
   ],
   [

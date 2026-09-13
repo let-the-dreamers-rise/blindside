@@ -5,6 +5,7 @@ Four packages, one contract, and a rule that nothing is reimplemented twice.
 ```
 contract/   the Compact contract, its witnesses, and a simulator that drives it
 core/       the cryptography and game logic both the app and the runner share
+chain/      wallet, providers and signing, shared by the runner and the browser
 app/        the mobile web client
 cli/        a whole game against a real chain
 ```
@@ -60,9 +61,52 @@ Three things, held by two different people:
 2. The hunter's own secret, which proves the hunter is who the note says.
 3. The hunter's note, proving that this victim is their target and not someone else's.
 
-A code photographed off a screen is therefore useless: it is one of three, and the other two never
+Words overheard across a room are therefore useless: they are one of three, and the other two never
 leave the hunter's device. This is why the surrender is a handover and not a scan of a public
 board.
+
+## The handover: five words instead of a screen
+
+The three things above add up to 96 bytes of the victim's private note. Nobody reads 96 bytes
+aloud, so the design inverts: **the bytes are published and the key is what gets said.**
+
+```
+words      five from the 2048 word BIP-39 list          55 bits
+key        x25519 keypair from Argon2id(words, game)    19 MiB, two passes, ~0.3s
+item       seal(publicKey, 128 bytes) -> 200 bytes      fixed length, whatever it holds
+bundle     blindside1.<game>.<base64url of 32 items>    one line of text
+```
+
+A player is exactly two items in that bundle:
+
+| Item | Sealed by | Holds | Who needs it |
+|---|---|---|---|
+| assignment | the organizer | target, randomness, target's name, generation | the player, and later their hunter |
+| tag token | the player themselves | the preimage behind their commitment | their hunter only |
+
+The organizer seals the assignment to a public key derived from words they have never heard, so
+they cannot open it again. They never see any tag token at all: a player seals their own, at join,
+and the organizer carries it without being able to read it. Both halves are needed for a tag, and
+neither alone does anything.
+
+Everything else falls out of this:
+
+- **No server.** The bundle is ciphertext and padding, so it can be pasted anywhere. Players read
+  their own target out of the public copy; a hunter opens their victim's half with words they were
+  told. Nothing has to travel privately between two phones.
+- **It works down a phone line.** Presence was never what made a tag real; consent was. Five words
+  carry consent over any channel.
+- **Nothing leaks from the shape.** Every item is 200 bytes and every game publishes 32 of them,
+  padded with random bytes, so the bundle says nothing about who is in the game or how many.
+- **A tag moves a player on.** Tagging inherits a target under fresh randomness, so the tagger
+  seals a later *generation* of their assignment and appends it. When several assignments open for
+  one key, the highest generation is the live one; order in a shuffled bundle decides nothing.
+
+The words are derived from the player's own secret, so a restored secret restores the codes too and
+there is never a second thing to back up. Reading them back is forgiving on purpose: case is
+ignored, anything that is not a letter separates words, and a word matches on its first four
+letters, because every word in the list is unique in them. "Abando, Ability..." is the same code as
+"abandon ability".
 
 ## Privacy boundaries
 
@@ -110,7 +154,7 @@ Two things that only show up on a real chain:
 
 - **Unshielded inputs need signatures, and the intents accessor returns a copy.** Signing the
   inputs in place writes to a map that is thrown away, and the node rejects the transaction as
-  malformed. `cli/src/signing.ts` assigns the signed intents back.
+  malformed. `chain/src/signing.ts` assigns the signed intents back.
 - **A circuit is proven against the state the indexer last served.** A call made immediately after
   the call it depends on can be built against a state that does not contain it, which surfaces as
   a failed assertion inside the proof with nothing to say which one. Every dependent call waits
@@ -124,7 +168,10 @@ Two things that only show up on a real chain:
 | `contract/src/test/rejections` | every assertion, by the error a player would see |
 | `contract/src/test/privacy` | what the ledger does and does not contain after a tag |
 | `contract/src/test/always-exit` | the four ways a real game breaks |
-| `core/src/test` | envelopes, tag codes, the host's shuffle, the error map |
+| `core/src/test/words` | the word codes, and what a key costs to guess |
+| `core/src/test/handover` | five people, one bundle, a tag from spoken words |
+| `core/src/test/cycle` | the host's shuffle, and what the bundle does not leak |
+| `core/src/test/errors` | contract assertions turned into something a player can act on |
 | `app/e2e` | a whole game in a browser, on a phone viewport |
 
 Coverage is gated at 80 percent for the game engine and the crypto core. CI compiles the contract

@@ -31,7 +31,7 @@ no mockups, no sped-up footage without saying so.
 *Scroll to "When it goes wrong". Press the four buttons in order, slowly, watching the pot.*
 
 > An escrow that can only pay a winner is a trap the first time a game does not produce one.
-> Somebody always refuses to hand over their code. Somebody loses their phone.
+> Somebody always refuses to surrender. Somebody loses their phone.
 >
 > So: I quit, and I leave a code only my own hunter can use. Nobody tags anyone again. The
 > deadline passes, and anybody, not the organizer, anybody, opens refunds. Every player takes back
