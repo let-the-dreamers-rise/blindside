@@ -6,6 +6,9 @@ import wasm from "vite-plugin-wasm";
 // both have to work. Targeting esnext means top-level await is native and needs no transform.
 export default defineConfig({
   plugins: [react(), wasm()],
+  // Relative asset paths, so the same build works from a project page, a subdirectory, or a
+  // host that serves it from somewhere other than the root.
+  base: "./",
   server: { host: true, port: 5173 },
   build: { target: "esnext" },
   esbuild: { target: "esnext" },

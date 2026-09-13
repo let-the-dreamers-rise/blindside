@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview",
+    "artifact": "pnpm build && node scripts/artifact-page.mjs",
     "test": "playwright test",
     "test:install": "playwright install --with-deps chromium",
     "typecheck": "tsc -p tsconfig.json --noEmit"

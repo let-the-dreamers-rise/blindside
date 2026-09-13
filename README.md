@@ -49,25 +49,67 @@ The chain sees two nullifiers that cannot be tied back to the notes they retire,
 It does not see A, B, or C. The last tag leaves the winner pointing at themselves, and that
 self-loop is the proof of victory.
 
+## Try it in two minutes, without a wallet
+
+The app has a sandbox that runs the **real compiled contract in your browser tab**. Every rule and
+every refusal in it is the contract's, not a mock. Play a whole game, win it, claim the pot. Then
+press the buttons under "When it goes wrong" and watch the pot come back out of a game nobody
+finished.
+
+```bash
+pnpm install
+pnpm --filter @blindside/app dev     # then open the link and press "Play a game right now"
+```
+
+## A whole game, on a real chain
+
+The sandbox shows the rules. This shows the chain. One command brings up a Midnight node, an
+indexer and a proof server, deploys the contract and plays a four player game through it, every
+step a real zero-knowledge proof:
+
+```bash
+pnpm --filter @blindside/cli stack:up
+pnpm --filter @blindside/cli local
+```
+
+A recorded run, which the app shows on its evidence page:
+
+| Step | Time |
+|---|---|
+| deploy | 20.3s |
+| join, four players | 23.8s each |
+| start game | 29.2s |
+| tag | 30.1s each |
+| claim victory | 23.9s |
+| **whole game** | **about 4 minutes 49 seconds** |
+
+Final state: phase `finished`, one player alive, three tags, **pot 0**, seven spent notes. The
+contract address and every transaction id are in `app/src/evidence/local-run.json`.
+
 ## Status
 
 | Piece | State |
 |---|---|
-| Compact contract (8 circuits) | Compiles on 0.31.1 |
-| Simulator test suite | 43 tests passing |
-| Escrow on preprod | Next |
-| Mobile web app | Next |
+| Compact contract, 8 circuits | Compiles on 0.31.1 |
+| Contract tests | 43 passing, 94% statement coverage |
+| Crypto and game core tests | 34 passing, 98% statement coverage |
+| Browser tests | 7 passing on a phone viewport |
+| Full game on a local chain | Deployed, played and paid out |
+| Mobile web app | Sandbox and evidence pages shipped |
+| Escrow on the public testnet | Next |
 | Real game with real players | Planned before submission |
 
-## Running it
+## Building it yourself
 
-Requires Node 22, pnpm, and the Compact toolchain (Linux or WSL2; the toolchain does not run
-natively on Windows).
+Requires Node 22, pnpm 9 and the Compact toolchain (Linux or WSL2; the toolchain does not run
+natively on Windows). Docker is needed only for the local chain.
 
 ```bash
 pnpm install
-pnpm --filter @blindside/contract compact   # compile the contract
-pnpm --filter @blindside/contract test       # 43 tests
+pnpm compact        # compile the contract
+pnpm typecheck
+pnpm test           # contract, core and browser tests
+pnpm test:coverage  # with the 80% gates
 ```
 
 ## Layout
@@ -76,8 +118,14 @@ pnpm --filter @blindside/contract test       # 43 tests
 contract/src/blindside.compact   the game: join, startGame, tag, claimVictory,
                                  resign, openRefunds, cancel, refund
 contract/src/witnesses.ts        private state, never leaves the device
-contract/src/test/game.ts        harness: one ledger, many identities
-contract/src/test/              lifecycle, rejections, privacy, always-exit
+contract/src/simulator.ts        one ledger, many identities; shared by the tests
+                                 and by the browser sandbox
+contract/src/test/               lifecycle, rejections, privacy, always-exit
+core/src/crypto/                 sealed target envelopes, tag code encoding
+core/src/game/cycle.ts           the host's shuffle: one cycle, padded and sealed
+core/src/errors.ts               contract assertions turned into game rules
+app/src/                         the mobile web client, sandbox and evidence
+cli/src/e2e-local.ts             a whole game against a local Midnight chain
 ```
 
 The tests named `always-exit` are the important ones. They are the four ways a real game breaks:
