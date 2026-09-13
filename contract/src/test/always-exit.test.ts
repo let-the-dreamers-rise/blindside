@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { Phase } from "../managed/blindside/contract/index.js";
-import { BlindsideGame, Player } from "./game.js";
+import { BlindsideGame, Player } from "../simulator.js";
 
 const DEADLINE = 1_000_000n;
 const BEFORE = 1_000;

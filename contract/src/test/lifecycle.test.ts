@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import { Phase } from "../managed/blindside/contract/index.js";
-import { BlindsideGame, Player } from "./game.js";
+import { BlindsideGame, Player } from "../simulator.js";
 
 const cast = () => ({
   alex: new Player("alex"),

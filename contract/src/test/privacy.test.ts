@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import { pureCircuits } from "../managed/blindside/contract/index.js";
-import { BlindsideGame, Player, hex } from "./game.js";
+import { BlindsideGame, Player, hex } from "../simulator.js";
 
 const liveGame = () => {
   const alex = new Player("alex");

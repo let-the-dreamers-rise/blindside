@@ -1,0 +1,241 @@
+/* Blindside: paper, ink and a single red stamp. No neon, no crosshairs. */
+
+:root {
+  --ink: #0d0c0b;
+  --paper: #efe9dd;
+  --paper-dim: #cfc7b8;
+  --paper-line: rgba(239, 233, 221, 0.16);
+  --stamp: #c2392f;
+  --stamp-dim: rgba(194, 57, 47, 0.15);
+  --ok: #5f8f5a;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --mono: "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  /* A faint paper grain, drawn rather than downloaded. */
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(239, 233, 221, 0.05), transparent 45%),
+    radial-gradient(circle at 85% 70%, rgba(194, 57, 47, 0.06), transparent 40%);
+  min-height: 100dvh;
+}
+
+#root {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 40px);
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.4em;
+}
+
+h1 {
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  line-height: 1.04;
+}
+
+p {
+  line-height: 1.55;
+  margin: 0 0 1em;
+  color: var(--paper-dim);
+}
+
+.lede {
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  color: var(--paper);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.stamp {
+  display: inline-block;
+  border: 2px solid var(--stamp);
+  color: var(--stamp);
+  padding: 4px 10px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  transform: rotate(-3deg);
+}
+
+.card {
+  background: rgba(239, 233, 221, 0.04);
+  border: 1px solid var(--paper-line);
+  border-radius: 10px;
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow);
+}
+
+.grid {
+  display: grid;
+  gap: 18px;
+}
+
+@media (min-width: 860px) {
+  .grid.two {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+  padding: 14px 20px;
+  min-height: 48px;
+  font-weight: 600;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--paper);
+}
+
+button.danger {
+  background: var(--stamp);
+  border-color: var(--stamp);
+  color: var(--paper);
+}
+
+:focus-visible {
+  outline: 3px solid var(--stamp);
+  outline-offset: 3px;
+}
+
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.steps li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  color: var(--paper-dim);
+}
+
+.steps li span {
+  font-family: var(--mono);
+  color: var(--stamp);
+  font-size: 0.8rem;
+}
+
+.envelope {
+  border: 1px dashed var(--paper-line);
+  border-radius: 8px;
+  padding: 22px;
+  text-align: center;
+}
+
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--paper-dim);
+  letter-spacing: 0.04em;
+}
+
+.tally strong {
+  display: block;
+  color: var(--paper);
+  font-size: 1.5rem;
+  font-family: var(--serif);
+  letter-spacing: 0;
+}
+
+.feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.feed li {
+  border-left: 2px solid var(--stamp);
+  padding: 6px 0 6px 12px;
+  color: var(--paper-dim);
+  font-size: 0.92rem;
+}
+
+.chain-row {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--paper-dim);
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.note {
+  font-size: 0.85rem;
+  color: var(--paper-dim);
+  border-left: 2px solid var(--paper-line);
+  padding-left: 12px;
+}
+
+.qr {
+  background: var(--paper);
+  padding: 14px;
+  border-radius: 8px;
+  display: inline-block;
+  line-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

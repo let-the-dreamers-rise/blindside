@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from "vitest";
-import { BlindsideGame, Player } from "./game.js";
+import { BlindsideGame, Player } from "../simulator.js";
 
 const threePlayerGame = () => {
   const alex = new Player("alex");
