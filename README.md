@@ -51,14 +51,22 @@ self-loop is the proof of victory.
 
 ## Try it in two minutes, without a wallet
 
-The app has a sandbox that runs the **real compiled contract in your browser tab**. Every rule and
-every refusal in it is the contract's, not a mock. Play a whole game, win it, claim the pot. Then
-press the buttons under "When it goes wrong" and watch the pot come back out of a game nobody
-finished.
+**[let-the-dreamers-rise.github.io/blindside](https://let-the-dreamers-rise.github.io/blindside/)**
+
+The sandbox runs the **real compiled contract in your browser tab**. Every rule and every refusal
+in it is the contract's, not a mock. Play a whole game, win it, claim the pot. Then press the
+buttons under "When it goes wrong" and watch the pot come back out of a game nobody finished.
+
+The same site has an [evidence page](https://let-the-dreamers-rise.github.io/blindside/#/evidence)
+showing a game played on a real chain, and a
+[spectator view](https://let-the-dreamers-rise.github.io/blindside/#/watch) that reads a deployed
+game straight out of a Midnight indexer.
+
+Or run it yourself:
 
 ```bash
 pnpm install
-pnpm --filter @blindside/app dev     # then open the link and press "Play a game right now"
+pnpm --filter @blindside/app dev     # then press "Play a game right now"
 ```
 
 ## A whole game, on a real chain
@@ -136,6 +144,14 @@ claims. In each case the money still gets out.
 
 18+. The word is "tag", never anything else. No location broadcasting, no weapon imagery, consent
 at every handover, and a stop rule that always wins. Prize pots are testnet only.
+
+## Reading the code
+
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) is the guided tour: how a game becomes notes and
+nullifiers, what a tag actually needs, which values are allowed to cross to the chain, and the two
+things that only go wrong once a real chain is involved.
+[docs/SECURITY.md](docs/SECURITY.md) is the threat table, including what this version does not
+protect.
 
 ## License
 
