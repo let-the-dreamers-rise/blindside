@@ -11,6 +11,7 @@
   "scripts": {
     "compact": "pnpm --filter @blindside/contract compact",
     "test": "pnpm -r test",
+    "test:coverage": "pnpm --filter @blindside/contract --filter @blindside/core test:coverage",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {

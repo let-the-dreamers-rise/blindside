@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { pureCircuits } from "@blindside/contract";
 import { toHex } from "../crypto/bundle.js";
+import { seal } from "../crypto/box.js";
 import { identityFrom, newIdentity } from "../crypto/keys.js";
 import { LEAF_SLOTS, buildStartPlan, findMyEnvelope } from "../game/cycle.js";
 
@@ -105,6 +106,33 @@ describe("building a game", () => {
   it("refuses a lobby that is too small or too large", () => {
     expect(() => buildStartPlan(lobby(2).map((p) => p.card))).toThrow(/three players/);
     expect(() => buildStartPlan(lobby(17).map((p) => p.card))).toThrow(/up to 16/);
+  });
+
+  it("ignores an envelope it can open but cannot read", () => {
+    const players = lobby(3);
+    const first = players[0];
+    if (first === undefined) {
+      throw new Error("no players");
+    }
+    const plan = buildStartPlan(players.map((entry) => entry.card));
+
+    // Two envelopes sealed to this player that are not assignments: one that is not JSON at
+    // all, one that is JSON of the wrong shape. Neither may be mistaken for a target.
+    const decoys = [
+      seal(first.card.encPublicKey, new TextEncoder().encode("not json")),
+      seal(first.card.encPublicKey, new TextEncoder().encode('{"hello":"world"}')),
+    ];
+
+    expect(findMyEnvelope(first.identity.encSecretKey, decoys)).toBeNull();
+
+    const real = findMyEnvelope(first.identity.encSecretKey, [
+      ...decoys,
+      ...plan.envelopes,
+    ]);
+    expect(real).not.toBeNull();
+    expect(toHex(real?.target ?? new Uint8Array())).not.toBe(
+      toHex(first.card.commitment),
+    );
   });
 
   it("does not put players in the order they joined", () => {

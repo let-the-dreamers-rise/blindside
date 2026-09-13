@@ -13,6 +13,7 @@
   "scripts": {
     "compact": "compact compile src/blindside.compact src/managed/blindside",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "test:compile": "pnpm compact && vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@types/node": "25.5.0",
+    "@vitest/coverage-v8": "4.1.0",
     "typescript": "6.0.2",
     "vitest": "4.1.0"
   }

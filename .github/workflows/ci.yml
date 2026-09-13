@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: compile, typecheck, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install the Compact toolchain
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf \
+            https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Select the pinned language version
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: compact update 0.31.1
+
+      - run: pnpm install --frozen-lockfile
+
+      # The generated circuits and proving keys are committed so the tests can run anywhere,
+      # but CI rebuilds them from source so the two can never drift apart unnoticed.
+      - name: Compile the contract
+        run: pnpm compact
+
+      - run: pnpm typecheck
+
+      - name: Unit and integration tests
+        run: pnpm test:coverage
+
+      - name: Build the app
+        run: pnpm --filter @blindside/app build
+
+      - name: Install the browser for the end to end tests
+        run: pnpm --filter @blindside/app exec playwright install --with-deps chromium
+
+      - name: End to end tests
+        run: pnpm --filter @blindside/app test
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: app/playwright-report
+          retention-days: 7
