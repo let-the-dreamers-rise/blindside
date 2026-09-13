@@ -22,10 +22,10 @@ export const Landing = () => (
       <button
         className="ghost"
         onClick={() => {
-          document.getElementById("how")?.scrollIntoView({ behavior: "smooth" });
+          window.location.hash = "#/evidence";
         }}
       >
-        How it works
+        See it on a real chain
       </button>
     </div>
 
@@ -64,6 +64,9 @@ export const Landing = () => (
         <p className="note" style={{ marginTop: 18 }}>
           What this version does not hide: the organizer builds the target list, so the organizer
           knows it. They cannot fake a tag and cannot touch the pot. Removing that is next.
+        </p>
+        <p style={{ marginTop: 18 }}>
+          <a href="#/evidence">A whole game, played on a Midnight node</a>
         </p>
       </section>
     </div>

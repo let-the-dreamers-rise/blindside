@@ -1,10 +1,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { Landing } from "./screens/Landing.tsx";
-import { Sandbox } from "./screens/Sandbox.tsx";
+
+// The sandbox pulls in the compiled contract and the Midnight runtime WASM, about a megabyte and
+// a half. The landing page does not need any of it, so it only arrives when someone decides to
+// play.
+const Sandbox = lazy(async () => ({
+  default: (await import("./screens/Sandbox.tsx")).Sandbox,
+}));
+const Evidence = lazy(async () => ({
+  default: (await import("./screens/Evidence.tsx")).Evidence,
+}));
 
 const currentRoute = (): string => window.location.hash || "#/";
+
+const Loading = ({ what }: { readonly what: string }) => (
+  <main>
+    <p className="mono" style={{ color: "var(--paper-dim)" }}>
+      {what}
+    </p>
+  </main>
+);
 
 export const App = () => {
   const [route, setRoute] = useState(currentRoute);
@@ -16,7 +33,18 @@ export const App = () => {
   }, []);
 
   if (route.startsWith("#/sandbox")) {
-    return <Sandbox />;
+    return (
+      <Suspense fallback={<Loading what="Loading the contract..." />}>
+        <Sandbox />
+      </Suspense>
+    );
+  }
+  if (route.startsWith("#/evidence")) {
+    return (
+      <Suspense fallback={<Loading what="Loading..." />}>
+        <Evidence />
+      </Suspense>
+    );
   }
   return <Landing />;
 };

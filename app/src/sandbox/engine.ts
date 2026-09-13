@@ -13,8 +13,10 @@ export type FeedEntry = {
   readonly detail?: string;
 };
 
+export type Phase = "lobby" | "live" | "finished" | "timedOut" | "cancelled";
+
 export type Snapshot = {
-  readonly phase: "lobby" | "live" | "finished" | "other";
+  readonly phase: Phase;
   readonly alive: number;
   readonly tags: number;
   readonly pot: bigint;
@@ -26,9 +28,17 @@ export type Snapshot = {
   readonly nullifiers: readonly string[];
   readonly leaves: number;
   readonly commitments: readonly string[];
+  readonly deadlinePassed: boolean;
+  readonly refundsOpen: boolean;
+  readonly youResigned: boolean;
+  readonly refunded: number;
+  readonly deadDrops: number;
 };
 
-const PHASES = ["lobby", "live", "finished", "other", "other"] as const;
+const PHASES = ["lobby", "live", "finished", "timedOut", "cancelled"] as const;
+
+/** The sandbox clock starts at 1000 and the game's deadline is 1,000,000. */
+const AFTER_THE_DEADLINE = 1_000_001;
 
 export class SandboxRunner {
   private readonly game = new BlindsideGame({ entryFee: 10n });
@@ -37,6 +47,9 @@ export class SandboxRunner {
   private feed: readonly FeedEntry[] = [];
   private nextFeedId = 1;
   private claimed = false;
+  private deadlinePassed = false;
+  private resigned = false;
+  private refunded = new Set<string>();
 
   constructor() {
     this.players = CAST.map((name) => new Player(name));
@@ -128,6 +141,57 @@ export class SandboxRunner {
     this.say("The pot was claimed by the last player standing.");
   }
 
+  // ------------------------------------------------------------ the ways out
+  //
+  // These are the paths that keep the pot from ever being trapped. They are here rather than
+  // buried in a test because the promise on the front page is that the money can always leave,
+  // and a promise you can press a button on is worth more than one you have to take on trust.
+
+  /** You drop out. Your hunter can still finish you off, and nobody else can use the code. */
+  quit(): void {
+    this.game.resign(this.you);
+    this.resigned = true;
+    this.say(
+      "You left a dead drop.",
+      "Only the player hunting you holds a note that matches it, so only they can use it. It does reveal who you were hunting.",
+    );
+  }
+
+  /** Nobody tags anyone again. The clock runs out. */
+  letTheDeadlinePass(): void {
+    this.game.setTime(AFTER_THE_DEADLINE);
+    this.deadlinePassed = true;
+    this.say(
+      "The deadline passed.",
+      "Anyone can now open refunds. Not the organizer, anyone.",
+    );
+  }
+
+  openRefunds(): void {
+    this.game.openRefunds();
+    this.say(
+      "Refunds are open.",
+      "The game is over as a draw. Every player who joined can take their own entry fee back.",
+    );
+  }
+
+  takeRefund(index = 0): void {
+    const player = this.players[index];
+    if (player === undefined || this.refunded.has(player.key)) {
+      return;
+    }
+    this.game.refund(player);
+    this.refunded = new Set([...this.refunded, player.key]);
+    this.say(
+      index === 0 ? "You took your refund." : "Someone took their refund.",
+      `The pot is down to ${this.game.ledger().pot}. Tagged players get theirs back too, so refusing to surrender never wins anything.`,
+    );
+  }
+
+  refundEveryone(): void {
+    this.players.forEach((_, index) => this.takeRefund(index));
+  }
+
   private nullifierCount(): number {
     return [...this.game.ledger().spent].length;
   }
@@ -136,10 +200,15 @@ export class SandboxRunner {
     const state = this.game.ledger();
     const target = this.targetOf(this.you);
     const youAreOut = !this.alive(this.you);
-    const phase = PHASES[Number(state.phase)] ?? "other";
+    const phase = PHASES[Number(state.phase)] ?? "lobby";
 
     return {
       phase,
+      deadlinePassed: this.deadlinePassed,
+      refundsOpen: phase === "timedOut" || phase === "cancelled",
+      youResigned: this.resigned,
+      refunded: this.refunded.size,
+      deadDrops: Number(state.deadDrops.size()),
       alive: Number(state.aliveCount),
       tags: Number(state.tagCount),
       pot: state.pot,

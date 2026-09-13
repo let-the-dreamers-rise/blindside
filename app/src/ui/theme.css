@@ -225,6 +225,64 @@ button.danger {
   padding-left: 12px;
 }
 
+.exits {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.exits li {
+  display: grid;
+  gap: 8px;
+}
+
+.exits li[data-done="yes"] {
+  opacity: 0.55;
+}
+
+.exits button {
+  justify-self: start;
+  text-align: left;
+}
+
+.exits .note {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.receipts {
+  width: 100%;
+  margin-top: 14px;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.receipts th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--paper-dim);
+  font-weight: 400;
+  padding-bottom: 8px;
+}
+
+.receipts td {
+  padding: 7px 10px 7px 0;
+  border-top: 1px solid var(--paper-line);
+  vertical-align: top;
+}
+
+.receipts td.mono {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--paper-dim);
+  white-space: nowrap;
+}
+
 .qr {
   background: var(--paper);
   padding: 14px;

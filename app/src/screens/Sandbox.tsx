@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ChainPanel } from "../components/ChainPanel.tsx";
+import { ExitsPanel } from "../components/ExitsPanel.tsx";
 import { TagCodeQR } from "../components/TagCodeQR.tsx";
 import { SandboxRunner, type Snapshot } from "../sandbox/engine.ts";
 
@@ -51,6 +52,16 @@ export const Sandbox = () => {
     await runSteps(() => game.claim());
   }, [game, runSteps]);
 
+  // The ways out do not need the proving theatre: what matters is that the pot moves.
+  const act = useCallback(
+    (action: () => void) => () => {
+      action();
+      setRevealed(false);
+      refresh();
+    },
+    [refresh],
+  );
+
   const code = useMemo(() => game.yourCode(), [game, snapshot]);
 
   return (
@@ -67,7 +78,19 @@ export const Sandbox = () => {
 
       <div className="grid two" style={{ marginTop: 24 }}>
         <section className="card">
-          {snapshot.youWon && !snapshot.claimed ? (
+          {snapshot.refundsOpen ? (
+            <>
+              <p className="stamp">Draw</p>
+              <h2 style={{ marginTop: 16 }}>Nobody won this one.</h2>
+              <p>
+                The deadline passed with players still in. Every player who joined can take back
+                exactly what they put in, whether they were tagged or not.
+              </p>
+              <button className="ghost" onClick={() => window.location.reload()}>
+                Play again
+              </button>
+            </>
+          ) : snapshot.youWon && !snapshot.claimed ? (
             <>
               <p className="stamp">Last one standing</p>
               <h2 style={{ marginTop: 16 }}>You won.</h2>
@@ -148,6 +171,17 @@ export const Sandbox = () => {
         </section>
 
         <ChainPanel snapshot={snapshot} />
+      </div>
+
+      <div style={{ marginTop: 18 }}>
+        <ExitsPanel
+          snapshot={snapshot}
+          busy={step !== null}
+          onQuit={act(() => game.quit())}
+          onDeadline={act(() => game.letTheDeadlinePass())}
+          onOpenRefunds={act(() => game.openRefunds())}
+          onRefundEveryone={act(() => game.refundEveryone())}
+        />
       </div>
 
       <section className="card" style={{ marginTop: 18 }}>

@@ -258,13 +258,15 @@ const main = async (): Promise<void> => {
     })),
     recordedAt: new Date().toISOString(),
   };
-  const outDir = path.resolve(process.cwd(), "..", "deploy");
+  // The app ships this file and shows it on its evidence page, so what a judge reads there is
+  // the output of this run and not a screenshot of one.
+  const outDir = path.resolve(process.cwd(), "..", "app", "src", "evidence");
   mkdirSync(outDir, { recursive: true });
   writeFileSync(
     path.join(outDir, "local-run.json"),
     `${JSON.stringify(evidence, null, 2)}\n`,
   );
-  console.log(`  evidence written to deploy/local-run.json\n`);
+  console.log(`  evidence written to app/src/evidence/local-run.json\n`);
 
   process.exit(0);
 };
