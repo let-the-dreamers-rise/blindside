@@ -13,6 +13,9 @@ import {
   registerForDust,
   useNetwork,
 } from "@blindside/chain";
+import type { BlindsideProviders } from "@blindside/chain";
+import { GameConsole } from "../components/GameConsole.tsx";
+import { providersFor } from "../live/providers.ts";
 import { rememberSeed, storedSeed } from "../live/seed-store.ts";
 
 const firstNetwork = (): ChainNetwork => {
@@ -37,7 +40,32 @@ export const Live = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [providers, setProviders] = useState<BlindsideProviders | null>(null);
   const subscription = useRef<{ unsubscribe: () => void } | null>(null);
+
+  // The console can only exist once the wallet can pay for something. Built once, then kept: it
+  // holds the private state store, which every call in a game writes to.
+  const ready = wallet !== null && funds !== null && funds.dust > 0n;
+  useEffect(() => {
+    if (!ready || wallet === null || providers !== null) {
+      return;
+    }
+    let live = true;
+    void providersFor(wallet, network)
+      .then((built) => {
+        if (live) {
+          setProviders(built);
+        }
+      })
+      .catch(() => {
+        if (live) {
+          setProblem("Could not reach the proof server. Is it running on this machine?");
+        }
+      });
+    return () => {
+      live = false;
+    };
+  }, [network, providers, ready, wallet]);
 
   useEffect(
     () => () => {
@@ -109,8 +137,14 @@ export const Live = () => {
 
       <h1 style={{ marginTop: 18 }}>Run a game</h1>
       <p className="lede">
-        This is the console for whoever is hosting. It talks to a real Midnight chain from this
-        tab: no server in between, and no wallet extension to install.
+        This is the console for whoever is hosting. It deploys a real contract to a real Midnight
+        chain, takes the joins, starts the game, settles every tag and pays out the pot, from this
+        tab. No server in between, and no wallet extension to install.
+      </p>
+      <p className="note">
+        You need a proof server of your own, which is one Docker container:{" "}
+        <code>pnpm --filter @blindside/cli stack:up</code> brings up a whole chain, or run just the
+        prover if you are pointing at a public network.
       </p>
 
       <section className="card" style={{ marginTop: 24 }}>
@@ -214,10 +248,23 @@ export const Live = () => {
 
           {funds !== null && funds.dust > 0n ? (
             <p className="stamp" style={{ marginTop: 18 }}>
-              Ready to deploy a game
+              {providers === null ? "Loading the proving material" : "Ready to deploy a game"}
             </p>
           ) : null}
         </section>
+      )}
+
+      {providers === null || wallet === null ? null : (
+        <GameConsole providers={providers} wallet={wallet} />
+      )}
+
+      {providers === null ? null : (
+        <p className="note" style={{ marginTop: 18 }}>
+          Honest about this console: it makes every player's secret here, in this tab, so one
+          person can run a whole game on a real chain and you can watch it happen. That also means
+          this tab knows the target list, which is the same limit the organizer has in this
+          version. Every payout address is this wallet's, because none of the players hold one.
+        </p>
       )}
     </main>
   );

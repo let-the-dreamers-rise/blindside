@@ -87,6 +87,21 @@ pnpm install
 pnpm --filter @blindside/app dev     # then press "Play a game right now"
 ```
 
+## A whole game, from a browser tab
+
+The live console runs a real game against a real Midnight node from a page: it deploys the
+contract, takes each join, starts the game, publishes the bundle, settles tags typed in as five
+words, and pays out. No server in between, no wallet extension, and the proof server is yours.
+
+```bash
+pnpm --filter @blindside/cli stack:up    # a Midnight node, indexer and prover in Docker
+pnpm --filter @blindside/app dev         # then open #/live
+```
+
+What it takes to make midnight-js run in a browser at all is four fixes that all fail silently;
+they are written down in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#running-a-chain-from-a-browser-tab)
+so the next person does not have to find them.
+
 ## A whole game, on a real chain
 
 The sandbox shows the rules. This shows the chain. One command brings up a Midnight node, an
@@ -122,6 +137,7 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Browser tests | 12 passing on a phone viewport |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
+| A whole game from a browser tab | Deployed, played and paid out against a local node |
 | Mobile web app | Sandbox, rules, evidence and spectator pages shipped |
 | Escrow on the public testnet | Next |
 | Real game with real players | Planned before submission |

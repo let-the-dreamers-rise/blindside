@@ -140,6 +140,30 @@ refuser can do is a draw in which they get back exactly what they put in.
 Payout addresses are bound at `join`, not supplied at `claim`, so a stolen phone can lose a game
 but cannot redirect the money.
 
+## Running a chain from a browser tab
+
+The live console deploys the contract, takes joins, starts the game, settles tags and pays out,
+from a page, against a real node. There is no server between the tab and the chain: the wallet is
+in the tab, the proof server is on the same machine, and the indexer is queried directly.
+
+Getting there took four fixes that are worth writing down, because none of them fail loudly.
+
+| What breaks | Why | Fix |
+|---|---|---|
+| Every ZK artifact read fails with `ZKConfigurationReadError` | `FetchZkConfigProvider` keeps the fetch it is given and calls it as a plain function. A browser's `fetch` must be called on the window, so it throws `Illegal invocation` before a request leaves the tab, and the error surfaces as a read failure | pass `globalThis.fetch.bind(globalThis)` as the second argument |
+| The private state store throws `Class extends value undefined` on load | it is built on Node's `EventEmitter`, which a bundler stubs out | alias `events` to the `events` package |
+| The wallet SDK's simulators import `subtle` from a module that is not there | they ask Node for its webcrypto | alias `crypto` and `node:crypto` to a shim that returns `globalThis.crypto` |
+| The indexer provider imports `WebSocket` by name | `isomorphic-ws` gives a browser only a default export | alias it to a shim that exports both |
+
+The proving material is the other half. `scripts/zk-assets.mjs` copies the compiled keys and ZKIR
+next to the app at build time, 65 MB of it, and the browser fetches one only when it is about to
+prove that circuit. Deploying needs the verifier keys, which are small; a tag needs a 19 MB prover
+key, which is fetched once and cached by the browser.
+
+What the console cannot do is hide the players from itself: it makes every player's secret in the
+tab, so one person can run a whole game and be watched doing it. That is the same limit the
+organizer already has in this version, said out loud on the page.
+
 ## Two ways to run it
 
 **Sandbox.** The compiled contract runs in the browser tab through the simulator. Every rule and
