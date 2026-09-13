@@ -4,32 +4,47 @@ services:
   proof-server:
     container_name: 'blindside-proof-server'
     image: 'midnightntwrk/proof-server:8.1.0'
+    restart: unless-stopped
     command: ['midnight-proof-server -v']
     ports:
       - '6300:6300'
     environment:
       RUST_BACKTRACE: 'full'
+    volumes:
+      # On first run the prover downloads ~40 MB of proving keys from
+      # srs.midnight.network. Keeping them in a volume means that happens once,
+      # not on every up, and a rebuilt stack is ready in seconds.
+      - zk-params:/.cache/midnight/zk-params
     # No healthcheck: the image has no curl, and readiness is visible in its log line
     # "Actix runtime found; starting in Actix runtime".
 
   node:
     container_name: 'blindside-node'
     image: 'midnightntwrk/midnight-node:1.0.2'
+    restart: unless-stopped
     ports:
       - '9944:9944'
     environment:
       CFG_PRESET: 'dev'
       SIDECHAIN_BLOCK_BENEFICIARY: '04bcf7ad3be7a5c790460be82a713af570f22e0f801f6659ab8e84a52be6969e'
+    # Not just "is it up": the indexer's SPO task reads block 1 on startup and exits if it is
+    # missing, so the node is only healthy once it has produced a second block.
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9944/health']
+      test:
+        - 'CMD-SHELL'
+        - >-
+          curl -sf -H 'content-type: application/json'
+          -d '{"id":1,"jsonrpc":"2.0","method":"chain_getHeader","params":[]}'
+          http://localhost:9944 | grep -qv '"number":"0x0"'
       interval: 2s
       timeout: 5s
-      retries: 30
+      retries: 60
       start_period: 20s
 
   indexer:
     container_name: 'blindside-indexer'
     image: 'midnightntwrk/indexer-standalone:4.3.3-hotfix'
+    restart: unless-stopped
     env_file: standalone.env
     ports:
       - '8088:8088'
@@ -45,3 +60,6 @@ services:
     depends_on:
       node:
         condition: service_healthy
+
+volumes:
+  zk-params:

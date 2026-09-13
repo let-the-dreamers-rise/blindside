@@ -1,0 +1,76 @@
+{
+  "network": "standalone",
+  "contractAddress": "f9e46b2585713ff9be02baabbcfaf51a2f55ddcfd3ce98cc34ff55d5464594f6",
+  "entryFee": "10",
+  "players": 4,
+  "finishedPhase": 2,
+  "potAfterPayout": "0",
+  "tagCount": "3",
+  "steps": [
+    {
+      "label": "wallet ready",
+      "seconds": 30.36
+    },
+    {
+      "label": "deploy",
+      "seconds": 20.27,
+      "txId": "0046b1af319474dc2871105ceee4c7913213240f09b8414feaca9cf6df2cb8a5aa",
+      "blockHeight": 157
+    },
+    {
+      "label": "join Alex",
+      "seconds": 23.65,
+      "txId": "004b6f15bdc8c9aac108d0f8213dc063c4bf0e199b250f1db912c03be288cf8f91",
+      "blockHeight": 161
+    },
+    {
+      "label": "join Bo",
+      "seconds": 23.87,
+      "txId": "0030d2553a923bd3c284eb8909b69dc2ec49a59bf0ddfa013db976738ee9e22468",
+      "blockHeight": 165
+    },
+    {
+      "label": "join Cam",
+      "seconds": 23.87,
+      "txId": "001303716c427f567cc407f47c4016e4d978ed72cdc8266d9ac007d48fcd137be7",
+      "blockHeight": 169
+    },
+    {
+      "label": "join Dee",
+      "seconds": 23.91,
+      "txId": "00f2848d2910f111aa32e08c39887de51ce94029705fa9bb5ea4367306be4f076e",
+      "blockHeight": 173
+    },
+    {
+      "label": "start game",
+      "seconds": 29.2,
+      "txId": "000558d4246495cfc809ea7bea3138344312a55d4ee2e1c83f9cba1aad96f0e30b",
+      "blockHeight": 178
+    },
+    {
+      "label": "tag 1",
+      "seconds": 30.49,
+      "txId": "0068058d1157df4c17f63ff15a9e3795df4f98eb482dc4a1186867f6bd7ad4ed70",
+      "blockHeight": 183
+    },
+    {
+      "label": "tag 2",
+      "seconds": 29.19,
+      "txId": "0001132c0f4b2277e4e4bb477f4137aa794f823b8a9d24eb65a1f847c2bfc21499",
+      "blockHeight": 188
+    },
+    {
+      "label": "tag 3",
+      "seconds": 30.49,
+      "txId": "00c14a6457c23db50a607de9940c144ed85479ce608bf3ff97e54a4efa14c364a1",
+      "blockHeight": 193
+    },
+    {
+      "label": "claim victory",
+      "seconds": 23.89,
+      "txId": "00e33d4f2d8e021b19ec327ec3edc1def4eb8e399d5b93f7f77068dd94614d2620",
+      "blockHeight": 197
+    }
+  ],
+  "recordedAt": "2026-09-13T18:01:44.925Z"
+}

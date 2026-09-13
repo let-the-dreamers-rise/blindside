@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as Rx from "rxjs";
-import * as ledger from "@midnight-ntwrk/ledger-v8";
 import { httpClientProofProvider } from "@midnight-ntwrk/midnight-js-http-client-proof-provider";
 import { indexerPublicDataProvider } from "@midnight-ntwrk/midnight-js-indexer-public-data-provider";
 import { levelPrivateStateProvider } from "@midnight-ntwrk/midnight-js-level-private-state-provider";
@@ -13,6 +12,7 @@ import type {
   WalletProvider,
 } from "@midnight-ntwrk/midnight-js/types";
 import { type Config, contractConfig } from "./config.ts";
+import { signTransactionIntents } from "./signing.ts";
 import type { WalletContext } from "./wallet.ts";
 
 export type BlindsideCircuits =
@@ -26,57 +26,6 @@ export type BlindsideCircuits =
   | "refund";
 
 export const PRIVATE_STATE_ID = "blindsidePrivateState";
-
-/**
- * Signs unshielded offers with the right proof marker.
- *
- * The wallet SDK hardcodes 'pre-proof' when cloning intents, which fails for already proven
- * intents. Same workaround as the official example.
- */
-const signTransactionIntents = (
-  tx: { intents?: Map<number, ledger.Intent<ledger.SignatureEnabled, ledger.Proofish, ledger.PreBinding>> },
-  signFn: (payload: Uint8Array) => ledger.Signature,
-  proofMarker: "proof" | "pre-proof",
-): void => {
-  if (tx.intents === undefined || tx.intents.size === 0) {
-    return;
-  }
-
-  for (const segment of tx.intents.keys()) {
-    const intent = tx.intents.get(segment);
-    if (intent === undefined) {
-      continue;
-    }
-
-    const cloned = ledger.Intent.deserialize<
-      ledger.SignatureEnabled,
-      ledger.Proofish,
-      ledger.PreBinding
-    >("signature", proofMarker, "pre-binding", intent.serialize());
-
-    const signature = signFn(cloned.signatureData(segment));
-
-    if (cloned.fallibleUnshieldedOffer) {
-      cloned.fallibleUnshieldedOffer = cloned.fallibleUnshieldedOffer.addSignatures(
-        cloned.fallibleUnshieldedOffer.inputs.map(
-          (_: ledger.UtxoSpend, index: number) =>
-            cloned.fallibleUnshieldedOffer?.signatures.at(index) ?? signature,
-        ),
-      );
-    }
-
-    if (cloned.guaranteedUnshieldedOffer) {
-      cloned.guaranteedUnshieldedOffer = cloned.guaranteedUnshieldedOffer.addSignatures(
-        cloned.guaranteedUnshieldedOffer.inputs.map(
-          (_: ledger.UtxoSpend, index: number) =>
-            cloned.guaranteedUnshieldedOffer?.signatures.at(index) ?? signature,
-        ),
-      );
-    }
-
-    tx.intents.set(segment, cloned);
-  }
-};
 
 export const createWalletAndMidnightProvider = async (
   ctx: WalletContext,
