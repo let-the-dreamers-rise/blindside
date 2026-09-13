@@ -12,6 +12,9 @@ const Sandbox = lazy(async () => ({
 const Evidence = lazy(async () => ({
   default: (await import("./screens/Evidence.tsx")).Evidence,
 }));
+const Watch = lazy(async () => ({
+  default: (await import("./screens/Watch.tsx")).Watch,
+}));
 
 const currentRoute = (): string => window.location.hash || "#/";
 
@@ -43,6 +46,13 @@ export const App = () => {
     return (
       <Suspense fallback={<Loading what="Loading..." />}>
         <Evidence />
+      </Suspense>
+    );
+  }
+  if (route.startsWith("#/watch")) {
+    return (
+      <Suspense fallback={<Loading what="Loading..." />}>
+        <Watch />
       </Suspense>
     );
   }

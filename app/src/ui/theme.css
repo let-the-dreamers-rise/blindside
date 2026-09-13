@@ -252,6 +252,39 @@ button.danger {
   padding-left: 0;
 }
 
+label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--paper-dim);
+  margin-bottom: 6px;
+}
+
+input,
+select {
+  font: inherit;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  color: var(--paper);
+  background: rgba(239, 233, 221, 0.05);
+  border: 1px solid var(--paper-line);
+  border-radius: 8px;
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--stamp);
+  outline-offset: 2px;
+}
+
+input.mono {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
 .receipts {
   width: 100%;
   margin-top: 14px;

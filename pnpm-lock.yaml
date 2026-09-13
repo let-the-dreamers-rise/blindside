@@ -33,6 +33,9 @@ importers:
       '@blindside/core':
         specifier: workspace:*
         version: link:../core
+      '@midnight-ntwrk/compact-runtime':
+        specifier: 0.16.0
+        version: 0.16.0
       qrcode:
         specifier: 1.5.4
         version: 1.5.4

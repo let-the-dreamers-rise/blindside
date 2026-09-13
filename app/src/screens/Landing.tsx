@@ -67,6 +67,8 @@ export const Landing = () => (
         </p>
         <p style={{ marginTop: 18 }}>
           <a href="#/evidence">A whole game, played on a Midnight node</a>
+          <br />
+          <a href="#/watch">Watch a live game from the chain alone</a>
         </p>
       </section>
     </div>
