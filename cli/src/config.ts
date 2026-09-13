@@ -38,15 +38,32 @@ export class StandaloneConfig implements Config {
 }
 
 /**
- * Midnight preprod, the public test network. The proof server stays local: proving needs the
- * private inputs, so it is not something to hand to somebody else's machine.
+ * A public Midnight test network. The proof server stays local whichever one is used: proving
+ * needs the private inputs, so it is not something to hand to somebody else's machine.
  */
-export class PreprodConfig implements Config {
-  indexer = "https://indexer.preprod.midnight.network/api/v4/graphql";
-  indexerWS = "wss://indexer.preprod.midnight.network/api/v4/graphql/ws";
-  node = "https://rpc.preprod.midnight.network";
-  proofServer = "http://127.0.0.1:6300";
-  constructor() {
-    setNetworkId("preprod");
+class PublicConfig implements Config {
+  readonly indexer: string;
+  readonly indexerWS: string;
+  readonly node: string;
+  readonly proofServer = "http://127.0.0.1:6300";
+
+  constructor(readonly name: string) {
+    this.indexer = `https://indexer.${name}.midnight.network/api/v4/graphql`;
+    this.indexerWS = `wss://indexer.${name}.midnight.network/api/v4/graphql/ws`;
+    this.node = `https://rpc.${name}.midnight.network`;
+    setNetworkId(name);
   }
 }
+
+export const PUBLIC_NETWORKS = {
+  preview: "https://midnight-tmnight-preview.nethermind.dev/",
+  preprod: "https://midnight-tmnight-preprod.nethermind.dev/",
+} as const;
+
+export type PublicNetwork = keyof typeof PUBLIC_NETWORKS;
+
+export const isPublicNetwork = (value: string): value is PublicNetwork =>
+  Object.hasOwn(PUBLIC_NETWORKS, value);
+
+/** Builds the config for a public network, setting the global network id as a side effect. */
+export const publicConfig = (name: PublicNetwork): Config => new PublicConfig(name);

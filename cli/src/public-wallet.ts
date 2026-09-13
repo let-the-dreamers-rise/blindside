@@ -1,5 +1,6 @@
-// The wallet used for preprod runs. Its seed lives in a gitignored file and is never printed:
-// losing it only costs test tokens, so there is no recovery path and no reason to want one.
+// The wallet used for runs against a public network. Its seed lives in a gitignored file and is
+// never printed: losing it only costs test tokens, so there is no recovery path and no reason to
+// want one.
 // SPDX-License-Identifier: Apache-2.0
 
 import { randomBytes } from "node:crypto";
@@ -14,18 +15,20 @@ import { getNetworkId } from "@midnight-ntwrk/midnight-js/network-id";
 import { HDWallet, Roles } from "@midnight-ntwrk/wallet-sdk-hd";
 import { createKeystore } from "@midnight-ntwrk/wallet-sdk-unshielded-wallet";
 
-export const SEED_PATH = path.resolve(process.cwd(), "..", "secrets", "preprod.seed");
+const seedPath = (network: string): string =>
+  path.resolve(process.cwd(), "..", "secrets", `${network}.seed`);
 
-export const seedExists = (): boolean => existsSync(SEED_PATH);
+export const seedExists = (network: string): boolean => existsSync(seedPath(network));
 
-/** Reads the wallet seed, generating one the first time. Never log the result. */
-export const loadOrCreateSeed = (): string => {
-  if (existsSync(SEED_PATH)) {
-    return readFileSync(SEED_PATH, "utf8").trim();
+/** Reads the wallet seed for a network, generating one the first time. Never log the result. */
+export const loadOrCreateSeed = (network: string): string => {
+  const file = seedPath(network);
+  if (existsSync(file)) {
+    return readFileSync(file, "utf8").trim();
   }
-  mkdirSync(path.dirname(SEED_PATH), { recursive: true });
+  mkdirSync(path.dirname(file), { recursive: true });
   const seed = randomBytes(32).toString("hex");
-  writeFileSync(SEED_PATH, `${seed}\n`, { mode: 0o600 });
+  writeFileSync(file, `${seed}\n`, { mode: 0o600 });
   return seed;
 };
 

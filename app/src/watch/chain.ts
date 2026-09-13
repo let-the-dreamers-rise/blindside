@@ -10,12 +10,17 @@ import { ledger } from "@blindside/contract";
 import { ContractState } from "@midnight-ntwrk/compact-runtime";
 
 export type Network = {
-  readonly id: "local" | "preprod";
+  readonly id: string;
   readonly label: string;
   readonly indexer: string;
 };
 
 export const NETWORKS: readonly Network[] = [
+  {
+    id: "preview",
+    label: "Midnight preview",
+    indexer: "https://indexer.preview.midnight.network/api/v4/graphql",
+  },
   {
     id: "preprod",
     label: "Midnight preprod",
