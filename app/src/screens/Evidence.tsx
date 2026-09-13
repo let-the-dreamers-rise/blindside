@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import run from "../evidence/local-run.json";
+import run from "../evidence/chain-run.json";
 
 type Step = {
   readonly label: string;

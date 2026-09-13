@@ -8,6 +8,8 @@
     "stack:up": "docker compose -f standalone.yml up -d",
     "stack:down": "docker compose -f standalone.yml down",
     "local": "tsx src/e2e-local.ts",
+    "preprod:address": "tsx src/preprod-address.ts",
+    "preprod": "tsx src/e2e-preprod.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
