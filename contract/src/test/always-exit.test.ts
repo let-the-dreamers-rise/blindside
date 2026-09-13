@@ -124,6 +124,20 @@ describe("a winner who never claims", () => {
   });
 });
 
+describe("a game that already paid out", () => {
+  it("cannot be reopened for refunds", () => {
+    const { game, alex, bo, cam, order } = gameOfThree();
+    game.start(order);
+    game.tag(alex, bo);
+    game.tag(alex, cam);
+    game.claimVictory(alex);
+    expect(game.ledger().pot).toBe(0n);
+
+    game.setTime(AFTER);
+    expect(() => game.openRefunds()).toThrow(/already paid out/);
+  });
+});
+
 describe("refund rules", () => {
   it("pays each player exactly once", () => {
     const { game, alex, order } = gameOfThree();

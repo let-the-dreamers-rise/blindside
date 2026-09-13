@@ -203,6 +203,9 @@ export circuit openRefunds(): [] {
   assert(phase == Phase.lobby || phase == Phase.live || phase == Phase.finished,
          "Refunds are already open");
   assert(!blockTimeLt(deadline), "The deadline has not passed yet");
+  // An emptied pot means the winner already claimed. Opening refunds then would leave every
+  // refund to fail on an empty pot, which reads like a bug rather than a finished game.
+  assert(pot > 0, "This game has already paid out");
   phase = Phase.timedOut;
 }
 

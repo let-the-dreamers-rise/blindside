@@ -28,8 +28,8 @@ export interface Config {
 
 /** A whole Midnight network on this machine: node, indexer and prover in Docker. */
 export class StandaloneConfig implements Config {
-  indexer = "http://127.0.0.1:8088/api/v3/graphql";
-  indexerWS = "ws://127.0.0.1:8088/api/v3/graphql/ws";
+  indexer = "http://127.0.0.1:8088/api/v4/graphql";
+  indexerWS = "ws://127.0.0.1:8088/api/v4/graphql/ws";
   node = "http://127.0.0.1:9944";
   proofServer = "http://127.0.0.1:6300";
   constructor() {
@@ -37,9 +37,13 @@ export class StandaloneConfig implements Config {
   }
 }
 
+/**
+ * Midnight preprod, the public test network. The proof server stays local: proving needs the
+ * private inputs, so it is not something to hand to somebody else's machine.
+ */
 export class PreprodConfig implements Config {
-  indexer = "https://indexer.preprod.midnight.network/api/v3/graphql";
-  indexerWS = "wss://indexer.preprod.midnight.network/api/v3/graphql/ws";
+  indexer = "https://indexer.preprod.midnight.network/api/v4/graphql";
+  indexerWS = "wss://indexer.preprod.midnight.network/api/v4/graphql/ws";
   node = "https://rpc.preprod.midnight.network";
   proofServer = "http://127.0.0.1:6300";
   constructor() {

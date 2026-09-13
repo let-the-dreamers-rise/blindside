@@ -11,6 +11,7 @@ const address = addressForSeed(loadOrCreateSeed());
 
 console.log(`\n  ${existed ? "Using" : "Created"} a preprod wallet.\n`);
 console.log(`  Fund this address:\n\n  ${address}\n`);
-console.log("  1. Open https://faucet.preprod.midnight.network/");
+console.log("  1. Open https://midnight-tmnight-preprod.nethermind.dev/");
+console.log("     (that is the preprod faucet. The devnet one rejects a preprod address.)");
 console.log("  2. Paste the address above and request tokens");
 console.log("  3. Run: pnpm --filter @blindside/cli preprod\n");

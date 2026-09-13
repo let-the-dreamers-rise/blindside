@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 
 test("a malformed address is rejected without a network call", async ({ page }) => {
   let calls = 0;
-  await page.route("**/api/v3/graphql", async (route) => {
+  await page.route("**/graphql", async (route) => {
     calls += 1;
     await route.abort();
   });
@@ -20,7 +20,7 @@ test("a malformed address is rejected without a network call", async ({ page }) 
 });
 
 test("an unreachable chain says so instead of hanging", async ({ page }) => {
-  await page.route("**/api/v3/graphql", (route) => route.abort());
+  await page.route("**/graphql", (route) => route.abort());
 
   await page.goto("/#/watch");
   await page.getByLabel("Contract address").fill("a".repeat(64));
@@ -30,7 +30,7 @@ test("an unreachable chain says so instead of hanging", async ({ page }) => {
 });
 
 test("a game the chain has never heard of is not an error", async ({ page }) => {
-  await page.route("**/api/v3/graphql", (route) =>
+  await page.route("**/graphql", (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",

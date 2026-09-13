@@ -17,14 +17,14 @@ export type Network = {
 
 export const NETWORKS: readonly Network[] = [
   {
-    id: "local",
-    label: "A chain on this machine",
-    indexer: "http://127.0.0.1:8088/api/v3/graphql",
-  },
-  {
     id: "preprod",
     label: "Midnight preprod",
-    indexer: "https://indexer.preprod.midnight.network/api/v3/graphql",
+    indexer: "https://indexer.preprod.midnight.network/api/v4/graphql",
+  },
+  {
+    id: "local",
+    label: "A chain on this machine",
+    indexer: "http://127.0.0.1:8088/api/v4/graphql",
   },
 ];
 

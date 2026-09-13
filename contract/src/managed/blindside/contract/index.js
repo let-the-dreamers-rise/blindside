@@ -432,7 +432,7 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('cancel',
                                      'argument 1 (as invoked from Typescript)',
-                                     'blindside.compact line 209 char 1',
+                                     'blindside.compact line 212 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
@@ -455,7 +455,7 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('refund',
                                      'argument 1 (as invoked from Typescript)',
-                                     'blindside.compact line 215 char 1',
+                                     'blindside.compact line 218 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
@@ -1931,6 +1931,21 @@ export class Contract {
                                                                                                             { popeq: { cached: false,
                                                                                                                        result: undefined } }]).value)),
                             'The deadline has not passed yet');
+    let t_0;
+    __compactRuntime.assert((t_0 = _descriptor_3.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                                             partialProofData,
+                                                                                             [
+                                                                                              { dup: { n: 0 } },
+                                                                                              { idx: { cached: false,
+                                                                                                       pushPath: false,
+                                                                                                       path: [
+                                                                                                              { tag: 'value',
+                                                                                                                value: { value: _descriptor_23.toValue(5n),
+                                                                                                                         alignment: _descriptor_23.alignment() } }] } },
+                                                                                              { popeq: { cached: false,
+                                                                                                         result: undefined } }]).value),
+                             t_0 > 0n),
+                            'This game has already paid out');
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
                                       [
