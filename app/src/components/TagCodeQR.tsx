@@ -36,16 +36,24 @@ export const TagCodeQR = ({ value, label }: Props) => {
   }, [shown]);
 
   return (
-    <div>
+    <div aria-live="polite">
       {shown && image !== null ? (
         <>
           <div className="qr">
-            <img src={image} alt={`Your one-time ${label}, as a QR code`} width={280} height={280} />
+            <img
+              src={image}
+              alt={`Your one-time ${label}, as a QR code`}
+              width={280}
+              height={280}
+            />
           </div>
           <p className="note" style={{ marginTop: 12 }}>
-            Hides itself in 30 seconds. Anyone who photographs this still cannot use it: a tag also
-            needs your hunter's own secret.
+            Turn your screen brightness up. This hides itself in 30 seconds. Anyone who photographs
+            it still cannot use it: a tag also needs your hunter's own secret.
           </p>
+          <button className="ghost" onClick={() => setShown(false)} style={{ marginTop: 12 }}>
+            Hide it now
+          </button>
         </>
       ) : (
         <button className="ghost" onClick={() => setShown(true)}>

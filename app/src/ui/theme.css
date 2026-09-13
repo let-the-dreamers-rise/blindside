@@ -252,6 +252,27 @@ button.danger {
   padding-left: 0;
 }
 
+.rules {
+  margin: 16px 0 0;
+}
+
+.rules > div + div {
+  margin-top: 18px;
+  border-top: 1px solid var(--paper-line);
+  padding-top: 18px;
+}
+
+.rules dt {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.rules dd {
+  margin: 0;
+  color: var(--paper-dim);
+}
+
 label {
   display: block;
   font-family: var(--mono);
@@ -314,6 +335,14 @@ input.mono {
   font-size: 0.74rem;
   color: var(--paper-dim);
   white-space: nowrap;
+}
+
+.qr img {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  margin: 0 auto;
 }
 
 .qr {

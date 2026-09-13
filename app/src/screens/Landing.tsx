@@ -80,6 +80,9 @@ export const Landing = () => (
         says stop, and no location tracking anywhere in the app. Prize pots are testnet only until
         a legal review says otherwise.
       </p>
+      <p style={{ marginTop: 14 }}>
+        <a href="#/rules">The rules in full, and what an organizer has to tell their players</a>
+      </p>
     </section>
   </main>
 );
