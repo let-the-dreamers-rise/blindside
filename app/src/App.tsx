@@ -24,6 +24,9 @@ const Live = lazy(async () => ({
 const Hunt = lazy(async () => ({
   default: (await import("./screens/Hunt.tsx")).Hunt,
 }));
+const Me = lazy(async () => ({
+  default: (await import("./screens/Me.tsx")).Me,
+}));
 
 const currentRoute = (): string => window.location.hash || "#/";
 
@@ -48,6 +51,13 @@ export const App = () => {
     return (
       <Suspense fallback={<Loading what="Loading the campus..." />}>
         <Hunt />
+      </Suspense>
+    );
+  }
+  if (route.startsWith("#/me")) {
+    return (
+      <Suspense fallback={<Loading what="Loading..." />}>
+        <Me />
       </Suspense>
     );
   }

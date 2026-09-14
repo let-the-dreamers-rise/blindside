@@ -19,6 +19,7 @@ through an organizer's personal payment app.
 | Play the hunt, no wallet | [the hunt](https://let-the-dreamers-rise.github.io/blindside/#/hunt): a pixel campus at night, eight players, one of them hunting you. Every tag, refusal, payout and refund runs the real compiled contract in the browser tab |
 | See what the chain does not | under the map, "What you saw" against "What the chain sees": the campus names people, the chain never does |
 | Play the paper version | [the sandbox](https://let-the-dreamers-rise.github.io/blindside/#/sandbox), the same contract with the buttons showing |
+| Be a player on the night | [the phone page](https://let-the-dreamers-rise.github.io/blindside/#/me): your words, the bundle, your target, and a check on the words you heard. No server |
 | Watch the pot leave a broken game | the same page, "When it goes wrong": quit, let the deadline pass, open refunds, watch the pot drain back to the players |
 | See it on a real chain | [the evidence page](https://let-the-dreamers-rise.github.io/blindside/#/evidence): contract address, every transaction, every timing |
 | See what an observer learns | [the spectator view](https://let-the-dreamers-rise.github.io/blindside/#/watch) reads a deployed game out of a Midnight indexer. It is deliberately unimpressive |
@@ -86,7 +87,7 @@ inside the proof.
 | Contract tests | 50, covering the lifecycle, every rejection by its player-facing message, what the ledger contains after a tag, and the four ways a real game breaks |
 | Crypto and game core | 64, including the end to end proof that five spoken words yield exactly what the tag circuit checks |
 | The hunt's simulation | 35, pure and seeded: the same seed is the same game twice |
-| Browser tests | 16, on a phone viewport, including a hunt won to the payout and a hunt lost to your hunter |
+| Browser tests | 19, on a phone viewport, including a hunt won to the payout, a hunt lost to your hunter, and a player's phone reading a real bundle |
 | Coverage gates | 80 percent, currently 94 percent statements on the engine and 97 on the core |
 | CI | compiles the contract from source rather than trusting the committed circuits, then typechecks, tests, builds and plays the browser game |
 

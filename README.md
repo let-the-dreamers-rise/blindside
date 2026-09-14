@@ -99,6 +99,19 @@ pnpm install
 pnpm --filter @blindside/app dev     # then press "Play the hunt"
 ```
 
+## On the night: your phone
+
+[The phone page](https://let-the-dreamers-rise.github.io/blindside/#/me) is what a player in a
+real game needs and nothing else. Keep the five words the organizer gave you. Paste the bundle
+from the group chat. Open the envelope: your target, readable only with your words. When you get
+them, type the five words they said and the page checks them the way the contract will, before
+anybody walks to the organizer. Nothing on it talks to a server, and the words stay on the phone
+until you tell it to forget them.
+
+In this version the organizer's console settles tags on chain, because proving a tag needs a
+proof server and a phone does not have one yet. The console cannot invent a tag: the words the
+hunter relays are the only thing that opens the target's half. Proving from the phone is next.
+
 ## A whole game, from a browser tab
 
 The live console runs a real game against a real Midnight node from a page: it deploys the
@@ -147,11 +160,12 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Contract tests | 50 passing, 94% statement coverage |
 | Crypto and game core tests | 64 passing, 97% statement coverage |
 | The hunt's simulation | 35 unit tests: grid, campus, sight, bots, catching, rumours |
-| Browser tests | 16 passing on a phone viewport, including a hunt won and a hunt lost |
+| Browser tests | 19 passing on a phone viewport, including a hunt won, a hunt lost, and a player's phone |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A whole game from a browser tab | Deployed, played and paid out against a local node |
-| Mobile web app | The hunt, the paper sandbox, rules, evidence and spectator pages shipped |
+| Mobile web app | The hunt, the phone page, the paper sandbox, rules, evidence and spectator pages |
+| A real game on phones | Phone page for players plus the console to settle; proving from the phone is next |
 | Escrow on the public testnet | Next |
 | Real game with real players | Planned before submission |
 
@@ -186,6 +200,7 @@ core/src/errors.ts               contract assertions turned into game rules
 chain/src/                       wallet, providers and signing, shared by the CLI
                                  and the browser console
 app/src/hunt/                    the pixel game: campus, sight, simulation, rumours
+app/src/me/                      a player's phone: the bundle, the target, the words heard
 app/src/                         the mobile web client, sandbox and evidence
 cli/src/e2e-local.ts             a whole game against a local Midnight chain
 ```

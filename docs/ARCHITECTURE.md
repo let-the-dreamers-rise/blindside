@@ -224,7 +224,9 @@ Two things that only show up on a real chain:
 | `core/src/test/cycle` | the host's shuffle, and what the bundle does not leak |
 | `core/src/test/errors` | contract assertions turned into something a player can act on |
 | `app/src/hunt/*.test.ts` | the grid and its paths, the campus, sight, bot behaviour, catching, tips and rumours; a seeded game is the same game twice |
+| `app/src/me/game.test.ts` | a phone reading its target out of a real bundle and checking heard words the way the circuit does |
 | `app/e2e/hunt` | a whole hunt won, a whole hunt lost, wrong words refused by the contract, no names on the chain panel |
+| `app/e2e/me` | a player's phone: words kept, bundle read, target opened, heard words checked, everything forgotten |
 | `app/e2e` | the paper sandbox, the four ways out, the evidence and spectator pages |
 
 Coverage is gated at 80 percent for the game engine and the crypto core. CI compiles the contract

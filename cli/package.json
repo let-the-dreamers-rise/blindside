@@ -10,6 +10,7 @@
     "local": "tsx src/e2e-local.ts",
     "address": "tsx src/public-address.ts",
     "public": "tsx src/e2e-public.ts",
+    "fixture:phone": "tsx src/fixture-phone.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

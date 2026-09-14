@@ -5,10 +5,12 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["src/**/*.test.ts"],
+    // Argon2id is deliberately slow: building a three player game is a few seconds of work.
+    testTimeout: 60_000,
     coverage: {
       provider: "v8",
       reporter: ["text-summary", "lcov"],
-      include: ["src/hunt/**/*.ts"],
+      include: ["src/hunt/**/*.ts", "src/me/**/*.ts"],
       exclude: [
         "src/**/*.test.ts",
         "src/hunt/art.ts",

@@ -296,7 +296,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   font: inherit;
   width: 100%;
   min-height: 48px;
@@ -307,8 +308,14 @@ select {
   border-radius: 8px;
 }
 
+textarea {
+  resize: vertical;
+  line-height: 1.4;
+}
+
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
   outline: 2px solid var(--stamp);
   outline-offset: 2px;
 }

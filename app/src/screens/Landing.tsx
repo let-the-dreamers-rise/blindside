@@ -106,6 +106,8 @@ export const Landing = () => (
           <a href="#/watch">Watch a live game from the chain alone</a>
           <br />
           <a href="#/sandbox">The paper version: the same contract, and the four ways out</a>
+          <br />
+          <a href="#/me">Playing in a real game tonight? Your phone</a>
         </p>
       </section>
     </div>
