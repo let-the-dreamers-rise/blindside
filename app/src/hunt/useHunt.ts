@@ -95,6 +95,8 @@ export type HuntView = {
   readonly exposed: boolean;
   /** The campus is swapped for the public record of the same moment. */
   readonly chainEye: boolean;
+  /** Somebody is at your shoulder. Never who: that is the one thing you do not get to know. */
+  readonly behind: boolean;
 };
 
 export type Hunt = HuntView & {
@@ -139,6 +141,7 @@ type Change = {
   readonly secondsLeft: number;
   readonly rumourAt: Point | null;
   readonly exposed: boolean;
+  readonly behind: boolean;
 };
 
 const factsOf = (engine: SandboxRunner, practice: boolean): Facts => {
@@ -256,6 +259,7 @@ const advanceView = (prev: HuntView, change: Change): HuntView => {
     secondsLeft: change.secondsLeft,
     rumourAt: change.rumourAt ?? prev.rumourAt,
     exposed: change.exposed,
+    behind: change.behind,
     worldFeed: prepend(prev.worldFeed, change.notes),
     caughtBy: caught ? change.caughtBy : prev.caughtBy,
     winner: change.ending?.winner ?? prev.winner,
@@ -319,6 +323,7 @@ export const useHunt = (): Hunt => {
     rumourAt: null,
     exposed: false,
     chainEye: false,
+    behind: false,
   }));
 
   const entries = useCallback((texts: readonly string[]): readonly FeedEntry[] =>
@@ -350,8 +355,11 @@ export const useHunt = (): Hunt => {
     const shutting = before.ring === null && sim.ring !== null;
     const secondsLeft = Math.max(0, GAME_SECONDS - Math.floor((sim.tick * TICK_MS) / 1000));
     const ending = endingOf(engine, secondsLeft);
+    const behind = events.some((event) => event.type === "behind");
     if (settled.caughtBy !== null) {
       speaker.play("caught");
+    } else if (behind) {
+      speaker.play("behind");
     } else if (
       rumour !== null ||
       events.some(
@@ -381,6 +389,7 @@ export const useHunt = (): Hunt => {
         secondsLeft,
         rumourAt: rumour?.at ?? null,
         exposed: lit,
+        behind,
       }),
     );
   }, [engineRef, simRef, speaker, entries]);

@@ -256,6 +256,17 @@ describe("the bots", () => {
     expect(sim.actors[7]?.closeFor).toBe(0);
   });
 
+  it("warn you that somebody is there before they have you, and never say who", () => {
+    const close = { ...withActorAt(withActorAt(alone(2), YOU, { x: 20, y: 8 }), 7, { x: 22, y: 8 }), tick: GRACE_TICKS };
+    const { events } = run(close, CYCLE, CATCH_TICKS * 2 + 12);
+    const warned = events.findIndex((event) => event.type === "behind");
+    const caught = events.findIndex((event) => event.type === "caught");
+    expect(warned).toBeGreaterThanOrEqual(0);
+    expect(warned).toBeLessThan(caught);
+    // The warning is the whole event: there is no field on it that could give the hunter away.
+    expect(events.filter((event) => event.type === "behind")[0]).toEqual({ type: "behind" });
+  });
+
   it("cannot catch you while you keep moving, and never in practice", () => {
     const close = { ...withActorAt(withActorAt(alone(2), YOU, { x: 20, y: 8 }), 7, { x: 22, y: 8 }), tick: GRACE_TICKS };
     const running = run(close, CYCLE, 40, (tick) => ({ ...NO_INPUT, dir: tick % 20 < 10 ? "left" : "right" }));

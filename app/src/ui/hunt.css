@@ -256,6 +256,27 @@
     height 400ms linear;
 }
 
+/* Somebody is at your shoulder. Red at the edges, and nothing that says who. */
+.hunt.behind .hunt-viewport::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 45%, rgba(146, 30, 24, 0.55) 100%);
+  animation: shoulder 700ms ease-in-out infinite;
+}
+
+@keyframes shoulder {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 .hunt.exposed .hunt-viewport::after {
   content: "";
   position: absolute;

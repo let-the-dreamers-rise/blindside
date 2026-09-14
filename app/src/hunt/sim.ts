@@ -124,6 +124,8 @@ export type SimEvent =
   | { readonly type: "tip"; readonly hunter: number }
   | { readonly type: "heard"; readonly hunter: number }
   | { readonly type: "exposed"; readonly hunter: number }
+  /** Somebody has been at your shoulder long enough to matter. Deliberately nameless. */
+  | { readonly type: "behind" }
   | { readonly type: "step"; readonly sprinting: boolean };
 
 export type Stepped = { readonly sim: Sim; readonly events: readonly SimEvent[] };
@@ -381,7 +383,10 @@ const chase = (
   }
   const goal = actor.lastSeen ?? you.at;
   const path = close ? [] : (findPathToAdjacent(world, actor.at, goal, occupied) ?? []);
-  return done(acc, advance({ ...actor, closeFor, path }, occupied), []);
+  // You do not get to learn who it is, only that somebody is there. A second to move is fair;
+  // being taken off the board by a sprite you never saw arrive is not.
+  const warning: readonly SimEvent[] = closeFor > 0 ? [{ type: "behind" }] : [];
+  return done(acc, advance({ ...actor, closeFor, path }, occupied), warning);
 };
 
 /** Tags between bots happen where you are not looking, the way real ones happen in corridors. */

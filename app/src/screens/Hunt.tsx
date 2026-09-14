@@ -75,7 +75,7 @@ export const Hunt = () => {
 
   return (
     <main
-      className={`hunt${hunt.phase === "intro" ? "" : " playing"}${hunt.exposed ? " exposed" : ""}`}
+      className={`hunt${hunt.phase === "intro" ? "" : " playing"}${hunt.exposed ? " exposed" : ""}${hunt.behind ? " behind" : ""}`}
     >
       {/* Once the game is running a phone needs its screen for the campus and the pad. */}
       <header className="hunt-head">

@@ -88,6 +88,32 @@ const Target = ({ hunt }: { readonly hunt: Hunt }) => {
   );
 };
 
+/** One line under the pad, and only the most pressing one. The order below is the priority. */
+const hint = (hunt: Hunt, target: string | null): string => {
+  if (hunt.facts.youOut) {
+    return "You are out. Everyone is visible now.";
+  }
+  if (hunt.behind) {
+    return "Somebody is right behind you. You do not get to know who. Move.";
+  }
+  if (hunt.exposed) {
+    return "You are off the grounds. The crowd has drifted in without you, so there is nobody out here to stand behind, and your hunter keeps being told where you are.";
+  }
+  if (hunt.hidden) {
+    return "You are lost in the crowd. Nobody can pick you out from a distance while you stand here.";
+  }
+  if (hunt.phase === "moment") {
+    return `${target ?? "They"} stopped. Type what you heard, below.`;
+  }
+  if (target === null) {
+    return "Arrow keys or the pad to walk, shift to run. Tap somebody to walk up to them. Open your envelope to learn who you are hunting.";
+  }
+  if (hunt.canTag) {
+    return `You are next to ${target}. Tag them, or press Enter.`;
+  }
+  return `Find ${target}. Rumours arrive below. Somebody is finding you the same way, and running is loud.`;
+};
+
 export const HuntHud = ({ hunt }: { readonly hunt: Hunt }) => {
   const target = hunt.targetIndex === null ? null : (hunt.names[hunt.targetIndex] ?? null);
   return (
@@ -144,21 +170,7 @@ export const HuntHud = ({ hunt }: { readonly hunt: Hunt }) => {
           <Stamina now={hunt.stamina} full={hunt.staminaFull} running={hunt.sim.sprinting} />
         </div>
       </div>
-      <p className="note hud-hint">
-        {hunt.facts.youOut
-          ? "You are out. Everyone is visible now."
-          : hunt.exposed
-            ? "You are off the grounds. The crowd has drifted in without you, so there is nobody out here to stand behind, and your hunter keeps being told where you are."
-            : hunt.hidden
-              ? "You are lost in the crowd. Nobody can pick you out from a distance while you stand here."
-              : hunt.phase === "moment"
-                ? `${target ?? "They"} stopped. Type what you heard, below.`
-                : target === null
-                  ? "Arrow keys or the pad to walk, shift to run. Tap somebody to walk up to them. Open your envelope to learn who you are hunting."
-                  : hunt.canTag
-                    ? `You are next to ${target}. Tag them, or press Enter.`
-                    : `Find ${target}. Rumours arrive below. Somebody is finding you the same way, and running is loud.`}
-      </p>
+      <p className="note hud-hint">{hint(hunt, target)}</p>
     </div>
   );
 };

@@ -2,7 +2,7 @@
 // until the first tap because browsers insist on it.
 // SPDX-License-Identifier: Apache-2.0
 
-export type Sound = "open" | "words" | "tag" | "refuse" | "caught" | "rumour" | "win";
+export type Sound = "open" | "words" | "tag" | "refuse" | "caught" | "rumour" | "win" | "behind";
 
 type Note = readonly [frequency: number, ms: number];
 
@@ -13,6 +13,8 @@ const TUNES: Readonly<Record<Sound, readonly Note[]>> = {
   refuse: [[196, 140], [175, 200]],
   caught: [[220, 180], [165, 320]],
   rumour: [[440, 50], [554, 70]],
+  // Two low notes a step apart, close together: a footfall behind you, not a fanfare.
+  behind: [[147, 90], [131, 110]],
   win: [[523, 110], [659, 110], [784, 110], [1047, 110], [1319, 260]],
 };
 
