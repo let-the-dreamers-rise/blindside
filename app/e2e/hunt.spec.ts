@@ -181,6 +181,39 @@ test("a link to a game opens that game, even mid-hunt", async ({ page }) => {
   await expect(page).toHaveURL(/seed=22&players=4&place=park/);
 });
 
+test("a whole hunt writes nothing to the console", async ({ page }) => {
+  test.setTimeout(150_000);
+  // The engine settles bots' tags by really calling the contract, and a refusal there is caught
+  // and logged rather than thrown. So an empty console is the assertion that the rules held for
+  // every tag nobody watched, which no other test can make.
+  const said: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      said.push(`${message.type()}: ${message.text()}`);
+    }
+  });
+  page.on("pageerror", (error) => said.push(`pageerror: ${error.message}`));
+
+  await openHunt(page, 44);
+  await page.getByRole("button", { name: "Start the hunt" }).click();
+  const target = await myTarget(page);
+  await walkUpTo(page, target);
+  await page.getByRole("button", { name: `Tag ${target}`, exact: true }).click();
+  await page.getByRole("button", { name: "The chain", exact: true }).click();
+  await page.getByRole("button", { name: "Back to the map" }).click();
+
+  // And then long enough for the bots to start tagging each other, which is the part that runs
+  // the contract with nobody looking. Whether one lands in the time is the game's business; an
+  // empty console either way is this test's.
+  await page
+    .getByText(/ is out\./)
+    .first()
+    .waitFor({ timeout: 45_000 })
+    .catch(() => undefined);
+
+  expect(said).toEqual([]);
+});
+
 test("a phone is told about the pad, not about arrow keys it does not have", async ({ page }) => {
   await openHunt(page, 24);
   await expect(page.getByText(/The pad walks, Run is faster/)).toBeVisible();

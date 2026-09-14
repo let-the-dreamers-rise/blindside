@@ -204,7 +204,7 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 | Crypto and game core tests | 64 passing, 97% statement coverage |
 | The hunt's simulation | 98 unit tests: grid, both maps, sight and what blocks it, bots, catching, crowds, running, rumours, the closing grounds |
 | Does a hunt resolve | Measured, not assumed: whole games played out against the compiled contract at every size, all coming down to one player |
-| Browser tests | 28 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, a shared link, the map in the corner and a player's phone |
+| Browser tests | 29 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, a shared link, the map in the corner, a player's phone, and a whole hunt that writes nothing to the console |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |
