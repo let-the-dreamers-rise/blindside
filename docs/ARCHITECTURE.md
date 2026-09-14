@@ -245,6 +245,15 @@ down to one player every time. Watched start to finish in practice, where nobody
 plays out every tag it is able to and leaves you and your hunter. Before the grounds closed it
 left five to seven players standing at full time.
 
+### Four, eight or twelve
+
+A game is the first few of one cast, so an index always names the same person and a smaller game
+is a shorter list rather than a different one. Picking a size on the intro card builds a new
+`SandboxRunner` with that many players, which means that many real joins and a real start, and
+the pot on screen is the contract's. The size rides in the address bar next to the seed, so a
+shared link is the same game at the same size. The balance test runs all three sizes: four ends
+quickly, twelve is a scramble, and both come down to one player.
+
 ### The chain's eye
 
 The contrast only works if somebody looks at both halves of it, and a panel below the fold is a

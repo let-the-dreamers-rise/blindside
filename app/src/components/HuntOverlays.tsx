@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from "react";
-import { GAME_SECONDS, type Hunt } from "../hunt/useHunt.ts";
+import { GAME_SECONDS, SIZES, type Hunt } from "../hunt/useHunt.ts";
 import { HOW_IT_WORKS } from "../screens/HuntIntroCopy.tsx";
 
-/** Somebody else can play the same night: same campus, same eight, same seed. */
+/** Somebody else can play the same night: same campus, same people, same seed. */
 const Again = ({ hunt }: { readonly hunt: Hunt }) => {
   const [copied, setCopied] = useState(false);
   const copy = () => {
@@ -26,25 +26,50 @@ const Again = ({ hunt }: { readonly hunt: Hunt }) => {
   );
 };
 
-const Intro = ({ hunt }: { readonly hunt: Hunt }) => (
-  <section className="card">
-    <p className="stamp">Eight players</p>
-    <h2 style={{ marginTop: 14 }}>One of them is hunting you.</h2>
-    <p>You are hunting one of them. {HOW_IT_WORKS}</p>
-    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
-      <button type="button" onClick={() => hunt.start(false)}>
-        Start the hunt
-      </button>
-      <button type="button" className="ghost" onClick={() => hunt.start(true)}>
-        Practice first
-      </button>
-    </div>
-    <p className="note" style={{ marginTop: 16 }}>
-      Practice takes the roofs off and sends your hunter home. Arrow keys or WASD walk, shift
-      runs, Enter tags, or tap the map. Every tag runs the real compiled contract in this tab.
-    </p>
-  </section>
-);
+const HOW_LONG: Readonly<Record<number, string>> = {
+  4: "quick",
+  8: "the usual",
+  12: "a scramble",
+};
+
+const Intro = ({ hunt }: { readonly hunt: Hunt }) => {
+  const [players, setPlayers] = useState(hunt.size);
+  return (
+    <section className="card">
+      <p className="stamp">{players} players</p>
+      <h2 style={{ marginTop: 14 }}>One of them is hunting you.</h2>
+      <p>You are hunting one of them. {HOW_IT_WORKS}</p>
+
+      <div className="sizes" role="group" aria-label="How many are playing">
+        {SIZES.map((size) => (
+          <button
+            type="button"
+            key={size}
+            className={`chip${size === players ? " on" : ""}`}
+            aria-pressed={size === players}
+            onClick={() => setPlayers(size)}
+          >
+            {size}
+            <span>{HOW_LONG[size] ?? ""}</span>
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
+        <button type="button" onClick={() => hunt.start(false, players)}>
+          Start the hunt
+        </button>
+        <button type="button" className="ghost" onClick={() => hunt.start(true, players)}>
+          Practice first
+        </button>
+      </div>
+      <p className="note" style={{ marginTop: 16 }}>
+        Practice takes the roofs off and sends your hunter home. Arrow keys or WASD walk, shift
+        runs, Enter tags, or tap the map. Every tag runs the real compiled contract in this tab.
+      </p>
+    </section>
+  );
+};
 
 const Caught = ({ hunt }: { readonly hunt: Hunt }) => {
   const name = hunt.caughtBy === null ? "Somebody" : (hunt.names[hunt.caughtBy] ?? "Somebody");

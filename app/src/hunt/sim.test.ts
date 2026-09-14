@@ -63,8 +63,8 @@ const at = (sim: Sim, index: number): Point => sim.actors[index]?.at ?? { x: -1,
 describe("the start", () => {
   it("puts everyone on their spawn tile and refuses more players than tiles", () => {
     const sim = alone(1);
-    expect(sim.actors.map((actor) => actor.at)).toEqual(CAMPUS.spawns);
-    expect(() => newSim(CAMPUS, 1, 9)).toThrow(/room for 8/);
+    expect(sim.actors.map((actor) => actor.at)).toEqual(CAMPUS.spawns.slice(0, 8));
+    expect(() => newSim(CAMPUS, 1, CAMPUS.spawns.length + 1)).toThrow(/room for/);
   });
 
   it("scatters strangers outdoors, and they are nobody", () => {

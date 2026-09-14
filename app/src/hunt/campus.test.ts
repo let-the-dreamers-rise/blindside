@@ -33,12 +33,17 @@ describe("the campus", () => {
     expect(CAMPUS.open.every((tile) => roomOf(CAMPUS, tile) === null)).toBe(true);
   });
 
-  it("starts everyone outdoors on walkable ground", () => {
-    expect(CAMPUS.spawns).toHaveLength(8);
+  it("starts everyone outdoors on walkable ground, with room for the largest game", () => {
+    expect(CAMPUS.spawns.length).toBeGreaterThanOrEqual(12);
     for (const spawn of CAMPUS.spawns) {
       expect(walkableAt(CAMPUS, spawn)).toBe(true);
       expect(roomOf(CAMPUS, spawn)).toBeNull();
     }
+  });
+
+  it("never starts two people on the same tile", () => {
+    const tiles = CAMPUS.spawns.map((spawn) => `${spawn.x},${spawn.y}`);
+    expect(new Set(tiles).size).toBe(tiles.length);
   });
 
   it("can be walked end to end: no tile is cut off", () => {

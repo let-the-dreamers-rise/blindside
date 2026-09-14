@@ -24,7 +24,27 @@ import {
   visibleFromYou,
 } from "./sim.ts";
 
-export const HUNT_CAST: readonly string[] = ["You", "Riya", "Sam", "Nina", "Dev", "Tara", "Kabir", "Zoe"];
+/**
+ * Everybody who can be in a hunt. A game of any size is the first few of these, so an index
+ * always names the same person and a smaller game is a shorter list rather than a different one.
+ */
+export const HUNT_CAST: readonly string[] = [
+  "You",
+  "Riya",
+  "Sam",
+  "Nina",
+  "Dev",
+  "Tara",
+  "Kabir",
+  "Zoe",
+  "Omar",
+  "Ines",
+  "Jude",
+  "Mei",
+];
+/** Quick, the ordinary game, and a scramble. */
+export const SIZES: readonly number[] = [4, 8, 12];
+export const DEFAULT_SIZE = 8;
 export const GAME_SECONDS = 300;
 const WORDS_SHOWN_MS = 9_000;
 const PROVE_MS = 700;
@@ -87,7 +107,9 @@ export type Hunt = HuntView & {
   readonly staminaFull: number;
   /** You are lost in a crowd of strangers: your hunter cannot see you from a distance. */
   readonly hidden: boolean;
-  readonly start: (practice: boolean) => void;
+  readonly start: (practice: boolean, players?: number) => void;
+  /** How many are in this game. Always the first few of the cast. */
+  readonly size: number;
   readonly openEnvelope: () => void;
   readonly hold: (dir: Dir | null) => void;
   readonly sprint: (on: boolean) => void;
@@ -129,12 +151,18 @@ const seedFromHash = (): number => {
   return match?.[1] === undefined ? Date.now() % 2_147_483_647 : Number(match[1]);
 };
 
+const sizeFromHash = (): number => {
+  const match = /players=(\d+)/.exec(window.location.hash);
+  const asked = match?.[1] === undefined ? DEFAULT_SIZE : Number(match[1]);
+  return SIZES.includes(asked) ? asked : DEFAULT_SIZE;
+};
+
 /**
- * A seeded game is the same game twice, so the seed belongs in the address bar: what somebody
- * shares is the night they played, not a new one that happens to look like it.
+ * A seeded game is the same game twice, so the seed and the size belong in the address bar:
+ * what somebody shares is the night they played, not a new one that happens to look like it.
  */
-const rememberSeed = (seed: number): void => {
-  const wanted = `#/hunt?seed=${seed}`;
+const rememberGame = (seed: number, players: number): void => {
+  const wanted = `#/hunt?seed=${seed}&players=${players}`;
   if (window.location.hash !== wanted) {
     window.history.replaceState(null, "", wanted);
   }
@@ -258,9 +286,10 @@ const useLazyRef = <T,>(init: () => T): { current: T } => {
 const delay = (ms: number): Promise<void> => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 export const useHunt = (): Hunt => {
-  const engineRef = useLazyRef(() => new SandboxRunner(HUNT_CAST));
   const seedRef = useLazyRef(seedFromHash);
-  const simRef = useLazyRef(() => newSim(CAMPUS, seedRef.current, HUNT_CAST.length));
+  const sizeRef = useLazyRef(sizeFromHash);
+  const engineRef = useLazyRef(() => new SandboxRunner(HUNT_CAST.slice(0, sizeRef.current)));
+  const simRef = useLazyRef(() => newSim(CAMPUS, seedRef.current, sizeRef.current));
   const speaker = useMemo(createSpeaker, []);
   const heldRef = useRef<Dir | null>(null);
   const sprintRef = useRef(false);
@@ -374,10 +403,17 @@ export const useHunt = (): Hunt => {
   );
 
   const start = useCallback(
-    (practice: boolean) => {
+    (practice: boolean, players: number = sizeRef.current) => {
       practiceRef.current = practice;
       litRef.current = false;
-      rememberSeed(seedRef.current);
+      // A different size is a different game, so it gets a new contract and a new campus rather
+      // than an old one with people taken off it.
+      if (players !== sizeRef.current) {
+        sizeRef.current = players;
+        engineRef.current = new SandboxRunner(HUNT_CAST.slice(0, players));
+        simRef.current = newSim(CAMPUS, seedRef.current, players);
+      }
+      rememberGame(seedRef.current, players);
       speaker.play("open");
       const opening = practice
         ? "Practice: nobody is hunting you and the roofs are off."
@@ -386,11 +422,16 @@ export const useHunt = (): Hunt => {
         ...prev,
         phase: "playing",
         practice,
+        sim: simRef.current,
+        snapshot: engineRef.current.snapshot(),
         facts: factsOf(engineRef.current, practice),
-        worldFeed: prepend(prev.worldFeed, entries([opening, "Eight players. The game is live."])),
+        worldFeed: prepend(
+          prev.worldFeed,
+          entries([opening, `${players} players. The game is live.`]),
+        ),
       }));
     },
-    [engineRef, seedRef, entries, speaker],
+    [engineRef, simRef, seedRef, sizeRef, entries, speaker],
   );
 
   const openEnvelope = useCallback(() => {
@@ -586,10 +627,11 @@ export const useHunt = (): Hunt => {
     window.location.reload();
   }, []);
 
-  /** The same eight players, the same campus, the same night. */
+  /** The same players, the same campus, the same night. */
   const shareLink = useCallback(
-    (): string => `${window.location.origin}${window.location.pathname}#/hunt?seed=${seedRef.current}`,
-    [seedRef],
+    (): string =>
+      `${window.location.origin}${window.location.pathname}#/hunt?seed=${seedRef.current}&players=${sizeRef.current}`,
+    [seedRef, sizeRef],
   );
 
   const visible = useMemo(() => visibleFromYou(view.sim, CAMPUS, view.facts), [view.sim, view.facts]);
@@ -607,7 +649,8 @@ export const useHunt = (): Hunt => {
   return {
     ...view,
     world: CAMPUS,
-    names: HUNT_CAST,
+    names: HUNT_CAST.slice(0, sizeRef.current),
+    size: sizeRef.current,
     visible,
     targetIndex,
     canTag,

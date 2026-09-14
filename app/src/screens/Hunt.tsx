@@ -85,8 +85,8 @@ export const Hunt = () => {
 
         <h1 style={{ marginTop: 18 }}>The hunt</h1>
         <p className="lede">
-          Eight players on a campus at night. One of them is hunting you. You are hunting one of
-          them. Find yours first.
+          A campus at night, and everybody on it has a target. One of them is hunting you. You are
+          hunting one of them. Find yours first.
         </p>
       </header>
 

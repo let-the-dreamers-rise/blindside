@@ -161,10 +161,26 @@ test("the wrong five words are refused by the contract, not by the page", async 
   await expect(statistic(page, "still in")).toContainText("8");
 });
 
-test("a game is a link: the seed goes in the address bar", async ({ page }) => {
+test("a game is a link: the seed and the size go in the address bar", async ({ page }) => {
   await page.goto("/#/hunt");
   await page.getByRole("button", { name: "Practice first" }).click();
-  await expect(page).toHaveURL(/#\/hunt\?seed=\d+/);
+  await expect(page).toHaveURL(/#\/hunt\?seed=\d+&players=8/);
+});
+
+test("a smaller game is a smaller game all the way down to the contract", async ({ page }) => {
+  await openHunt(page, 18);
+  await page.getByRole("group", { name: "How many are playing" }).getByText("4").click();
+  await page.getByRole("button", { name: "Practice first" }).click();
+
+  await expect(page).toHaveURL(/players=4/);
+  // Three people to walk to, four staked entries in the pot, four pseudonyms on the record.
+  await expect(page.getByRole("button", { name: /^Walk to / })).toHaveCount(3);
+  await expect(statistic(page, "in the pot")).toContainText("40");
+  await expect(statistic(page, "still in")).toContainText("4");
+
+  await page.getByRole("button", { name: "The chain", exact: true }).click();
+  const eye = page.getByRole("region", { name: "What the chain sees" });
+  await expect(eye.getByTestId("chain-players").locator(".chain-card")).toHaveCount(4);
 });
 
 test("the campus is full of people who are not in the game", async ({ page }) => {

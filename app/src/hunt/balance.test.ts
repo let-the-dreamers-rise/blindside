@@ -9,7 +9,21 @@ import { SandboxRunner } from "../sandbox/engine.ts";
 import { CAMPUS } from "./campus.ts";
 import { NO_INPUT, type Facts, type Sim, YOU, newSim, step } from "./sim.ts";
 
-const CAST: readonly string[] = ["You", "Riya", "Sam", "Nina", "Dev", "Tara", "Kabir", "Zoe"];
+const CAST: readonly string[] = [
+  "You",
+  "Riya",
+  "Sam",
+  "Nina",
+  "Dev",
+  "Tara",
+  "Kabir",
+  "Zoe",
+  "Omar",
+  "Ines",
+  "Jude",
+  "Mei",
+];
+const ORDINARY = 8;
 /** Five minutes at a tick of 150ms, which is what the clock on the screen counts down. */
 const WHOLE_GAME = 2_000;
 const SEEDS: readonly number[] = [1, 7, 42, 99, 2_026];
@@ -36,8 +50,9 @@ type Run = {
 const playItOut = (
   seed: number,
   practice: boolean,
+  size: number = ORDINARY,
 ): Run & { readonly left: number; readonly survivors: readonly number[] } => {
-  const engine = new SandboxRunner([...CAST]);
+  const engine = new SandboxRunner(CAST.slice(0, size));
   const run = Array.from({ length: WHOLE_GAME }).reduce<Run>(
     (acc) => {
       if (acc.finishedAt !== null) {
@@ -67,7 +82,7 @@ const playItOut = (
       }, acc.refused);
       return { sim: next.sim, finishedAt: null, refused };
     },
-    { sim: newSim(CAMPUS, seed, CAST.length), finishedAt: null, refused: 0 },
+    { sim: newSim(CAMPUS, seed, size), finishedAt: null, refused: 0 },
   );
   return {
     ...run,
@@ -105,5 +120,41 @@ describe("a hunt watched from start to finish", () => {
   it("plays out every tag it can, leaving you and whoever is hunting you", () => {
     expect(games.map((game) => game.left)).toEqual(SEEDS.map(() => 2));
     games.forEach((game) => expect(game.survivors).toContain(YOU));
+  });
+});
+
+describe("a hunt of any size", () => {
+  const sizes: readonly number[] = [4, 8, 12];
+  // Three seeds rather than five: every size doubles the games played, and the point here is
+  // that the size does not change the answer, not another sample of the same size.
+  const few = SEEDS.slice(0, 3);
+  const hands = sizes.map((size) => ({ size, games: few.map((seed) => playItOut(seed, false, size)) }));
+  const watched = sizes.map((size) => ({ size, games: few.map((seed) => playItOut(seed, true, size)) }));
+
+  it("comes down to one player whether four are playing or twelve", () => {
+    hands.forEach(({ size, games }) => {
+      expect({ size, left: games.map((game) => game.left) }).toEqual({
+        size,
+        left: few.map(() => 1),
+      });
+    });
+  });
+
+  it("plays out every tag it can when it is watched all the way through", () => {
+    watched.forEach(({ size, games }) => {
+      expect({ size, left: games.map((game) => game.left) }).toEqual({
+        size,
+        left: few.map(() => 2),
+      });
+    });
+  });
+
+  it("never asks the contract for a tag it would refuse, at any size", () => {
+    [...hands, ...watched].forEach(({ size, games }) => {
+      expect({ size, refused: games.map((game) => game.refused) }).toEqual({
+        size,
+        refused: few.map(() => 0),
+      });
+    });
   });
 });

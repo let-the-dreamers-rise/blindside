@@ -198,6 +198,8 @@ export const CAMPUS: World = makeWorld({
     { name: "the west benches", at: { x: 10, y: 14 } },
     { name: "the east benches", at: { x: 28, y: 14 } },
   ],
+  // You are always the first. The rest are spread so that a small game is not eight people in
+  // one corner and a large one still starts nobody next to anybody.
   spawns: [
     { x: 19, y: 9 },
     { x: 5, y: 8 },
@@ -207,5 +209,9 @@ export const CAMPUS: World = makeWorld({
     { x: 6, y: 14 },
     { x: 33, y: 14 },
     { x: 19, y: 22 },
+    { x: 19, y: 3 },
+    { x: 10, y: 8 },
+    { x: 26, y: 8 },
+    { x: 33, y: 21 },
   ],
 });
