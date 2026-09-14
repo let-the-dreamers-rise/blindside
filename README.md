@@ -217,8 +217,9 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 
 The app is a static build with a hash router, so it needs no server and no rewrite rules, and
 `base` is `./` so the same build works from a root domain or a subdirectory without being rebuilt.
-[docs/DEPLOY.md](docs/DEPLOY.md) has the steps for Vercel, where `vercel.json` already carries
-every build setting, and for the GitHub Pages workflow that publishes it today.
+[docs/DEPLOY.md](docs/DEPLOY.md) has the steps for Vercel and Netlify, where `vercel.json` and
+`netlify.toml` already carry every build setting, and for the GitHub Pages workflow that publishes
+it today.
 
 ## Building it yourself
 

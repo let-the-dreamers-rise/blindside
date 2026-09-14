@@ -1,0 +1,21 @@
+# The demo is a static build with a hash router, so there is nothing to route and nothing to run.
+# Netlify installs the workspace, builds the app and serves what comes out.
+
+[build]
+  command = "pnpm --filter @blindside/app build"
+  publish = "app/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# The proving keys are 65 MB of the output and the hashed assets are named after their contents,
+# so both can be cached until they are replaced.
+[[headers]]
+  for = "/zk/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
