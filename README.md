@@ -6,11 +6,6 @@
 
 *One take, at the speed it plays. Nothing here is a mockup.*
 
-There is a longer one, silent and a minute and a quarter, in [docs/demo.mp4](docs/demo.mp4): the
-choice, the walk, a tag, the five words, the public record, the grounds closing. It is recorded by
-playing the game rather than by editing footage together, which is why it is in the repository
-next to the code that makes it.
-
 Blindside is a hidden-target tag game on [Midnight](https://midnight.network). You are secretly
 assigned one other player to tag. When you get them, they say **five words** out loud; those words
 are the only key that opens their half of the game, a zero-knowledge proof settles the tag on chain
@@ -79,6 +74,11 @@ self-loop is the proof of victory.
 ## Play it in two minutes, without a wallet
 
 **[let-the-dreamers-rise.github.io/blindside](https://let-the-dreamers-rise.github.io/blindside/)**
+
+Or watch a minute and a quarter of it first: [docs/demo.mp4](docs/demo.mp4), silent, one take of a
+four player hunt. The choice, the walk, a tag, the five words, the public record, the grounds
+closing. It is recorded by playing the game rather than by editing footage together, which is why
+it sits in the repository next to the code that makes it.
 
 **The hunt** is a place at night, drawn in pixels, with four, eight or twelve players on it and
 ten strangers who are not in the game. One of them is hunting you and you do not know which. You
