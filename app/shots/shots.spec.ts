@@ -28,8 +28,14 @@ const settle = async (page: Page, ms = 900): Promise<void> => {
  * changing only the hash moves the address bar and nothing else, which is also true for anybody
  * pasting a shared link into a tab that is already playing.
  */
+let take = 0;
+
 const openHunt = async (page: Page, seed: number, place: string): Promise<void> => {
-  await page.goto(`/?shot=${seed}#/hunt?seed=${seed}&players=8&place=${place}`);
+  // The query string is what makes it a load. It has to differ every time as well: navigating to
+  // the URL the page is already on changes nothing, so a second game on the same seed would
+  // quietly carry on being the first one.
+  take += 1;
+  await page.goto(`/?shot=${seed}-${take}#/hunt?seed=${seed}&players=8&place=${place}`);
   await page.getByRole("heading", { name: "One of them is hunting you." }).waitFor();
 };
 
@@ -48,6 +54,13 @@ const walkUpTo = async (page: Page, name: string): Promise<boolean> => {
   }
   return false;
 };
+
+test("the front page", async ({ page }, info) => {
+  await page.goto("/#/");
+  await page.getByRole("heading", { level: 1 }).first().waitFor();
+  await settle(page, 600);
+  await shoot(page, "00-the-front", info.project.name);
+});
 
 test("the choices, the campus, the moment, the chain and the park", async ({ page }, info) => {
   const project = info.project.name;
@@ -74,6 +87,19 @@ test("the choices, the campus, the moment, the chain and the park", async ({ pag
     }
   }
 
+  // A fresh game for this one, and a wait for somebody to be tagged out there, because the
+  // picture is about a count that moves while the list of people does not. Doing it off the back
+  // of the tag above made the frame depend on whether that tag landed.
+  await openHunt(page, 77, "campus");
+  await page.getByRole("button", { name: "Practice first" }).click();
+  await page.getByRole("button", { name: "Open the envelope" }).click();
+  // Somebody, somewhere on the campus, gets tagged. If nobody does in time the picture is still
+  // worth having, so this waits rather than asserts.
+  await page
+    .getByText(/ is out\./)
+    .first()
+    .waitFor({ timeout: 60_000 })
+    .catch(() => undefined);
   await page.getByRole("button", { name: "The chain", exact: true }).click();
   await settle(page, 400);
   await shoot(page, "04-the-chain", project);

@@ -163,7 +163,7 @@ export const HuntHud = ({ hunt }: { readonly hunt: Hunt }) => {
             onClick={hunt.toggleChainEye}
             aria-pressed={hunt.chainEye}
           >
-            {hunt.chainEye ? "The campus" : "The chain"}
+            {hunt.chainEye ? "The map" : "The chain"}
           </button>
           <button
             type="button"

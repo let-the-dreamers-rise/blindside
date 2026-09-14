@@ -27,6 +27,7 @@ list of people does not, because that list is the whole of what the chain knows 
 
 | | |
 |---|---|
+| Watch a minute of it | [docs/demo.mp4](demo.mp4): one silent take of a real four player hunt, recorded by playing it |
 | Play the hunt, no wallet | [the hunt](https://let-the-dreamers-rise.github.io/blindside/#/hunt): a pixel campus at night, one of the others hunting you. Pick four players for a game that fits in ninety seconds. Every tag, refusal, payout and refund runs the real compiled contract in the browser tab |
 | See what the chain does not | press **The chain** mid-game: the same moment with everything identifying taken out. Three players out, the record says three are out, and nothing says which three or who put them there |
 | Play the paper version | [the sandbox](https://let-the-dreamers-rise.github.io/blindside/#/sandbox), the same contract with the buttons showing |
@@ -127,6 +128,14 @@ Stated plainly, because a privacy product that overclaims is worse than one that
 - **No live wallet flow in the app yet.** A real game is driven from the runner; the app plays the
   sandbox and watches real games.
 - **Test tokens only.** Real money needs mainnet and a legal review first.
+
+## The one thing waiting on somebody else
+
+The public testnet run is written and tested; it needs test tokens in one address.
+`pnpm --filter @blindside/cli address preview` prints it, the Nethermind preview faucet is behind
+a bot check a person has to pass, and `pnpm --filter @blindside/cli public preview` then plays a
+whole game against the public network. The same code already plays a whole game against a local
+node, which is what the evidence page shows.
 
 ## Next
 

@@ -596,6 +596,11 @@
     height: clamp(260px, 52vh, 520px);
   }
 
+  /* The public record is a page of reading, and while it is open the pad below it does nothing. */
+  .hunt.playing .hunt-viewport.reading {
+    height: clamp(400px, 78vh, 760px);
+  }
+
   .hunt.playing .hud {
     position: sticky;
     bottom: 0;
@@ -668,6 +673,12 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   opacity: 0.9;
   pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+/* The camera stops at the edge of the place, so in that corner you walk under this. */
+.minimap.shy {
+  opacity: 0.2;
 }
 
 @media (min-width: 560px) {

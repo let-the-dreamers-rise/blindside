@@ -9,6 +9,9 @@ build/
 coverage/
 playwright-report/
 test-results/
+# Raw takes from the video run. docs/demo.mp4 is the one that gets committed.
+app/video-out/
+docs/demo.webm
 .vite/
 .turbo/
 

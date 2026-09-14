@@ -23,6 +23,20 @@ import { Minimap } from "./Minimap.tsx";
 /** The two phases where you are standing on the map. Everything else puts a card over it. */
 const ON_THE_MAP: ReadonlySet<Hunt["phase"]> = new Set(["playing", "moment"] as const);
 
+/** The corner the little map sits in, in pixels, with room for its margin and its border. */
+const MINI_W = 180;
+const MINI_H = 118;
+
+/**
+ * The camera stops at the edge of the place rather than showing the dark past it, so in the top
+ * right corner you walk out from under the camera and under the little map instead.
+ */
+const walkedUnderIt = (at: Point | undefined, camera: Point, size: Size): boolean =>
+  at !== undefined &&
+  size.w > 0 &&
+  at.x * TILE - camera.x > size.w - MINI_W &&
+  at.y * TILE - camera.y < MINI_H;
+
 type Size = { readonly w: number; readonly h: number };
 
 const axis = (centre: number, view: number, total: number): number =>
@@ -195,7 +209,7 @@ export const HuntStage = ({ hunt, children }: Props) => {
 
   return (
     <div
-      className={`hunt-viewport${shaking ? " jolt" : ""}${hunt.phase === "moment" ? " listening" : ""}`}
+      className={`hunt-viewport${shaking ? " jolt" : ""}${hunt.phase === "moment" ? " listening" : ""}${hunt.chainEye ? " reading" : ""}`}
       ref={viewportRef}
     >
       <div
@@ -258,7 +272,13 @@ export const HuntStage = ({ hunt, children }: Props) => {
         position, only yours, because that is all it is ever given.
       */}
       {ON_THE_MAP.has(hunt.phase) && !hunt.chainEye ? (
-        <Minimap world={world} you={you?.at ?? null} rumour={hunt.rumourAt} ring={sim.ring} />
+        <Minimap
+          world={world}
+          you={you?.at ?? null}
+          rumour={hunt.rumourAt}
+          ring={sim.ring}
+          shy={walkedUnderIt(you?.at, camera, size)}
+        />
       ) : null}
       {hunt.chainEye ? (
         <ChainEye snapshot={hunt.snapshot} onClose={hunt.toggleChainEye} />

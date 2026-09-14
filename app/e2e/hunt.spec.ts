@@ -200,10 +200,18 @@ test("the whole map sits in the corner of the one you can see", async ({ page })
   await expect(corner).toBeVisible();
 
   // The public record replaces the map, so the map in the corner goes with it.
+  const stage = page.locator(".hunt-viewport");
+  const playing = (await stage.boundingBox())?.height ?? 0;
   await page.getByRole("button", { name: "The chain", exact: true }).click();
   await expect(corner).toBeHidden();
+
+  // A page of reading on a phone, so it gets the room the pad underneath is not using.
+  const reading = (await stage.boundingBox())?.height ?? 0;
+  expect(reading).toBeGreaterThan(playing);
+
   await page.getByRole("button", { name: "Back to the map" }).click();
   await expect(corner).toBeVisible();
+  expect((await stage.boundingBox())?.height ?? 0).toBe(playing);
 });
 
 test("the other place is a different map with its own buildings", async ({ page }) => {

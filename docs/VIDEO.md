@@ -95,6 +95,11 @@ them. Tag. The five words in the bubble. Type them.*
   footage is cut.
 - The chain view is the star. Give it a full beat after the first tag.
 - No gun imagery, no crosshairs, no red spatter. The word is "tag".
+- `pnpm --filter @blindside/app video` records the 0:12 to 0:50 section as one take, by playing a
+  real four player hunt at real speed: the choice, the walk, the tag, the five words typed a
+  letter at a time, the chain held for a beat, then the grounds closing. It writes `docs/demo.mp4`
+  with no sound, paced so the script above can be read straight over it. Nothing in it is a
+  mockup and nothing is sped up.
 - `pnpm --filter @blindside/app shots` writes the same frames to `docs/shots`, desktop and phone,
   by playing the game rather than mocking it up. Use them for thumbnails and the deck. It also
   writes `docs/shots/the-hunt.gif`: one take of a target walked down and tagged, timed to the rate

@@ -11,7 +11,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: "list",
-  timeout: 300_000,
+  // One take of a whole game, including two minutes of waiting for the grounds to close.
+  timeout: 480_000,
   use: {
     baseURL: "http://127.0.0.1:4173",
   },

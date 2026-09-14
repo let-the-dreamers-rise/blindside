@@ -13,13 +13,15 @@ type Props = {
   readonly rumour: Point | null;
   /** The ground still open, once the grounds have started closing. */
   readonly ring: Ring | null;
+  /** You have walked under it, so it gets out of the way rather than standing on top of you. */
+  readonly shy?: boolean;
 };
 
 /**
- * The campus in miniature. You are the marker; the ring is the last thing you were told, which
+ * The place in miniature. You are the marker; the ring is the last thing you were told, which
  * is already out of date. Nobody's live position is ever on it.
  */
-export const Minimap = ({ world, you, rumour, ring }: Props) => {
+export const Minimap = ({ world, you, rumour, ring, shy = false }: Props) => {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     if (ref.current !== null) {
@@ -29,7 +31,7 @@ export const Minimap = ({ world, you, rumour, ring }: Props) => {
   return (
     <canvas
       ref={ref}
-      className="minimap"
+      className={`minimap${shy ? " shy" : ""}`}
       role="img"
       width={world.width * 4}
       height={world.height * 4}

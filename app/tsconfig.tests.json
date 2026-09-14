@@ -7,5 +7,12 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["e2e/**/*.ts", "shots/**/*.ts", "playwright.config.ts", "playwright.shots.config.ts"]
+  "include": [
+    "e2e/**/*.ts",
+    "shots/**/*.ts",
+    "video/**/*.ts",
+    "playwright.config.ts",
+    "playwright.shots.config.ts",
+    "playwright.video.config.ts"
+  ]
 }

@@ -6,6 +6,11 @@
 
 *One take, at the speed it plays. Nothing here is a mockup.*
 
+There is a longer one, silent and a minute and a quarter, in [docs/demo.mp4](docs/demo.mp4): the
+choice, the walk, a tag, the five words, the public record, the grounds closing. It is recorded by
+playing the game rather than by editing footage together, which is why it is in the repository
+next to the code that makes it.
+
 Blindside is a hidden-target tag game on [Midnight](https://midnight.network). You are secretly
 assigned one other player to tag. When you get them, they say **five words** out loud; those words
 are the only key that opens their half of the game, a zero-knowledge proof settles the tag on chain
@@ -205,7 +210,7 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |
 | Mobile web app | The hunt, the phone page, the paper sandbox, rules, evidence and spectator pages |
 | A real game on phones | Phone page for players plus the console to settle; proving from the phone is next |
-| Escrow on the public testnet | Next |
+| Escrow on the public testnet | Ready and waiting on tokens. `pnpm --filter @blindside/cli address preview` prints the address to fund, and `pnpm --filter @blindside/cli public preview` plays a whole game against the public network once it has them |
 | Real game with real players | Planned before submission |
 
 ## Building it yourself
