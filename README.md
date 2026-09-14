@@ -73,7 +73,7 @@ self-loop is the proof of victory.
 
 ## Play it in two minutes, without a wallet
 
-**[let-the-dreamers-rise.github.io/blindside](https://let-the-dreamers-rise.github.io/blindside/)**
+**[playblindside.vercel.app](https://playblindside.vercel.app/)**
 
 Or watch a minute and a quarter of it first: [docs/demo.mp4](docs/demo.mp4), silent, one take of a
 four player hunt. The choice, the walk, a tag, the five words, the public record, the grounds
@@ -116,13 +116,13 @@ Two feeds sit under the map as well. *What you saw* is the place: who went into 
 is out, where your target was last seen. *What the chain sees* is two spent notes and one new
 one. The same tag, side by side.
 
-[The paper version](https://let-the-dreamers-rise.github.io/blindside/#/sandbox) is the same
+[The paper version](https://playblindside.vercel.app/#/sandbox) is the same
 contract with the buttons showing. Play a whole game, win it, claim the pot. Then press the
 buttons under "When it goes wrong" and watch the pot come back out of a game nobody finished.
 
-The same site has an [evidence page](https://let-the-dreamers-rise.github.io/blindside/#/evidence)
+The same site has an [evidence page](https://playblindside.vercel.app/#/evidence)
 showing a game played on a real chain, and a
-[spectator view](https://let-the-dreamers-rise.github.io/blindside/#/watch) that reads a deployed
+[spectator view](https://playblindside.vercel.app/#/watch) that reads a deployed
 game straight out of a Midnight indexer.
 
 Or run it yourself:
@@ -134,7 +134,7 @@ pnpm --filter @blindside/app dev     # then press "Play the hunt"
 
 ## On the night: your phone
 
-[The phone page](https://let-the-dreamers-rise.github.io/blindside/#/me) is what a player in a
+[The phone page](https://playblindside.vercel.app/#/me) is what a player in a
 real game needs and nothing else. Keep the five words the organizer gave you. Paste the bundle
 from the group chat. Open the envelope: your target, readable only with your words. When you get
 them, type the five words they said and the page checks them the way the contract will, before
@@ -204,7 +204,7 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 | Crypto and game core tests | 64 passing, 97% statement coverage |
 | The hunt's simulation | 98 unit tests: grid, both maps, sight and what blocks it, bots, catching, crowds, running, rumours, the closing grounds |
 | Does a hunt resolve | Measured, not assumed: whole games played out against the compiled contract at every size, all coming down to one player |
-| Browser tests | 29 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, a shared link, the map in the corner, a player's phone, and a whole hunt that writes nothing to the console |
+| Browser tests | 29 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, a shared link, the map in the corner, a player's phone, and a whole hunt that writes nothing to the console. The same suite runs against the deployed site and not only a local preview, which is how the published demo is checked |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |
@@ -217,9 +217,11 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 
 The app is a static build with a hash router, so it needs no server and no rewrite rules, and
 `base` is `./` so the same build works from a root domain or a subdirectory without being rebuilt.
-[docs/DEPLOY.md](docs/DEPLOY.md) has the steps for Vercel and Netlify, where `vercel.json` and
-`netlify.toml` already carry every build setting, and for the GitHub Pages workflow that publishes
-it today.
+It is on Vercel at [playblindside.vercel.app](https://playblindside.vercel.app/), where the two
+proving keys a hunt needs are 19MB each and are served with a year of immutable caching, so a
+second visit starts without fetching them again. [docs/DEPLOY.md](docs/DEPLOY.md) has the steps,
+and `vercel.json`, `netlify.toml` and `app/public/_headers` each carry the same build and cache
+settings, so the build is not tied to one host.
 
 ## Building it yourself
 

@@ -1,7 +1,8 @@
-name: Demo
+name: Demo mirror
 
-# Publishes the sandbox to GitHub Pages so the game can be tried from a link, with no wallet
-# and nothing to install.
+# The published demo is https://playblindside.vercel.app, uploaded from the CLI (docs/DEPLOY.md).
+# This publishes the same build to GitHub Pages as a mirror, so a current copy is always live
+# without anybody running a command. Nothing links to it. Deleting this file retires it.
 
 on:
   push:

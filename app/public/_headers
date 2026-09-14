@@ -1,0 +1,11 @@
+# Cache rules that travel with the build rather than with one host's config file, so the same
+# output behaves the same wherever it is served from.
+#
+# The proving keys are 65 MB of the output and the hashed assets are named after their contents,
+# so both can be cached until something replaces them.
+
+/zk/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

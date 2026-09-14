@@ -28,14 +28,14 @@ list of people does not, because that list is the whole of what the chain knows 
 | | |
 |---|---|
 | Watch a minute of it | [docs/demo.mp4](demo.mp4): one silent take of a real four player hunt, recorded by playing it |
-| Play the hunt, no wallet | [the hunt](https://let-the-dreamers-rise.github.io/blindside/#/hunt): a pixel campus at night, one of the others hunting you. Pick four players for a game that fits in ninety seconds. Every tag, refusal, payout and refund runs the real compiled contract in the browser tab |
+| Play the hunt, no wallet | [the hunt](https://playblindside.vercel.app/#/hunt): a pixel campus at night, one of the others hunting you. Pick four players for a game that fits in ninety seconds. Every tag, refusal, payout and refund runs the real compiled contract in the browser tab |
 | See what the chain does not | press **The chain** mid-game: the same moment with everything identifying taken out. Three players out, the record says three are out, and nothing says which three or who put them there |
-| Play the paper version | [the sandbox](https://let-the-dreamers-rise.github.io/blindside/#/sandbox), the same contract with the buttons showing |
-| Be a player on the night | [the phone page](https://let-the-dreamers-rise.github.io/blindside/#/me): your words, the bundle, your target, and a check on the words you heard. No server |
+| Play the paper version | [the sandbox](https://playblindside.vercel.app/#/sandbox), the same contract with the buttons showing |
+| Be a player on the night | [the phone page](https://playblindside.vercel.app/#/me): your words, the bundle, your target, and a check on the words you heard. No server |
 | Run one yourself | the console at `#/live` deploys, takes joins, starts a game and publishes the bundle from the tab. Settling a tag from a browser is refused by proof-server 8.1.0 and the CLI does it instead; both are written up rather than papered over |
 | Watch the pot leave a broken game | the same page, "When it goes wrong": quit, let the deadline pass, open refunds, watch the pot drain back to the players |
-| See it on a real chain | [the evidence page](https://let-the-dreamers-rise.github.io/blindside/#/evidence): contract address, every transaction, every timing |
-| See what an observer learns | [the spectator view](https://let-the-dreamers-rise.github.io/blindside/#/watch) reads a deployed game out of a Midnight indexer. It is deliberately unimpressive |
+| See it on a real chain | [the evidence page](https://playblindside.vercel.app/#/evidence): contract address, every transaction, every timing |
+| See what an observer learns | [the spectator view](https://playblindside.vercel.app/#/watch) reads a deployed game out of a Midnight indexer. It is deliberately unimpressive |
 
 ## The cryptography, briefly
 
