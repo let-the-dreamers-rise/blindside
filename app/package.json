@@ -10,6 +10,7 @@
     "build": "pnpm zk && tsc -p tsconfig.json --noEmit && vite build",
     "preview": "vite preview",
     "artifact": "pnpm build && node scripts/artifact-page.mjs",
+    "shots": "playwright test -c playwright.shots.config.ts",
     "test": "playwright test",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",

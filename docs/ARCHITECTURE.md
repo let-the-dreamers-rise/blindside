@@ -209,13 +209,13 @@ see nine tiles of open ground. Open is the word doing the work. A wall or a tree
 people stops sight dead, checked by walking the straight line between them, so a building is
 something to put between yourself and whoever is looking rather than a shape on the floor. The
 rule is symmetric, and two people standing next to each other can always see each other, which a
-test checks over a sample of the whole campus.
+test checks over a sample of the whole map.
 
 Four things bend it, and each one is a decision a player makes rather than a number that goes up:
 
 - **Buildings.** Step through a door and the room's roof stays on for everybody outside it. Stay
   outside and the same building is a wall to stand behind.
-- **The crowd.** Ten strangers walk the campus who are not in the game and can never be tagged.
+- **The crowd.** Ten strangers walk the place who are not in the game and can never be tagged.
   Stand with two of them close by and your hunter loses you at any distance but arm's length.
   Hiding is a place you stand, not a button.
 - **Running.** Shift, or the Run button, is two tiles a tick while your breath lasts. It is also
@@ -223,17 +223,24 @@ Four things bend it, and each one is a decision a player makes rather than a num
   until a quarter of it is back, so there is no stuttering half-sprint to fall back on.
 
 Bots tag each other only where you are not looking, the way real tags happen in corridors, and
-what you learn about it is what the campus would tell you ("Nina is out") rather than what the
+what you learn about it is what the place would tell you ("Nina is out") rather than what the
 chain would ("someone was tagged"). The rumour mill runs both ways: every so often you hear where
 your target was last seen, and your hunter hears where you were.
 
+Being caught takes a second and a half of somebody standing at your shoulder, and for most of
+that the screen used to say nothing, so you were taken off the board by a sprite you never saw
+arrive. The simulation now raises a warning as soon as somebody has been there for one step: the
+screen goes red at the edges and there is a footfall in the speaker. That event carries nothing
+but itself, with no hunter field on it, because the one thing a player must never learn is who is
+hunting them and a field that exists is a field something eventually renders.
+
 ### The grounds close
 
-A campus this size hides eight people for a very long time, and a game that ends on a timer is
-not a game. `ring.ts` is a pure function of the tick: three quarters of a minute in, the open
-ground starts shrinking towards the quad, and two and a quarter minutes later that is all there
-is. It is drawn as a lit line with the dark closing in behind it, on the campus and on the little
-map.
+A map this size hides eight people for a very long time, and a game that ends on a timer is not a
+game. `ring.ts` is a pure function of the tick: three quarters of a minute in, the open ground
+starts shrinking towards the middle, and two and a quarter minutes later a courtyard is all there
+is. It is drawn as a lit line with the dark closing in behind it, on the map and on the little
+one in the corner.
 
 Nobody is walled in. Standing outside costs you instead: the crowd has drifted inside without
 you, so there is nobody left out there to be lost among, and every few seconds your hunter is

@@ -438,6 +438,27 @@ export const useHunt = (): Hunt => {
     return () => window.clearInterval(id);
   }, [view.phase, tick]);
 
+  /**
+   * Somebody pastes a link to a game into a tab that is already playing one. The address bar
+   * changes and nothing else does, which looks like a broken link. This starts the game in the
+   * link instead. Our own address bar updates go through replaceState, which raises no event, so
+   * the only thing that reaches this is a person navigating.
+   */
+  useEffect(() => {
+    const followTheLink = () => {
+      if (!window.location.hash.startsWith("#/hunt")) {
+        return;
+      }
+      const wanted = `${seedFromHash()}:${sizeFromHash()}:${placeFromHash().key}`;
+      const here = `${seedRef.current}:${sizeRef.current}:${placeRef.current.key}`;
+      if (wanted !== here) {
+        window.location.reload();
+      }
+    };
+    window.addEventListener("hashchange", followTheLink);
+    return () => window.removeEventListener("hashchange", followTheLink);
+  }, [seedRef, sizeRef, placeRef]);
+
   useEffect(
     () => () => {
       if (wordsTimerRef.current !== null) {

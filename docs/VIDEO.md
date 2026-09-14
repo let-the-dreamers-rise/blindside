@@ -12,22 +12,32 @@ no mockups, no sped-up footage without saying so.
 > standing wins the pot. Two things have always been broken about it: somebody has to hold the
 > money, and somebody has to hold the list.
 
-## 0:12 - 0:45  Play it
+## 0:12 - 0:50  Play it
 
-*Tap "Play the hunt". Start. Open the envelope. Walk. A rumour arrives. Find them. Tag. The
-five words in the bubble. Type them. Cut to the two feeds under the map.*
+*Tap "Play the hunt". Pick four, "quick". Start. Open the envelope. Walk. A rumour arrives. Find
+them. Tag. The five words in the bubble. Type them.*
 
-> This is the game, on a campus at night. Eight players. One of them is hunting me and I do not
-> know which. I am hunting Riya. I do not know where she is either, but the campus talks: she
-> was last seen near the Gym.
+> This is the game, on a campus at night. Four of us, because that fits in a minute; eight is the
+> usual and twelve is a scramble. One of them is hunting me and I do not know which. I am hunting
+> Riya. I do not know where they are either, but the campus talks: they were last seen near the
+> Gym.
 >
-> There. Tag. She stops, she says five words, once, and I type what I heard. Now the two feeds.
-> The left one is what the campus knows: Riya is out, Zoe went into the Hall. The right one is
-> everything the chain learned from the same tag: two spent notes and one new one. Not my name,
-> not hers, not the link between us.
+> Buildings block sight, so they can put one between us. Standing in a crowd of strangers hides
+> me. Running is fast and loud, and whoever is hunting me can hear it.
+>
+> There. Tag. They stop, they say five words, once, and I type what I heard.
 
-*Pause on the chain panel for a beat. Cut to the win, then claim the pot.*
+*Press "The chain". Hold on it.*
 
+> Same moment, read off the public record instead. One player is out, and the record says one is
+> out. Which one, who put them out, and who is hunting whom are not on this screen, because they
+> are not on the chain. That list of players never changes, whatever happens to the people.
+
+*Back to the map. Let the grounds close for a beat, then cut to the win and claim the pot.*
+
+> Three quarters of a minute in, the grounds start closing and everybody is drawn towards the
+> middle, so it ends in a confrontation rather than on a clock.
+>
 > Every tag in that game ran the real compiled contract, in this tab. Last one standing proves
 > it and the contract pays out. Nobody handed me anything.
 
@@ -83,5 +93,7 @@ five words in the bubble. Type them. Cut to the two feeds under the map.*
 - Phone viewport throughout for the app, a real phone if possible.
 - Do not speed anything up silently. If a proof takes thirty seconds, either show it or say the
   footage is cut.
-- The chain panel is the star. Give it a full beat after the first tag.
+- The chain view is the star. Give it a full beat after the first tag.
 - No gun imagery, no crosshairs, no red spatter. The word is "tag".
+- `pnpm --filter @blindside/app shots` writes the same frames to `docs/shots`, desktop and phone,
+  by playing the game rather than mocking it up. Use them for thumbnails and the deck.

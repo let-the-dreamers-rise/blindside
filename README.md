@@ -2,6 +2,8 @@
 
 **Everyone has a target. Nobody knows who has them.**
 
+![A campus at night with eight players on it, the grounds closing to a lit ring around the fountain](docs/shots/desktop/06-the-grounds-close.png)
+
 Blindside is a hidden-target tag game on [Midnight](https://midnight.network). You are secretly
 assigned one other player to tag. When you get them, they say **five words** out loud; those words
 are the only key that opens their half of the game, a zero-knowledge proof settles the tag on chain
@@ -88,14 +90,16 @@ nobody left out there to hide behind, and your hunter is told where you are ever
 The last minute is everybody in one courtyard, which is where it should end.
 
 Every join, tag, refusal, payout and refund in it runs the **real compiled contract in your
-browser tab**. The campus, the rumours and the other seven players are a game about the real one.
+browser tab**. The place, the rumours and everybody else on it are a game about the real one.
 
-Press **The chain** at any point and the campus is replaced, in place, by everything an observer
-holding the whole ledger can read at that moment: the pot, the notes, the spent ones, and eight
-pseudonyms that never change however many people are out. The counts move while you watch; the
-list of people does not. That contrast, in one button, is the product.
+Press **The chain** at any point and the map is replaced, in place, by everything an observer
+holding the whole ledger can read at that moment. The counts move while you watch. The list of
+people does not, because that list is the whole of what the chain knows about people. That
+contrast, in one button, is the product.
 
-Two feeds sit under the map as well. *What you saw* is the campus: who went into the Library, who
+![The same moment read off the public record: counts, retired notes and eight pseudonyms, and no names anywhere](docs/shots/desktop/04-the-chain.png)
+
+Two feeds sit under the map as well. *What you saw* is the place: who went into the Library, who
 is out, where your target was last seen. *What the chain sees* is two spent notes and one new
 one. The same tag, side by side.
 
@@ -187,7 +191,7 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Crypto and game core tests | 64 passing, 97% statement coverage |
 | The hunt's simulation | 98 unit tests: grid, both maps, sight and what blocks it, bots, catching, crowds, running, rumours, the closing grounds |
 | Does a hunt resolve | Measured, not assumed: whole games played out against the compiled contract at every size, all coming down to one player |
-| Browser tests | 25 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, and a player's phone |
+| Browser tests | 26 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, a shared link and a player's phone |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |

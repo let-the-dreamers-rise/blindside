@@ -167,6 +167,20 @@ test("a game is a link: the seed and the size go in the address bar", async ({ p
   await expect(page).toHaveURL(/#\/hunt\?seed=\d+&players=8/);
 });
 
+test("a link to a game opens that game, even mid-hunt", async ({ page }) => {
+  await openHunt(page, 21);
+  await page.getByRole("button", { name: "Practice first" }).click();
+  await expect(page.getByRole("button", { name: "Open the envelope" })).toBeVisible();
+
+  await page.evaluate(() => {
+    window.location.hash = "#/hunt?seed=22&players=4&place=park";
+  });
+
+  await expect(page.getByRole("heading", { name: "One of them is hunting you." })).toBeVisible();
+  await page.getByRole("button", { name: "Practice first" }).click();
+  await expect(page).toHaveURL(/seed=22&players=4&place=park/);
+});
+
 test("the other place is a different map with its own buildings", async ({ page }) => {
   await openHunt(page, 19);
   await page.getByRole("group", { name: "Where you are playing" }).getByText("The park").click();
