@@ -19,6 +19,7 @@ import {
   same,
   walkableAt,
 } from "./grid.ts";
+import { type Ring, closing, insideRing, outsideRing, ringAt } from "./ring.ts";
 import { type Rng, nextRandom, pick, seedRng } from "./rng.ts";
 import { canSee } from "./sight.ts";
 
@@ -48,10 +49,18 @@ export const CATCH_TICKS = 5;
 export const GRACE_TICKS = 200;
 export const FIRST_BOT_TAG_AFTER = 200;
 export const BOT_TAG_COOLDOWN = 110;
+/**
+ * Once the grounds are shut the game is in the open: the last tags happen in front of you, and
+ * they come fast. Without this the endgame deadlocks, because a quad everybody has been herded
+ * into is a quad where you can see everybody, and a tag you can see is a tag that never happens.
+ */
+export const SHUT_TAG_COOLDOWN = 45;
 /** Every twenty-four seconds or so, your hunter hears roughly where you are. */
 export const TIP_EVERY = 160;
 /** A bot that reaches its target and cannot tag it walks away and forgets for this long. */
 export const GIVE_UP_TICKS = 70;
+/** Standing outside the grounds while they close tells your hunter where you are this often. */
+export const EXPOSED_EVERY = 20;
 
 const IDLE_MIN = 6;
 const IDLE_SPREAD = 20;
@@ -85,6 +94,10 @@ export type Sim = {
   readonly lastBotTag: number;
   readonly follow: number | null;
   readonly heard: number;
+  /** The ground still open. Derived from the tick and kept here so every part of a step sees it. */
+  readonly ring: Ring | null;
+  /** The last tick the closing grounds gave you away. */
+  readonly lit: number;
 };
 
 /** What the contract says is true. The simulation never decides this itself. */
@@ -110,6 +123,7 @@ export type SimEvent =
   | { readonly type: "caught"; readonly hunter: number }
   | { readonly type: "tip"; readonly hunter: number }
   | { readonly type: "heard"; readonly hunter: number }
+  | { readonly type: "exposed"; readonly hunter: number }
   | { readonly type: "step"; readonly sprinting: boolean };
 
 export type Stepped = { readonly sim: Sim; readonly events: readonly SimEvent[] };
@@ -152,6 +166,8 @@ export const newSim = (world: World, seed: number, count: number, extraCount = E
     lastBotTag: 0,
     follow: null,
     heard: 0,
+    ring: null,
+    lit: 0,
   };
 };
 
@@ -307,23 +323,33 @@ const perceive = (sim: Sim, world: World, actor: Actor, prey: Actor | null): Act
   return covered ? actor : { ...actor, lastSeen: prey.at, seenAt: sim.tick };
 };
 
-const pickGoal = (world: World, rng: Rng): readonly [Point, Rng] => {
+/** Somewhere to go that is still open. Once the grounds close, nobody strolls off the edge. */
+const pickGoal = (world: World, rng: Rng, ring: Ring | null): readonly [Point, Rng] => {
   const [roll, afterRoll] = nextRandom(rng);
-  const [room, afterRoom] = pick(afterRoll, world.rooms);
+  const doors = world.rooms.filter((room) => !outsideRing(ring, room.door));
+  const [room, afterRoom] = pick(afterRoll, doors);
   if (roll < INDOORS_CHANCE && room !== undefined) {
     const [tile, afterTile] = pick(afterRoom, room.floor);
     return [tile ?? room.door, afterTile];
   }
-  const [tile, afterTile] = pick(afterRoom, world.open);
+  const [tile, afterTile] = pick(afterRoom, insideRing(ring, world.open));
   return [tile ?? { x: 0, y: 0 }, afterTile];
 };
 
-const wander = (acc: Stepped, world: World, actor: Actor, occupied: ReadonlySet<string>): Stepped => {
+/** Walking to somewhere that has since closed. Whoever it is needs a new destination. */
+const stranded = (ring: Ring | null, actor: Actor): boolean => {
+  const goal = actor.path[actor.path.length - 1];
+  return goal !== undefined && outsideRing(ring, goal);
+};
+
+const wander = (acc: Stepped, world: World, walker: Actor, occupied: ReadonlySet<string>): Stepped => {
+  // Nobody strolls off the closing grounds. The crowd is drawn in along with everybody else.
+  const actor = stranded(acc.sim.ring, walker) ? { ...walker, path: [], idle: 0 } : walker;
   if (actor.idle > 0) {
     return done(acc, { ...actor, idle: actor.idle - 1 }, []);
   }
   if (actor.path.length === 0) {
-    const [goal, rng] = pickGoal(world, acc.sim.rng);
+    const [goal, rng] = pickGoal(world, acc.sim.rng, acc.sim.ring);
     const path = findPath(world, actor.at, goal, occupied) ?? [];
     const planned = { ...actor, path, idle: path.length === 0 ? 4 : 0 };
     return done({ ...acc, sim: { ...acc.sim, rng } }, planned, []);
@@ -360,10 +386,12 @@ const chase = (
 
 /** Tags between bots happen where you are not looking, the way real ones happen in corridors. */
 const botMayTag = (sim: Sim, world: World, facts: Facts, hunter: Actor, prey: Actor): boolean => {
-  if (sim.tick < FIRST_BOT_TAG_AFTER || sim.tick - sim.lastBotTag < BOT_TAG_COOLDOWN) {
+  const shut = closing(sim.tick) === 1;
+  const wait = shut ? SHUT_TAG_COOLDOWN : BOT_TAG_COOLDOWN;
+  if (sim.tick < FIRST_BOT_TAG_AFTER || sim.tick - sim.lastBotTag < wait) {
     return false;
   }
-  if (facts.youOut) {
+  if (shut || facts.youOut) {
     return true;
   }
   const you = sim.actors[YOU];
@@ -456,6 +484,32 @@ const stepExtras = (sim: Sim, world: World): Sim => {
   }, sim);
 };
 
+/**
+ * The closing grounds. Standing outside them is not fatal, it is bright: every so often your
+ * hunter is told exactly where you are, and the crowd you could have been lost in has moved on
+ * without you.
+ */
+const exposure = (acc: Stepped, facts: Facts): Stepped => {
+  const { sim } = acc;
+  const you = sim.actors[YOU];
+  const hunter = yourHunter(facts);
+  const actor = hunter === null ? undefined : sim.actors[hunter];
+  if (facts.practice || facts.youOut || you === undefined || actor === undefined) {
+    return acc;
+  }
+  if (sim.tick < GRACE_TICKS || sim.tick - sim.lit < EXPOSED_EVERY) {
+    return acc;
+  }
+  if (!outsideRing(sim.ring, you.at)) {
+    return acc;
+  }
+  const told = { ...actor, lastSeen: you.at, seenAt: sim.tick };
+  return {
+    sim: { ...sim, lit: sim.tick, actors: replace(sim.actors, told) },
+    events: [...acc.events, { type: "exposed", hunter: actor.index }],
+  };
+};
+
 /** Sprinting carries. Your hunter does not see you, but it knows which way to walk. */
 const noise = (acc: Stepped, world: World, facts: Facts, sprinted: boolean): Stepped => {
   const you = acc.sim.actors[YOU];
@@ -475,7 +529,8 @@ const noise = (acc: Stepped, world: World, facts: Facts, sprinted: boolean): Ste
 };
 
 export const step = (sim: Sim, world: World, facts: Facts, input: Input): Stepped => {
-  const ticked = { ...sim, tick: sim.tick + 1 };
+  const tick = sim.tick + 1;
+  const ticked = { ...sim, tick, ring: ringAt(world, tick) };
   const you = stepYou(ticked, world, facts, input);
   const start: Stepped = {
     sim: stepExtras(you.sim, world),
@@ -485,7 +540,7 @@ export const step = (sim: Sim, world: World, facts: Facts, input: Input): Steppe
   const bots = heard.sim.actors
     .slice(1)
     .reduce((acc, actor) => stepBot(acc, actor.index, world, facts), heard);
-  return tipOff(bots, facts);
+  return exposure(tipOff(bots, facts), facts);
 };
 
 /** Who your character can currently see. Everyone, once you are out or practising. */

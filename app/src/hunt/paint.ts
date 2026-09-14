@@ -16,6 +16,7 @@ import {
 import { type Room, type Tile, type World, tileAt } from "./campus.ts";
 import { type Point, indexOf, pointAt } from "./grid.ts";
 import { drawArt } from "./pixels.ts";
+import type { Ring } from "./ring.ts";
 
 const onGrass = (tile: Tile): tile is "grass" | "tree" | "bench" =>
   tile === "grass" || tile === "tree" || tile === "bench";
@@ -129,12 +130,14 @@ export const paintPoster = (
 
 const MINI = 4;
 
+
 /** The whole campus at four pixels a tile, with you on it and nobody else. */
 export const paintMinimap = (
   canvas: HTMLCanvasElement,
   world: World,
   you: Point | null,
   rumour: Point | null = null,
+  ring: Ring | null = null,
 ): void => {
   const ctx = canvas.getContext("2d");
   if (ctx === null) {
@@ -148,6 +151,22 @@ export const paintMinimap = (
       tile === "water" ? "#2c5f86" : tile === "wall" || tile === "door" ? "#6b5a48" : tile === "floor" ? "#3d3126" : (world.walkable[indexOf(world, at)] ?? false) ? "#2a2e26" : "#141812";
     ctx.fillRect(at.x * MINI, at.y * MINI, MINI, MINI);
   });
+  if (ring !== null) {
+    const box = {
+      x: ring.x0 * MINI,
+      y: ring.y0 * MINI,
+      w: (ring.x1 - ring.x0 + 1) * MINI,
+      h: (ring.y1 - ring.y0 + 1) * MINI,
+    };
+    ctx.fillStyle = "rgba(11, 8, 6, 0.62)";
+    ctx.fillRect(0, 0, canvas.width, box.y);
+    ctx.fillRect(0, box.y + box.h, canvas.width, canvas.height - box.y - box.h);
+    ctx.fillRect(0, box.y, box.x, box.h);
+    ctx.fillRect(box.x + box.w, box.y, canvas.width - box.x - box.w, box.h);
+    ctx.strokeStyle = "rgba(194, 57, 47, 0.7)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
+  }
   if (rumour !== null) {
     ctx.strokeStyle = "rgba(232, 193, 112, 0.85)";
     ctx.lineWidth = 1.5;

@@ -213,6 +213,18 @@ export const HuntStage = ({ hunt, children }: Props) => {
         {world.rooms.map((room, index) => (
           <Roof key={room.name} room={room} hidden={roofsOff || inside === index} />
         ))}
+        {sim.ring === null ? null : (
+          <div
+            className="grounds"
+            aria-hidden="true"
+            style={{
+              left: sim.ring.x0 * TILE,
+              top: sim.ring.y0 * TILE,
+              width: (sim.ring.x1 - sim.ring.x0 + 1) * TILE,
+              height: (sim.ring.y1 - sim.ring.y0 + 1) * TILE,
+            }}
+          />
+        )}
         {sim.extras.map((extra) => (
           <Stranger key={extra.index} actor={extra} />
         ))}

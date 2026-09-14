@@ -74,7 +74,9 @@ export const Hunt = () => {
   const you = hunt.sim.actors[YOU];
 
   return (
-    <main className={hunt.phase === "intro" ? "hunt" : "hunt playing"}>
+    <main
+      className={`hunt${hunt.phase === "intro" ? "" : " playing"}${hunt.exposed ? " exposed" : ""}`}
+    >
       {/* Once the game is running a phone needs its screen for the campus and the pad. */}
       <header className="hunt-head">
         <a href="#/" className="mono" style={{ color: "var(--paper-dim)" }}>
@@ -98,7 +100,12 @@ export const Hunt = () => {
         <section className="card">
           <h2>What you saw</h2>
           <div className="saw">
-            <Minimap world={hunt.world} you={you?.at ?? null} rumour={hunt.rumourAt} />
+            <Minimap
+              world={hunt.world}
+              you={you?.at ?? null}
+              rumour={hunt.rumourAt}
+              ring={hunt.sim.ring}
+            />
             <ul className="feed" aria-label="What you saw">
               {hunt.worldFeed.map((entry) => (
                 <li key={entry.id}>{entry.text}</li>

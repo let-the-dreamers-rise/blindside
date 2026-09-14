@@ -3,9 +3,11 @@ import { CAMPUS, roomOf } from "./campus.ts";
 import { type Point, adjacent, keyOf, walkableAt } from "./grid.ts";
 import { SIGHT } from "./sight.ts";
 import { ASKING_ABOUT_YOU, rumourAbout, sightings } from "./rumours.ts";
+import { CLOSE_AT, CLOSE_OVER, outsideRing, ringAt } from "./ring.ts";
 import {
   BOT_TAG_COOLDOWN,
   CATCH_TICKS,
+  EXPOSED_EVERY,
   EXTRAS,
   FIRST_BOT_TAG_AFTER,
   GRACE_TICKS,
@@ -302,5 +304,71 @@ describe("what you can see", () => {
 
   it("phrases a rumour by the nearest landmark", () => {
     expect(rumourAbout(CAMPUS, "Riya", { x: 33, y: 7 })).toBe("Riya was last seen near the Gym.");
+  });
+});
+
+describe("the closing grounds", () => {
+  const SHUT = CLOSE_AT + CLOSE_OVER;
+  /** Nobody hunting anybody, so the only thing moving people is where they are allowed to be. */
+  const STROLLING: Facts = { ...CYCLE, targets: NAMES.map(() => null) };
+  const OUT_THERE: Point = { x: 1, y: 8 };
+  const IN_HERE: Point = { x: 19, y: 13 };
+
+  it("leaves the whole campus open until its hour", () => {
+    expect(run(newSim(CAMPUS, 3, 8, EXTRAS), CYCLE, 2).sim.ring).toBeNull();
+  });
+
+  it("draws the crowd in rather than sending it home", () => {
+    const shutting = { ...newSim(CAMPUS, 3, 8, EXTRAS), tick: SHUT };
+    const after = run(shutting, STROLLING, 400).sim;
+    expect(after.extras).toHaveLength(EXTRAS);
+    expect(after.extras.filter((extra) => outsideRing(after.ring, extra.at))).toEqual([]);
+  });
+
+  it("gives anybody walking to a closed place somewhere else to be", () => {
+    const shutting = { ...newSim(CAMPUS, 3, 8, EXTRAS), tick: SHUT };
+    const goals = run(shutting, STROLLING, 40).sim.extras
+      .filter((extra) => extra.path.length > 0)
+      .map((extra) => extra.path[extra.path.length - 1] ?? OUT_THERE);
+    expect(goals.length).toBeGreaterThan(0);
+    expect(goals.filter((goal) => outsideRing(ringAt(CAMPUS, SHUT), goal))).toEqual([]);
+  });
+
+  it("tells your hunter where you are while you stand outside it", () => {
+    const start = withActorAt({ ...alone(4), tick: SHUT }, YOU, OUT_THERE);
+    const after = run(start, CYCLE, EXPOSED_EVERY + 2);
+    expect(after.events.some((event) => event.type === "exposed")).toBe(true);
+    expect(after.sim.actors[yourHunter(CYCLE) ?? -1]?.lastSeen).not.toBeNull();
+  });
+
+  it("says nothing about you while you stay inside it", () => {
+    const start = withActorAt({ ...alone(4), tick: SHUT }, YOU, IN_HERE);
+    const after = run(start, CYCLE, EXPOSED_EVERY + 2);
+    expect(after.events.some((event) => event.type === "exposed")).toBe(false);
+  });
+
+  it("never gives you away in practice", () => {
+    const start = withActorAt({ ...alone(4), tick: SHUT }, YOU, OUT_THERE);
+    const after = run(start, PRACTICE, EXPOSED_EVERY + 2);
+    expect(after.events.some((event) => event.type === "exposed")).toBe(false);
+  });
+
+  it("only ever sends the other players somewhere still open", () => {
+    // Every destination anybody is given while the grounds are shut, not just where they end up.
+    const walked = Array.from({ length: 200 }).reduce<{
+      readonly sim: Sim;
+      readonly goals: readonly Point[];
+    }>(
+      (acc) => {
+        const sim = step(acc.sim, CAMPUS, STROLLING, NO_INPUT).sim;
+        const goals = sim.actors
+          .filter((actor) => actor.index !== YOU && actor.path.length > 0)
+          .map((actor) => actor.path[actor.path.length - 1] ?? OUT_THERE);
+        return { sim, goals: [...acc.goals, ...goals] };
+      },
+      { sim: { ...alone(9), tick: SHUT }, goals: [] },
+    );
+    expect(walked.goals.length).toBeGreaterThan(0);
+    expect(walked.goals.filter((goal) => outsideRing(walked.sim.ring, goal))).toEqual([]);
   });
 });

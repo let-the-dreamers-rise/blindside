@@ -8,6 +8,7 @@ import { createSpeaker } from "./audio.ts";
 import { CAMPUS, type World } from "./campus.ts";
 import { type Dir, type Point, adjacent, chebyshev } from "./grid.ts";
 
+import { outsideRing } from "./ring.ts";
 import { ASKING_ABOUT_YOU, RUMOUR_EVERY, rumourAbout, sightings } from "./rumours.ts";
 import {
   type Facts,
@@ -70,6 +71,8 @@ export type HuntView = {
   readonly jolt: number;
   /** Where the last rumour put your target. The only place the little map ever points. */
   readonly rumourAt: Point | null;
+  /** You are standing off the closing grounds, where there is nobody left to hide among. */
+  readonly exposed: boolean;
 };
 
 export type Hunt = HuntView & {
@@ -110,6 +113,7 @@ type Change = {
   readonly ending: Ending;
   readonly secondsLeft: number;
   readonly rumourAt: Point | null;
+  readonly exposed: boolean;
 };
 
 const factsOf = (engine: SandboxRunner, practice: boolean): Facts => {
@@ -220,12 +224,24 @@ const advanceView = (prev: HuntView, change: Change): HuntView => {
     snapshot: change.snapshot,
     secondsLeft: change.secondsLeft,
     rumourAt: change.rumourAt ?? prev.rumourAt,
+    exposed: change.exposed,
     worldFeed: prepend(prev.worldFeed, change.notes),
     caughtBy: caught ? change.caughtBy : prev.caughtBy,
     winner: change.ending?.winner ?? prev.winner,
     bubbles:
       caught && change.caughtBy !== null ? withBubble(prev.bubbles, change.caughtBy, "Got you.") : prev.bubbles,
   };
+};
+
+const CLOSING_NOTE =
+  "The grounds are closing. Everybody is drifting in towards the quad, and there will be less and less campus to lose yourself in.";
+const OFF_THE_GROUNDS =
+  "You are off the grounds. The crowd has moved on without you, and out here your hunter is being told where you are.";
+
+/** Standing on ground that has closed, with a game running that can punish you for it. */
+const standingOut = (sim: Sim, facts: Facts): boolean => {
+  const you = sim.actors[YOU];
+  return you !== undefined && !facts.practice && !facts.youOut && outsideRing(sim.ring, you.at);
 };
 
 const useLazyRef = <T,>(init: () => T): { current: T } => {
@@ -248,6 +264,7 @@ export const useHunt = (): Hunt => {
   const pendingRef = useRef<{ tapped: Point | null; follow: number | null }>({ tapped: null, follow: null });
   const practiceRef = useRef(false);
   const envelopeRef = useRef(false);
+  const litRef = useRef(false);
   const nextIdRef = useRef(1);
   const wordsTimerRef = useRef<number | null>(null);
 
@@ -268,6 +285,7 @@ export const useHunt = (): Hunt => {
     secondsLeft: GAME_SECONDS,
     jolt: 0,
     rumourAt: null,
+    exposed: false,
   }));
 
   const entries = useCallback((texts: readonly string[]): readonly FeedEntry[] =>
@@ -292,17 +310,33 @@ export const useHunt = (): Hunt => {
     const seen = sightings(CAMPUS, before, sim, facts, HUNT_CAST);
     const settled = settle(engine, events);
     const rumour = rumourNow(sim, facts, envelopeRef.current);
+    // Said once when it begins and once each time you walk off it, not every time it bites.
+    const lit = standingOut(sim, facts);
+    const stepped = lit && !litRef.current;
+    litRef.current = lit;
+    const shutting = before.ring === null && sim.ring !== null;
     const secondsLeft = Math.max(0, GAME_SECONDS - Math.floor((sim.tick * TICK_MS) / 1000));
     const ending = endingOf(engine, secondsLeft);
     if (settled.caughtBy !== null) {
       speaker.play("caught");
-    } else if (rumour !== null || events.some((event) => event.type === "tip" || event.type === "heard")) {
+    } else if (
+      rumour !== null ||
+      events.some(
+        (event) => event.type === "tip" || event.type === "heard" || event.type === "exposed",
+      )
+    ) {
       speaker.play("rumour");
     }
     if (ending?.phase === "over" || ending?.phase === "draw") {
       speaker.play("win");
     }
-    const notes = entries([...seen, ...settled.notes, ...(rumour === null ? [] : [rumour.text])]);
+    const notes = entries([
+      ...(shutting ? [CLOSING_NOTE] : []),
+      ...(stepped ? [OFF_THE_GROUNDS] : []),
+      ...seen,
+      ...settled.notes,
+      ...(rumour === null ? [] : [rumour.text]),
+    ]);
     setView((prev) =>
       advanceView(prev, {
         sim,
@@ -313,6 +347,7 @@ export const useHunt = (): Hunt => {
         ending,
         secondsLeft,
         rumourAt: rumour?.at ?? null,
+        exposed: lit,
       }),
     );
   }, [engineRef, simRef, speaker, entries]);
@@ -337,6 +372,7 @@ export const useHunt = (): Hunt => {
   const start = useCallback(
     (practice: boolean) => {
       practiceRef.current = practice;
+      litRef.current = false;
       rememberSeed(seedRef.current);
       speaker.play("open");
       const opening = practice

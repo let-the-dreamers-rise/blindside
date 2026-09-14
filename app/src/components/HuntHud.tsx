@@ -139,15 +139,17 @@ export const HuntHud = ({ hunt }: { readonly hunt: Hunt }) => {
       <p className="note hud-hint">
         {hunt.facts.youOut
           ? "You are out. Everyone is visible now."
-          : hunt.hidden
-            ? "You are lost in the crowd. Nobody can pick you out from a distance while you stand here."
-            : hunt.phase === "moment"
-              ? `${target ?? "They"} stopped. Type what you heard, below.`
-              : target === null
-                ? "Arrow keys or the pad to walk, shift to run. Tap somebody to walk up to them. Open your envelope to learn who you are hunting."
-                : hunt.canTag
-                  ? `You are next to ${target}. Tag them, or press Enter.`
-                  : `Find ${target}. Rumours arrive below. Somebody is finding you the same way, and running is loud.`}
+          : hunt.exposed
+            ? "You are off the grounds. The crowd has drifted in without you, so there is nobody out here to stand behind, and your hunter keeps being told where you are."
+            : hunt.hidden
+              ? "You are lost in the crowd. Nobody can pick you out from a distance while you stand here."
+              : hunt.phase === "moment"
+                ? `${target ?? "They"} stopped. Type what you heard, below.`
+                : target === null
+                  ? "Arrow keys or the pad to walk, shift to run. Tap somebody to walk up to them. Open your envelope to learn who you are hunting."
+                  : hunt.canTag
+                    ? `You are next to ${target}. Tag them, or press Enter.`
+                    : `Find ${target}. Rumours arrive below. Somebody is finding you the same way, and running is loud.`}
       </p>
     </div>
   );
