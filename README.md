@@ -74,8 +74,8 @@ self-loop is the proof of victory.
 **The hunt** is a campus at night, drawn in pixels, with four, eight or twelve players on it and
 ten strangers who are not in the game. One of them is hunting you and you do not know which. You
 are hunting one of them: open your envelope, listen to the rumours, get to them before your
-hunter gets to you. Buildings hide whoever is inside. Standing in a crowd hides you. Running is fast and loud,
-and your hunter can hear it. When you have somebody, they stop and say five words, once, and you
+hunter gets to you. Buildings hide whoever is inside, and anybody who puts one between themselves and you.
+Standing in a crowd hides you. Running is fast and loud, and your hunter can hear it. When you have somebody, they stop and say five words, once, and you
 type what you heard.
 
 Three quarters of a minute in, **the grounds start closing**. The open ground shrinks to the quad
