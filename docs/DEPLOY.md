@@ -11,6 +11,11 @@ year of immutability, a second visit starts without touching them again. `vercel
 `netlify.toml` and `app/public/_headers` each carry the same rule, so the headers travel with the
 build instead of living in one host's dashboard.
 
+The size is worth putting next to what a visitor actually pays, because they are not the same
+number. The build is code split, and opening the site and playing a hunt fetches the page, the
+app, the word list and the 1.3 MB on-chain runtime: about 1.8 MB in total. The proving keys and
+the 10 MB ledger wasm are only reached by `#/live`, the console that talks to a real chain.
+
 ## Where it is now
 
 **[playblindside.vercel.app](https://playblindside.vercel.app/)**, on Vercel, deployed from the

@@ -217,11 +217,13 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 
 The app is a static build with a hash router, so it needs no server and no rewrite rules, and
 `base` is `./` so the same build works from a root domain or a subdirectory without being rebuilt.
-It is on Vercel at [playblindside.vercel.app](https://playblindside.vercel.app/), where the two
-proving keys a hunt needs are 19MB each and are served with a year of immutable caching, so a
-second visit starts without fetching them again. [docs/DEPLOY.md](docs/DEPLOY.md) has the steps,
-and `vercel.json`, `netlify.toml` and `app/public/_headers` each carry the same build and cache
-settings, so the build is not tied to one host.
+It is on Vercel at [playblindside.vercel.app](https://playblindside.vercel.app/). The whole build
+is 78MB, but almost none of that is on the way to a game: it is code split, so opening the site
+and playing a hunt transfers about 1.8MB, and the 65MB of proving keys and the 10MB ledger wasm
+are fetched only by the console that talks to a real chain, with a year of immutable caching when
+they are. [docs/DEPLOY.md](docs/DEPLOY.md) has the steps, and `vercel.json`, `netlify.toml` and
+`app/public/_headers` each carry the same build and cache settings, so the build is not tied to
+one host.
 
 ## Building it yourself
 

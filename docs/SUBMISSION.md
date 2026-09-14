@@ -102,6 +102,7 @@ inside the proof.
 | The hunt's simulation | 98, pure and seeded: the same seed is the same game twice, and every structural test runs against both maps |
 | Does the game actually resolve | whole hunts played out with nobody at the keyboard, at every size, every tag through the compiled contract. It is a measurement, not an intention: before the grounds closed it left five to seven players standing at full time |
 | Browser tests | 29, on a phone viewport, including a hunt won to the payout, a hunt lost to your hunter, the chain's view before and after a tag, both maps, a shared link picked up mid-game, and a player's phone reading a real bundle |
+| The demo that is published | the same 29 tests can be pointed at the deployed site instead of a local preview, and all 29 pass against it. A host fails in ways a preview cannot: a file that never got uploaded, a header that came out wrong, a route that needed a rewrite. The link a judge opens is checked the way the code is |
 | Coverage gates | 80 percent, currently 94 percent statements on the engine and 97 on the core |
 | CI | checks that every repository path the docs name still exists, compiles the contract from source rather than trusting the committed circuits, then typechecks, tests, builds and plays the browser game |
 
