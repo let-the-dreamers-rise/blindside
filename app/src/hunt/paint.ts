@@ -1,7 +1,18 @@
 // The ground, painted once, and the little map in the corner, painted whenever you move.
 // SPDX-License-Identifier: Apache-2.0
 
-import { BENCH, GROUND, PIXEL, TILE, TREE, WINDOW, grassVariant } from "./art.ts";
+import {
+  BENCH,
+  GROUND,
+  PERSON,
+  PIXEL,
+  SPRITE_SCALE,
+  TILE,
+  TREE,
+  WINDOW,
+  grassVariant,
+  personPalette,
+} from "./art.ts";
 import { type Room, type Tile, type World, tileAt } from "./campus.ts";
 import { type Point, indexOf, pointAt } from "./grid.ts";
 import { drawArt } from "./pixels.ts";
@@ -82,6 +93,38 @@ export const paintGround = (canvas: HTMLCanvasElement, world: World): void => {
   world.landmarks
     .filter((landmark) => landmark.name === "the fountain")
     .forEach((landmark) => paintGlow(ctx, landmark.at, TILE * 3, 0.12));
+};
+
+/** A still of the campus with a few people standing on it, for a page that is not the game. */
+export const paintPoster = (
+  canvas: HTMLCanvasElement,
+  world: World,
+  people: readonly { readonly at: Point; readonly index: number; readonly facing: 1 | -1 }[],
+): void => {
+  paintGround(canvas, world);
+  const ctx = canvas.getContext("2d");
+  if (ctx === null) {
+    return;
+  }
+  [...people]
+    .sort((a, b) => a.at.y - b.at.y)
+    .forEach((person) => {
+      const art = PERSON[0] ?? [];
+      const width = (art[0]?.length ?? 0) * SPRITE_SCALE;
+      const x = person.at.x * TILE + (TILE - width) / 2;
+      const y = person.at.y * TILE + TILE - art.length * SPRITE_SCALE;
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(x + width / 2, y + art.length * SPRITE_SCALE, 9, 3, 0, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+      ctx.fill();
+      if (person.facing === -1) {
+        ctx.translate(x * 2 + width, 0);
+        ctx.scale(-1, 1);
+      }
+      drawArt(ctx, art, personPalette(person.index, false), x, y, SPRITE_SCALE);
+      ctx.restore();
+    });
 };
 
 const MINI = 4;

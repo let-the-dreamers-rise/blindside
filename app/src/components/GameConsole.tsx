@@ -5,7 +5,8 @@
 import { useCallback, useState } from "react";
 import type { BlindsideProviders, WalletContext } from "@blindside/chain";
 import { explain } from "@blindside/core";
-import { LiveGame, type Ledger } from "../live/game.ts";
+import { LiveGame, type Ledger, type Stage } from "../live/game.ts";
+import { type Step, Working } from "./Working.tsx";
 import { TypeTheirWords } from "./WordCode.tsx";
 
 const DEFAULT_FEE = "1000000";
@@ -19,27 +20,41 @@ type Props = {
 
 const MAX_RAW = 300;
 
+/** 3000000 is hard to read and easy to misread. 3 000 000 is neither. */
+const grouped = (value: bigint | number): string =>
+  value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+
 /**
  * A contract assertion has a player-facing translation. Anything else is a real failure of the
  * chain, the prover or the network, and the person running a game is better served by what it
- * actually said than by a reassuring sentence that tells them nothing.
+ * actually said than by a reassuring sentence that tells them nothing. A proof that never got
+ * built never reached the chain either, so nothing was spent and nothing moved: say that too.
  */
+const RETRY = /proof server|failed to prove|proving|submitting scoped transaction/i;
+
 const say = (error: unknown): string => {
   const explained = explain(error);
   if (explained.title !== "That did not go through") {
     return `${explained.title}. ${explained.action}`;
   }
   const raw = error instanceof Error ? error.message : String(error ?? "");
-  return raw.length === 0
-    ? `${explained.title}. ${explained.action}`
-    : raw.slice(0, MAX_RAW);
+  if (raw.length === 0) {
+    return `${explained.title}. ${explained.action}`;
+  }
+  const advice = RETRY.test(raw)
+    ? "Press it again: the proof never reached the chain, so nothing was spent and nothing changed. If it keeps happening, check the proof server is up. "
+    : "";
+  return `${advice}${raw.slice(0, MAX_RAW)}`;
 };
 
 export const GameConsole = ({ providers, wallet }: Props) => {
   const [game, setGame] = useState<LiveGame | null>(null);
   const [state, setState] = useState<Ledger | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [steps, setSteps] = useState<readonly Step[]>([]);
+  const [startedAt, setStartedAt] = useState(0);
   const [problem, setProblem] = useState<string | null>(null);
+  const [tagProblem, setTagProblem] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [fee, setFee] = useState(DEFAULT_FEE);
   const [minutes, setMinutes] = useState(DEFAULT_MINUTES);
@@ -48,19 +63,31 @@ export const GameConsole = ({ providers, wallet }: Props) => {
   const [, setTick] = useState(0);
 
   const run = useCallback(
-    async (label: string, action: () => Promise<string | null>) => {
+    async (
+      label: string,
+      action: (report: Stage) => Promise<string | null>,
+      onProblem: (message: string) => void = setProblem,
+    ) => {
       setBusy(label);
       setProblem(null);
+      setTagProblem(null);
+      setSteps([]);
+      setStartedAt(Date.now());
+      const report: Stage = (what) =>
+        setSteps((previous) =>
+          previous.at(-1)?.what === what ? previous : [...previous, { what, at: Date.now() }],
+        );
       try {
-        const said = await action();
+        const said = await action(report);
         setNote(said);
       } catch (error) {
         // Kept in the console as well: a failure here is the chain, the prover or the network,
         // and whoever is running the game may need the whole of it to work out which.
         console.error(`${label} failed`, error);
-        setProblem(say(error));
+        onProblem(say(error));
       } finally {
         setBusy(null);
+        setSteps([]);
         setTick((value) => value + 1);
       }
     },
@@ -76,11 +103,13 @@ export const GameConsole = ({ providers, wallet }: Props) => {
 
   const onCreate = useCallback(
     () =>
-      void run("Deploying the game", async () => {
-        const created = await LiveGame.create(providers, wallet, {
-          entryFee: BigInt(fee || "0"),
-          minutes: Number(minutes) || 60,
-        });
+      void run("Deploying the game", async (report) => {
+        const created = await LiveGame.create(
+          providers,
+          wallet,
+          { entryFee: BigInt(fee || "0"), minutes: Number(minutes) || 60 },
+          report,
+        );
         setGame(created);
         await refresh(created);
         return `Deployed at ${created.address}`;
@@ -94,8 +123,8 @@ export const GameConsole = ({ providers, wallet }: Props) => {
     }
     const joining = name.trim();
     setName("");
-    void run(`Adding ${joining}`, async () => {
-      await game.join(joining);
+    void run(`Adding ${joining}`, async (report) => {
+      await game.join(joining, report);
       await refresh(game);
       return `${joining} is in. Their entry fee is in the contract.`;
     });
@@ -105,8 +134,8 @@ export const GameConsole = ({ providers, wallet }: Props) => {
     if (game === null) {
       return;
     }
-    void run("Starting the game", async () => {
-      await game.start();
+    void run("Starting the game", async (report) => {
+      await game.start(report);
       await refresh(game);
       return "Started. Send everybody the bundle below.";
     });
@@ -117,11 +146,15 @@ export const GameConsole = ({ providers, wallet }: Props) => {
       if (game === null) {
         return;
       }
-      void run("Settling the tag", async () => {
-        const gone = await game.tagFromWords(spoken);
-        await refresh(game);
-        return `${gone} is out.`;
-      });
+      void run(
+        "Settling the tag",
+        async (report) => {
+          const gone = await game.tagFromWords(spoken, report);
+          await refresh(game);
+          return `${gone} is out.`;
+        },
+        setTagProblem,
+      );
     },
     [game, refresh, run],
   );
@@ -130,8 +163,8 @@ export const GameConsole = ({ providers, wallet }: Props) => {
     if (game === null) {
       return;
     }
-    void run("Paying out", async () => {
-      const winner = await game.claim();
+    void run("Paying out", async (report) => {
+      const winner = await game.claim(report);
       await refresh(game);
       return `${winner} won. The contract paid out.`;
     });
@@ -183,9 +216,15 @@ export const GameConsole = ({ providers, wallet }: Props) => {
             onChange={(event) => setMinutes(event.target.value.replace(/\D/g, ""))}
           />
 
+          <p className="note" style={{ marginTop: 16 }}>
+            {fee === "" ? "No entry fee" : `${grouped(BigInt(fee))} from each player`}, so a game of
+            four is a pot of {grouped(BigInt(fee || "0") * 4n)}.
+          </p>
+
           <button disabled={busy !== null} onClick={onCreate} style={{ marginTop: 18 }}>
             {busy ?? "Deploy the game"}
           </button>
+          {busy === null ? null : <Working label={busy} steps={steps} startedAt={startedAt} />}
         </section>
       ) : (
         <>
@@ -212,7 +251,7 @@ export const GameConsole = ({ providers, wallet }: Props) => {
                 tags
               </div>
               <div>
-                <strong>{state === null ? "..." : state.pot.toString()}</strong>
+                <strong>{state === null ? "..." : grouped(state.pot)}</strong>
                 in the pot
               </div>
             </div>
@@ -220,6 +259,8 @@ export const GameConsole = ({ providers, wallet }: Props) => {
             <p style={{ marginTop: 18 }}>
               <a href={`#/watch/${game.address}`}>Open the board for this game</a>
             </p>
+
+            {busy === null ? null : <Working label={busy} steps={steps} startedAt={startedAt} />}
           </section>
 
           {phase === 0 ? (
@@ -290,7 +331,7 @@ export const GameConsole = ({ providers, wallet }: Props) => {
                   <TypeTheirWords
                     label="Settle it on chain"
                     busy={busy}
-                    problem={null}
+                    problem={tagProblem}
                     onSubmit={onTag}
                   />
                 </div>

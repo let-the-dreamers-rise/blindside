@@ -96,6 +96,7 @@ export type Hunt = HuntView & {
   readonly claim: () => void;
   readonly toggleMute: () => void;
   readonly playAgain: () => void;
+  readonly shareLink: () => string;
 };
 
 type Ending = { readonly phase: "won" | "over" | "draw"; readonly winner: number | null } | null;
@@ -119,6 +120,17 @@ const factsOf = (engine: SandboxRunner, practice: boolean): Facts => {
 const seedFromHash = (): number => {
   const match = /seed=(\d+)/.exec(window.location.hash);
   return match?.[1] === undefined ? Date.now() % 2_147_483_647 : Number(match[1]);
+};
+
+/**
+ * A seeded game is the same game twice, so the seed belongs in the address bar: what somebody
+ * shares is the night they played, not a new one that happens to look like it.
+ */
+const rememberSeed = (seed: number): void => {
+  const wanted = `#/hunt?seed=${seed}`;
+  if (window.location.hash !== wanted) {
+    window.history.replaceState(null, "", wanted);
+  }
 };
 
 const prepend = (feed: readonly FeedEntry[], entries: readonly FeedEntry[]): readonly FeedEntry[] =>
@@ -228,7 +240,8 @@ const delay = (ms: number): Promise<void> => new Promise((resolve) => window.set
 
 export const useHunt = (): Hunt => {
   const engineRef = useLazyRef(() => new SandboxRunner(HUNT_CAST));
-  const simRef = useLazyRef(() => newSim(CAMPUS, seedFromHash(), HUNT_CAST.length));
+  const seedRef = useLazyRef(seedFromHash);
+  const simRef = useLazyRef(() => newSim(CAMPUS, seedRef.current, HUNT_CAST.length));
   const speaker = useMemo(createSpeaker, []);
   const heldRef = useRef<Dir | null>(null);
   const sprintRef = useRef(false);
@@ -324,6 +337,7 @@ export const useHunt = (): Hunt => {
   const start = useCallback(
     (practice: boolean) => {
       practiceRef.current = practice;
+      rememberSeed(seedRef.current);
       speaker.play("open");
       const opening = practice
         ? "Practice: nobody is hunting you and the roofs are off."
@@ -336,7 +350,7 @@ export const useHunt = (): Hunt => {
         worldFeed: prepend(prev.worldFeed, entries([opening, "Eight players. The game is live."])),
       }));
     },
-    [engineRef, entries, speaker],
+    [engineRef, seedRef, entries, speaker],
   );
 
   const openEnvelope = useCallback(() => {
@@ -524,8 +538,15 @@ export const useHunt = (): Hunt => {
   }, [speaker]);
 
   const playAgain = useCallback(() => {
+    window.location.hash = "#/hunt";
     window.location.reload();
   }, []);
+
+  /** The same eight players, the same campus, the same night. */
+  const shareLink = useCallback(
+    (): string => `${window.location.origin}${window.location.pathname}#/hunt?seed=${seedRef.current}`,
+    [seedRef],
+  );
 
   const visible = useMemo(() => visibleFromYou(view.sim, CAMPUS, view.facts), [view.sim, view.facts]);
   const targetIndex = view.envelopeOpen && !view.facts.youOut ? (view.facts.targets[YOU] ?? null) : null;
@@ -563,5 +584,6 @@ export const useHunt = (): Hunt => {
     claim,
     toggleMute,
     playAgain,
+    shareLink,
   };
 };

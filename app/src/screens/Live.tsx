@@ -138,8 +138,15 @@ export const Live = () => {
       <h1 style={{ marginTop: 18 }}>Run a game</h1>
       <p className="lede">
         This is the console for whoever is hosting. It deploys a real contract to a real Midnight
-        chain, takes the joins, starts the game, settles every tag and pays out the pot, from this
-        tab. No server in between, and no wallet extension to install.
+        chain, takes the joins, starts the game and publishes the bundle, from this tab. No server
+        in between, and no wallet extension to install.
+      </p>
+      <p className="note">
+        One thing here does not work yet, and you should know before you start rather than after:
+        settling a tag from a browser is refused by proof server 8.1.0, while the same call from
+        Node against the same container lands. Deploy, join and start are fine.{" "}
+        <code>pnpm --filter @blindside/cli local</code> plays a whole game through, tags and
+        payout included, and what has been ruled out is written down in docs/ARCHITECTURE.md.
       </p>
       <p className="note">
         You need a proof server of your own, which is one Docker container:{" "}

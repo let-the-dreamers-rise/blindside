@@ -1,6 +1,6 @@
 {
   "network": "undeployed",
-  "contractAddress": "d57c47fccd1c6b79f05892da38293202c8a99a1348da2c74fb94795fdd9b698c",
+  "contractAddress": "a2e48b97a9445c853740dd773f14161bf50d3090588de93ecbebdfae53d101a5",
   "entryFee": "10",
   "players": 4,
   "handover": "five spoken words",
@@ -12,68 +12,68 @@
   "steps": [
     {
       "label": "wallet ready",
-      "seconds": 30.22
+      "seconds": 30.74
     },
     {
       "label": "deploy",
-      "seconds": 18.3,
-      "txId": "006ecc7ad0afc4e55dbfb0c7937b1d3eb442aa52fbfc3fa230c2ce2c7b60176c94",
-      "blockHeight": 63
+      "seconds": 27.13,
+      "txId": "00f1012b5a64d6ea2e87c080dbcae910b9aaf0e69fdcec40768404eb81705ca9cc",
+      "blockHeight": 14
     },
     {
       "label": "join Alex",
-      "seconds": 21.68,
-      "txId": "00fabae5ac00df70379a0e8d8a5cc6ff85e0074ecb157d120e78f0d8c991ef2e22",
-      "blockHeight": 67
+      "seconds": 21.89,
+      "txId": "00f86fb0cb4e49c14f983f3f1cdd745ed207c778cd32dee5096b156aacc4072d05",
+      "blockHeight": 19
     },
     {
       "label": "join Bo",
-      "seconds": 22.6,
-      "txId": "009a5ef41487f731ac5d5be5018b86edbc5d5b16aa402ba54285e6525af8c0f2df",
-      "blockHeight": 71
+      "seconds": 15.84,
+      "txId": "00174da0e947a1fad27c73b98dd1cd352e4c7baae5a98a533383fa8755e74b4a51",
+      "blockHeight": 22
     },
     {
       "label": "join Cam",
-      "seconds": 17.25,
-      "txId": "00aa8978ff4e119b7cf0b0226a2107c0d5e6cff394d52e6474e14006a4742b5dec",
-      "blockHeight": 74
+      "seconds": 18.53,
+      "txId": "0051ae44bc2cac8af204042f5cfe00c839e991d9d4733e05684ae35d1f2004aa5f",
+      "blockHeight": 25
     },
     {
       "label": "join Dee",
-      "seconds": 17.24,
-      "txId": "000cd51acc3579a98994abe23c4be6085b7a63331b5fbd8d2785866525c1d9902a",
-      "blockHeight": 77
+      "seconds": 22.36,
+      "txId": "007685abe13fa65cbde62c44e41d16057fcc9f49a2bc2e2e04dcb284e8eaa291b6",
+      "blockHeight": 29
     },
     {
       "label": "start game",
-      "seconds": 29.24,
-      "txId": "0049b574867d5da24afc0fe5d1c50745950038ea7eeef8e1b300e9ecd11dfedb70",
-      "blockHeight": 82
+      "seconds": 34.38,
+      "txId": "00f5e5034c5831f5cdd90a65602a2d75879c96905f6512c6f3ad12d8ff626e46cc",
+      "blockHeight": 35
     },
     {
       "label": "tag 1",
-      "seconds": 21.84,
-      "txId": "00b915090be5a551f4409265a61d218dcc653d39f0594f4f266102bc2cfae18fb6",
-      "blockHeight": 86
+      "seconds": 33.2,
+      "txId": "00de0b324f1fb791ae460a6d11ce018e3e6f74e4483ec48efbf9a5c8471e68685a",
+      "blockHeight": 41
     },
     {
       "label": "tag 2",
-      "seconds": 21.98,
-      "txId": "00afc15b6787f753414bb28ecd8d59c0edea7258859ed48cd31776c28a43ab62e5",
-      "blockHeight": 90
+      "seconds": 26.95,
+      "txId": "0051daeb7dc2e05809a0751174249f5d0f0a6ed423987aeb94557c101bcc948ce2",
+      "blockHeight": 46
     },
     {
       "label": "tag 3",
-      "seconds": 23.28,
-      "txId": "00f3404baaf307704bbea8a7b47eff4138f7ead46584efa612387375605e12b329",
-      "blockHeight": 94
+      "seconds": 33.1,
+      "txId": "0003023396636fc98169adb464f4f626127f4d573f1c79400b806b164300453732",
+      "blockHeight": 52
     },
     {
       "label": "claim victory",
-      "seconds": 22.55,
-      "txId": "009edfbe7b8d2c46513d7e78f16e202d55a01a998a417b07c9e8ef0b42c7ec1064",
-      "blockHeight": 98
+      "seconds": 34.35,
+      "txId": "00daf577f1783abc3d5325008ce465323348f0831f9538da89b95e36a1575a60b8",
+      "blockHeight": 58
     }
   ],
-  "recordedAt": "2026-09-13T22:54:07.954Z"
+  "recordedAt": "2026-09-14T09:19:33.181Z"
 }

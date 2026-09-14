@@ -6,11 +6,17 @@ Midnight Buildathon, Wave 1. Everything below is in this repository and can be r
 
 Blindside is the tag game your school or office already plays, with two things it has never had:
 a prize pot nobody can run off with, and a target list nobody can leak. Everyone is secretly
-assigned one other player. You tag them in real life, they hand over a one-time code, and a
+assigned one other player. You tag them in real life, they say five words out loud, and a
 zero-knowledge proof settles the tag on Midnight without the chain learning who tagged whom. You
 inherit their target. The last player standing proves it and the contract pays out. Millions of
 people already play this every year over group chats and spreadsheets, with the money moving
 through an organizer's personal payment app.
+
+You can play it before you read any of that. The hunt is a pixel campus at night with eight
+players on it and ten strangers who are not in the game: one of the eight is hunting you and you
+do not know which. It is a game, and it is also the clearest way we found to show what the chain
+does and does not learn, because the two feeds sit side by side under the map. The campus knows
+who went into the Library. The chain knows that two notes were spent.
 
 ## What a judge can check in five minutes
 
@@ -20,6 +26,7 @@ through an organizer's personal payment app.
 | See what the chain does not | under the map, "What you saw" against "What the chain sees": the campus names people, the chain never does |
 | Play the paper version | [the sandbox](https://let-the-dreamers-rise.github.io/blindside/#/sandbox), the same contract with the buttons showing |
 | Be a player on the night | [the phone page](https://let-the-dreamers-rise.github.io/blindside/#/me): your words, the bundle, your target, and a check on the words you heard. No server |
+| Run one yourself | the console at `#/live` deploys, takes joins, starts a game and publishes the bundle from the tab. Settling a tag from a browser is refused by proof-server 8.1.0 and the CLI does it instead; both are written up rather than papered over |
 | Watch the pot leave a broken game | the same page, "When it goes wrong": quit, let the deadline pass, open refunds, watch the pot drain back to the players |
 | See it on a real chain | [the evidence page](https://let-the-dreamers-rise.github.io/blindside/#/evidence): contract address, every transaction, every timing |
 | See what an observer learns | [the spectator view](https://let-the-dreamers-rise.github.io/blindside/#/watch) reads a deployed game out of a Midnight indexer. It is deliberately unimpressive |

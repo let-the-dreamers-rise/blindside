@@ -26,12 +26,43 @@ const zkBase = (): string => new URL("zk", document.baseURI).toString();
  */
 const boundFetch = globalThis.fetch.bind(globalThis);
 
-export const providersFor = (
+/** Every circuit the contract has. A game only calls four of them, but a deploy publishes all. */
+const CIRCUITS = [
+  "join",
+  "startGame",
+  "tag",
+  "claimVictory",
+  "resign",
+  "openRefunds",
+  "cancel",
+  "refund",
+] as const;
+
+/**
+ * Reads every verifier key once, in order, before anything is deployed.
+ *
+ * Two reasons. A deploy publishes all eight keys at once, and eight parallel reads of files that
+ * run to nineteen megabytes is the kind of thing that half-succeeds quietly; doing it here in
+ * order means a missing or truncated asset is an error on this page, with a name attached,
+ * rather than a confusing refusal from a proof server twenty minutes into a game.
+ */
+export const warmZkAssets = async (
+  provider: FetchZkConfigProvider<BlindsideCircuits>,
+): Promise<void> => {
+  for (const circuit of CIRCUITS) {
+    try {
+      await provider.getVerifierKey(circuit);
+    } catch (cause) {
+      throw new Error(`The proving material for ${circuit} could not be read`, { cause });
+    }
+  }
+};
+
+export const providersFor = async (
   ctx: WalletContext,
   endpoints: ChainEndpoints,
-): Promise<BlindsideProviders> =>
-  configureProviders(
-    ctx,
-    endpoints,
-    new FetchZkConfigProvider<BlindsideCircuits>(zkBase(), boundFetch),
-  );
+): Promise<BlindsideProviders> => {
+  const zk = new FetchZkConfigProvider<BlindsideCircuits>(zkBase(), boundFetch);
+  await warmZkAssets(zk);
+  return configureProviders(ctx, endpoints, zk);
+};

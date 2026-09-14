@@ -129,6 +129,12 @@ test("the wrong five words are refused by the contract, not by the page", async 
   await expect(statistic(page, "still in")).toContainText("8");
 });
 
+test("a game is a link: the seed goes in the address bar", async ({ page }) => {
+  await page.goto("/#/hunt");
+  await page.getByRole("button", { name: "Practice first" }).click();
+  await expect(page).toHaveURL(/#\/hunt\?seed=\d+/);
+});
+
 test("the campus is full of people who are not in the game", async ({ page }) => {
   await openHunt(page, 15);
   await page.getByRole("button", { name: "Practice first" }).click();

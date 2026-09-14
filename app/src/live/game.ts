@@ -58,6 +58,18 @@ export type GameSetup = {
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
+ * What the console is doing right now. These are the real steps this file takes, not a
+ * progress bar invented to fill the wait: proving is genuinely most of it, and saying so is
+ * better than a spinner that implies something is nearly finished.
+ */
+export type Stage = (what: string) => void;
+
+const quiet: Stage = () => undefined;
+
+/** Proving is the slow part everywhere, so it says the same thing everywhere. */
+const PROVING = "Proving and submitting. This is twenty to thirty seconds";
+
+/**
  * Where the compiled proving material lives. In a browser there is no disk, so this is a path
  * under the app's own origin, filled at build time by scripts/zk-assets.mjs.
  */
@@ -78,7 +90,9 @@ const waitFor = async (
   providers: BlindsideProviders,
   address: string,
   predicate: (ledger: Ledger) => boolean,
+  report: Stage = quiet,
 ): Promise<Ledger> => {
+  report("Waiting for the chain to catch up");
   const deadline = Date.now() + SYNC_TIMEOUT_MS;
   for (;;) {
     const state = await providers.publicDataProvider.queryContractState(address);
@@ -113,10 +127,13 @@ export class LiveGame {
     providers: BlindsideProviders,
     wallet: WalletContext,
     { entryFee, minutes }: GameSetup,
+    report: Stage = quiet,
   ): Promise<LiveGame> {
     const hostSecret = crypto.getRandomValues(new Uint8Array(32));
     const endsAt = BigInt(Math.floor(Date.now() / 1000) + minutes * 60);
 
+    report("Making the host secret, which never leaves this tab");
+    report(PROVING);
     const deployed = await deployContract(providers, {
       compiledContract: compiled,
       privateStateId: PRIVATE_STATE_ID,
@@ -184,7 +201,8 @@ export class LiveGame {
   }
 
   /** One player joins: one entry fee into the contract, one commitment published. */
-  async join(name: string): Promise<void> {
+  async join(name: string, report: Stage = quiet): Promise<void> {
+    report(`Making a secret and five words for ${name}`);
     const identity = newIdentity();
     const seat: Seat = {
       identity,
@@ -193,6 +211,7 @@ export class LiveGame {
     };
 
     await this.setPrivateState({ sk: identity.secret });
+    report(PROVING);
     await this.calls.join(
       identity.commitment,
       payoutBytesOf(this.wallet.unshieldedKeystore),
@@ -201,7 +220,8 @@ export class LiveGame {
   }
 
   /** The organizer shuffles the cycle, publishes the tree, and publishes the bundle. */
-  async start(): Promise<void> {
+  async start(report: Stage = quiet): Promise<void> {
+    report("Shuffling one cycle and sealing every part of it");
     const plan = buildStartPlan(
       this.seats.map((seat) => joinCard(seat.identity, seat.keys, seat.name)),
     );
@@ -211,7 +231,9 @@ export class LiveGame {
       this.providers,
       this.address,
       (current) => Number(current.playerCount) === this.seats.length,
+      report,
     );
+    report(PROVING);
     await this.calls.startGame([...plan.leaves]);
 
     this.bundleText = encodeBundle({ game: this.address, items: plan.items });
@@ -233,7 +255,8 @@ export class LiveGame {
    * whoever they open is the player being surrendered. Their hunter is then whoever holds a note
    * pointing at them, which is exactly one person.
    */
-  async tagFromWords(spoken: string): Promise<string> {
+  async tagFromWords(spoken: string, report: Stage = quiet): Promise<string> {
+    report("Trying those words against the bundle");
     const heard = readWordCode(spoken);
     if (heard === null) {
       throw new Error("That is not five words from the list.");
@@ -277,7 +300,9 @@ export class LiveGame {
       this.providers,
       this.address,
       (current) => Number(current.tagCount) === this.generation,
+      report,
     );
+    report(PROVING);
     await this.calls.tag();
 
     // The hunter inherited a target, so they seal a later note to their own words and add it to
@@ -304,7 +329,7 @@ export class LiveGame {
   }
 
   /** The last player proves they are last, and the contract pays out. */
-  async claim(): Promise<string> {
+  async claim(report: Stage = quiet): Promise<string> {
     const winner = this.seats.find(
       (seat) => !this.out.has(toHex(seat.identity.commitment)),
     );
@@ -317,8 +342,10 @@ export class LiveGame {
       sk: winner.identity.secret,
       edge: { target: note.target, rand: note.rand },
     });
-    await waitFor(this.providers, this.address, (current) => Number(current.aliveCount) === 1);
+    await waitFor(this.providers, this.address, (current) => Number(current.aliveCount) === 1, report);
+    report(PROVING);
     await this.calls.claimVictory();
+    report("Waiting for the pot to empty");
     await waitFor(this.providers, this.address, (current) => current.pot === 0n);
 
     return winner.name;

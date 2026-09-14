@@ -1,8 +1,30 @@
 // The beginning and the endings, laid over the campus.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useState } from "react";
 import { GAME_SECONDS, type Hunt } from "../hunt/useHunt.ts";
 import { HOW_IT_WORKS } from "../screens/HuntIntroCopy.tsx";
+
+/** Somebody else can play the same night: same campus, same eight, same seed. */
+const Again = ({ hunt }: { readonly hunt: Hunt }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    void navigator.clipboard?.writeText(hunt.shareLink()).then(() => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2_000);
+    });
+  };
+  return (
+    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <button type="button" className="ghost" onClick={hunt.playAgain}>
+        Play again
+      </button>
+      <button type="button" className="ghost" onClick={copy}>
+        {copied ? "Copied" : "Copy this game's link"}
+      </button>
+    </div>
+  );
+};
 
 const Intro = ({ hunt }: { readonly hunt: Hunt }) => (
   <section className="card">
@@ -81,9 +103,7 @@ const Paid = ({ hunt }: { readonly hunt: Hunt }) => (
       Every one of those tags was a hidden note spent and a new one created. The chain still does
       not know who tagged whom, and the organizer never held the money.
     </p>
-    <button type="button" className="ghost" onClick={hunt.playAgain}>
-      Play again
-    </button>
+    <Again hunt={hunt} />
   </section>
 );
 
@@ -95,9 +115,7 @@ const Over = ({ hunt }: { readonly hunt: Hunt }) => {
       <h2 style={{ marginTop: 14 }}>{name} was the last one standing.</h2>
       <Scoreboard hunt={hunt} />
       <p>The contract paid them. It did not need anybody's permission, and it could not have paid anybody else.</p>
-      <button type="button" className="ghost" onClick={hunt.playAgain}>
-        Play again
-      </button>
+      <Again hunt={hunt} />
     </section>
   );
 };
@@ -110,9 +128,7 @@ const Draw = ({ hunt }: { readonly hunt: Hunt }) => (
       Nobody won, so nobody is paid. Refunds opened at the deadline and every player took back
       exactly what they put in. The pot is {hunt.snapshot.pot.toString()}.
     </p>
-    <button type="button" className="ghost" onClick={hunt.playAgain}>
-      Play again
-    </button>
+    <Again hunt={hunt} />
   </section>
 );
 

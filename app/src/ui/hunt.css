@@ -213,9 +213,11 @@
   border-radius: 8px;
   font-family: var(--serif);
   font-size: 0.95rem;
-  line-height: 1.2;
-  white-space: nowrap;
-  z-index: 4;
+  line-height: 1.25;
+  width: max-content;
+  max-width: 220px;
+  text-align: center;
+  z-index: 200;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
@@ -251,6 +253,7 @@
 
 .hunt-viewport.listening .actor:has(.bubble) {
   opacity: 1;
+  z-index: 200;
 }
 
 .hunt-overlay {

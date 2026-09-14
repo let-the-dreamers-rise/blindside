@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import { CampusStrip } from "../components/CampusStrip.tsx";
+
 export const Landing = () => (
   <main>
     <p className="stamp">Testnet. No real money.</p>
@@ -14,6 +16,8 @@ export const Landing = () => (
       Blindside is the tag game your school, office or group chat already plays, with two things it
       has never had: a prize pot nobody can run off with, and a target list nobody can leak.
     </p>
+
+    <CampusStrip />
 
     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "28px 0 36px" }}>
       <button onClick={() => { window.location.hash = "#/hunt"; }}>

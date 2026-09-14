@@ -114,16 +114,26 @@ In this version the organizer's console settles tags on chain, because proving a
 proof server and a phone does not have one yet. The console cannot invent a tag: the words the
 hunter relays are the only thing that opens the target's half. Proving from the phone is next.
 
-## A whole game, from a browser tab
+## Running a game from a browser tab
 
 The live console runs a real game against a real Midnight node from a page: it deploys the
-contract, takes each join, starts the game, publishes the bundle, settles tags typed in as five
-words, and pays out. No server in between, no wallet extension, and the proof server is yours.
+contract, takes each join, starts the game and publishes the bundle. No server in between, no
+wallet extension, and the proof server is yours.
+
+**What does not work yet, stated plainly.** Settling a tag from the browser is refused by
+proof-server 8.1.0 with `couldn't find built-in key tag`, while the same call from Node against
+the same container proves and lands. Deploy, join and start all work from the browser, and the
+browser reads identical key bytes (checked by hash), so it is not the assets and not the contract.
+Until it is found, the console is how a game is set up and the CLI is how one is played through.
 
 ```bash
 pnpm --filter @blindside/cli stack:up    # a Midnight node, indexer and prover in Docker
 pnpm --filter @blindside/app dev         # then open #/live
 ```
+
+If a transaction starts failing to prove or the node rejects one as invalid, the local chain has
+drifted rather than the game breaking: `stack:down` then `stack:up` and start again. A proof that
+never landed spent nothing, which is why the console tells you to press the button again.
 
 What it takes to make midnight-js run in a browser at all is four fixes that all fail silently;
 they are written down in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#running-a-chain-from-a-browser-tab)
@@ -165,7 +175,7 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Browser tests | 21 passing on a phone viewport, including a hunt won, a hunt lost, and a player's phone |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
-| A whole game from a browser tab | Deployed, played and paid out against a local node |
+| A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |
 | Mobile web app | The hunt, the phone page, the paper sandbox, rules, evidence and spectator pages |
 | A real game on phones | Phone page for players plus the console to settle; proving from the phone is next |
 | Escrow on the public testnet | Next |

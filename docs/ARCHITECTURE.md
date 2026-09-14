@@ -140,6 +140,27 @@ refuser can do is a draw in which they get back exactly what they put in.
 Payout addresses are bound at `join`, not supplied at `claim`, so a stolen phone can lose a game
 but cannot redirect the money.
 
+## What does not work from a browser tab
+
+Calling the `tag` circuit from a browser is refused by proof-server 8.1.0 with
+`couldn't find built-in key tag`, at the `/check` before proving starts. The same call from Node,
+against the same container and the same key files, proves and lands: the CLI plays whole games
+through it. What has been ruled out, so the next person does not repeat it:
+
+- **The assets.** The browser reads `tag.prover` byte for byte identical to the file on disk
+  (SHA-256 compared), all 19,514,895 of them, and `getProverKey("tag")` returns them in 249ms.
+- **Size.** `startGame` is 19,476,701 bytes and works from the browser.
+- **The deploy.** The contract those calls run against was deployed from the browser, and
+  `startGame` on it succeeds, so its published verifier keys are sound.
+- **A stale chain.** It fails the same way on a chain brought up seconds earlier.
+- **Warming the assets.** Reading every verifier key in order before deploying changed nothing
+  here, though it is worth doing anyway: a missing asset now fails loudly, on the page that
+  needs it.
+
+What is left is how midnight-js builds the unproven `tag` transaction in a browser. The request
+never reaches `window.fetch` or `XMLHttpRequest` as this page can see them, because the SDK holds
+its own reference from module load, so the next step is a build of it with that call instrumented.
+
 ## Running a chain from a browser tab
 
 The live console deploys the contract, takes joins, starts the game, settles tags and pays out,
@@ -154,6 +175,7 @@ Getting there took four fixes that are worth writing down, because none of them 
 | The private state store throws `Class extends value undefined` on load | it is built on Node's `EventEmitter`, which a bundler stubs out | alias `events` to the `events` package |
 | The wallet SDK's simulators import `subtle` from a module that is not there | they ask Node for its webcrypto | alias `crypto` and `node:crypto` to a shim that returns `globalThis.crypto` |
 | The indexer provider imports `WebSocket` by name | `isomorphic-ws` gives a browser only a default export | alias it to a shim that exports both |
+| After a long session every call fails to prove, or the node rejects one as invalid | the local chain has drifted from what the wallet and indexer believe | `stack:down` then `stack:up`. Nothing was spent: a proof that never landed never reached the chain |
 
 The proving material is the other half. `scripts/zk-assets.mjs` copies the compiled keys and ZKIR
 next to the app at build time, 65 MB of it, and the browser fetches one only when it is about to

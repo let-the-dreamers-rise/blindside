@@ -154,7 +154,14 @@ export const HuntStage = ({ hunt, children }: Props) => {
   }, []);
 
   const you = sim.actors[YOU];
-  const camera = cameraFor(you?.at ?? { x: 0, y: 0 }, size, world);
+  // While somebody is saying their words the camera sits between the two of you, so the bubble
+  // is never half off the edge of the screen.
+  const them = targetIndex === null ? undefined : sim.actors[targetIndex];
+  const focus =
+    hunt.phase === "moment" && you !== undefined && them !== undefined
+      ? { x: (you.at.x + them.at.x) / 2, y: (you.at.y + them.at.y) / 2 }
+      : (you?.at ?? { x: 0, y: 0 });
+  const camera = cameraFor(focus, size, world);
   const roofsOff = facts.practice || facts.youOut;
   const inside = you === undefined ? null : roomOf(world, you.at);
 
