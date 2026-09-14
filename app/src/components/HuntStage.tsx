@@ -1,7 +1,14 @@
 // The campus, the people on it, and the camera that follows you.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type PointerEvent, type ReactNode, useEffect, useRef, useState } from "react";
+import {
+  type PointerEvent,
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { SPRITE_HEIGHT, SPRITE_WIDTH, TILE } from "../hunt/art.ts";
 import { type Room, type World, roomOf } from "../hunt/campus.ts";
@@ -138,15 +145,19 @@ export const HuntStage = ({ hunt, children }: Props) => {
     return () => window.clearTimeout(timer);
   }, [jolt]);
 
-  useEffect(() => {
+  // Measured before the first paint, or the camera spends a frame clamped to a corner and the
+  // campus visibly jumps into place.
+  useLayoutEffect(() => {
     const viewport = viewportRef.current;
     if (viewport === null) {
       return;
     }
+    const rect = viewport.getBoundingClientRect();
+    setSize({ w: rect.width, h: rect.height });
     const observer = new ResizeObserver((entries) => {
-      const rect = entries[0]?.contentRect;
-      if (rect !== undefined) {
-        setSize({ w: rect.width, h: rect.height });
+      const next = entries[0]?.contentRect;
+      if (next !== undefined) {
+        setSize({ w: next.width, h: next.height });
       }
     });
     observer.observe(viewport);

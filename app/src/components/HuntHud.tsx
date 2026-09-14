@@ -131,7 +131,10 @@ export const HuntHud = ({ hunt }: { readonly hunt: Hunt }) => {
             {hunt.muted ? "Sound off" : "Sound on"}
           </button>
         </div>
-        <Stamina now={hunt.stamina} full={hunt.staminaFull} running={hunt.sim.sprinting} />
+        <div className="hud-breath">
+          <span className="hud-label">Breath</span>
+          <Stamina now={hunt.stamina} full={hunt.staminaFull} running={hunt.sim.sprinting} />
+        </div>
       </div>
       <p className="note hud-hint">
         {hunt.facts.youOut

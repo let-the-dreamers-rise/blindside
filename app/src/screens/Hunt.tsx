@@ -74,16 +74,19 @@ export const Hunt = () => {
   const you = hunt.sim.actors[YOU];
 
   return (
-    <main className="hunt">
-      <a href="#/" className="mono" style={{ color: "var(--paper-dim)" }}>
-        &larr; Blindside
-      </a>
+    <main className={hunt.phase === "intro" ? "hunt" : "hunt playing"}>
+      {/* Once the game is running a phone needs its screen for the campus and the pad. */}
+      <header className="hunt-head">
+        <a href="#/" className="mono" style={{ color: "var(--paper-dim)" }}>
+          &larr; Blindside
+        </a>
 
-      <h1 style={{ marginTop: 18 }}>The hunt</h1>
-      <p className="lede">
-        Eight players on a campus at night. One of them is hunting you. You are hunting one of
-        them. Find yours first.
-      </p>
+        <h1 style={{ marginTop: 18 }}>The hunt</h1>
+        <p className="lede">
+          Eight players on a campus at night. One of them is hunting you. You are hunting one of
+          them. Find yours first.
+        </p>
+      </header>
 
       <HuntStage hunt={hunt}>
         <HuntOverlays hunt={hunt} />

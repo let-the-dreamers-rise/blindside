@@ -4,7 +4,7 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  height: min(68vh, 768px);
+  height: min(62vh, 720px);
   margin-top: 22px;
   background: #0b0a09;
   border: 1px solid var(--paper-line);
@@ -339,9 +339,13 @@
   touch-action: none;
 }
 
+.hud-breath {
+  display: grid;
+  gap: 6px;
+  width: 140px;
+}
+
 .stamina {
-  flex: 1 1 120px;
-  min-width: 100px;
   height: 8px;
   border: 1px solid var(--paper-line);
   border-radius: 4px;
@@ -410,6 +414,32 @@
 @media (hover: hover) and (pointer: fine) {
   .dpad {
     display: none;
+  }
+}
+
+/* A phone has to hold the campus and the controls at once, so the page header goes away as
+   soon as the game starts and the map takes what is left. */
+@media (max-width: 700px) {
+  .hunt.playing .hunt-head {
+    display: none;
+  }
+
+  .hunt.playing .hunt-viewport {
+    margin-top: 4px;
+    height: clamp(240px, 44vh, 460px);
+  }
+
+  .hunt.playing .hud {
+    position: sticky;
+    bottom: 0;
+    z-index: 7;
+    padding-bottom: 8px;
+    background: var(--ink);
+  }
+
+  .dpad {
+    grid-template-columns: repeat(3, 44px);
+    grid-template-rows: repeat(3, 44px);
   }
 }
 
