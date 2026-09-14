@@ -30,6 +30,7 @@ export const Minimap = ({ world, you, rumour, ring }: Props) => {
     <canvas
       ref={ref}
       className="minimap"
+      role="img"
       width={world.width * 4}
       height={world.height * 4}
       aria-label="The map, with you on it and the last place your target was heard of"

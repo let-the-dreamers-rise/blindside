@@ -177,7 +177,7 @@ Getting there took four fixes that are worth writing down, because none of them 
 | The indexer provider imports `WebSocket` by name | `isomorphic-ws` gives a browser only a default export | alias it to a shim that exports both |
 | After a long session every call fails to prove, or the node rejects one as invalid | the local chain has drifted from what the wallet and indexer believe | `stack:down` then `stack:up`. Nothing was spent: a proof that never landed never reached the chain |
 
-The proving material is the other half. `scripts/zk-assets.mjs` copies the compiled keys and ZKIR
+The proving material is the other half. `app/scripts/zk-assets.mjs` copies the compiled keys and ZKIR
 next to the app at build time, 65 MB of it, and the browser fetches one only when it is about to
 prove that circuit. Deploying needs the verifier keys, which are small; a tag needs a 19 MB prover
 key, which is fetched once and cached by the browser.
@@ -194,7 +194,7 @@ allowed to know different things.
 
 | Layer | Knows | Must never be shown |
 |---|---|---|
-| the simulation (`sim.ts`) | where everyone is, who hunts whom, so its bots can hunt | |
+| the simulation (`app/src/hunt/sim.ts`) | where everyone is, who hunts whom, so its bots can hunt | |
 | the screen (`HuntStage`, `HuntHud`) | where *you* are, who you can see, your own target once you open the envelope | anybody else's target, anybody out of sight |
 | the chain panel (`ChainPanel`, `ChainEye`) | phase, counts, the pot, spent notes, players as pseudonyms | any name, any link between two people |
 
@@ -204,7 +204,7 @@ who is alive and who hunts whom are read from the ledger each tick, and when a b
 target the event goes to the same `tag` circuit your own tags go to. The bots cannot do anything
 the contract would refuse, because they do not do anything the contract does not do.
 
-Sight is one rule for everybody, `canSee` in `sight.ts`: indoors you see your room, outdoors you
+Sight is one rule for everybody, `canSee` in `app/src/hunt/sight.ts`: indoors you see your room, outdoors you
 see nine tiles of open ground. Open is the word doing the work. A wall or a tree between two
 people stops sight dead, checked by walking the straight line between them, so a building is
 something to put between yourself and whoever is looking rather than a shape on the floor. The
@@ -237,10 +237,17 @@ hunting them and a field that exists is a field something eventually renders.
 ### The grounds close
 
 A map this size hides eight people for a very long time, and a game that ends on a timer is not a
-game. `ring.ts` is a pure function of the tick: three quarters of a minute in, the open ground
+game. `app/src/hunt/ring.ts` is a pure function of the tick: three quarters of a minute in, the open ground
 starts shrinking towards the middle, and two and a quarter minutes later a courtyard is all there
 is. It is drawn as a lit line with the dark closing in behind it, on the map and on the little
 one in the corner.
+
+That little one is the whole place at four pixels a tile, sitting over the top right of the map.
+A phone shows about a third of the ground at a time, so without it the closing line is mostly off
+the edge of the screen and a rumour about the Gym points nowhere. It is painted from three things
+and no others: the ground, where you are, and the last rumour's circle. No other player's
+position is ever passed to it, so there is nothing on it to leak, and it takes no taps, so
+tapping through it still walks you to the tile underneath.
 
 Nobody is walled in. Standing outside costs you instead: the crowd has drifted inside without
 you, so there is nobody left out there to be lost among, and every few seconds your hunter is
@@ -284,7 +291,7 @@ are not.
 
 A place is a block of text, a list of rooms, a list of landmarks and where people start. Rooms are
 flood-filled from the text, doors are found by adjacency, and everything else is worked out.
-`places.ts` lists them and the address bar carries which one you are on.
+`app/src/hunt/places.ts` lists them and the address bar carries which one you are on.
 
 The campus is buildings and crowds. The park is a wood down the west side, a lake, and open lawn
 in the middle, which plays differently for one reason: trees stop sight, so on the park the thing

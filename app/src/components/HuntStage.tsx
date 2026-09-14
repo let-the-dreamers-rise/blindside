@@ -18,6 +18,10 @@ import { spriteUrl } from "../hunt/pixels.ts";
 import { type Actor, YOU } from "../hunt/sim.ts";
 import type { Hunt } from "../hunt/useHunt.ts";
 import { ChainEye } from "./ChainEye.tsx";
+import { Minimap } from "./Minimap.tsx";
+
+/** The two phases where you are standing on the map. Everything else puts a card over it. */
+const ON_THE_MAP: ReadonlySet<Hunt["phase"]> = new Set(["playing", "moment"] as const);
 
 type Size = { readonly w: number; readonly h: number };
 
@@ -248,6 +252,14 @@ export const HuntStage = ({ hunt, children }: Props) => {
           <div className="lantern" style={{ background: lanternAt(you.at) }} aria-hidden="true" />
         ) : null}
       </div>
+      {/*
+        A phone shows about a third of the ground at a time, so without this you cannot see where
+        the grounds have closed to, or which way the rumour pointed. It carries nobody's live
+        position, only yours, because that is all it is ever given.
+      */}
+      {ON_THE_MAP.has(hunt.phase) && !hunt.chainEye ? (
+        <Minimap world={world} you={you?.at ?? null} rumour={hunt.rumourAt} ring={sim.ring} />
+      ) : null}
       {hunt.chainEye ? (
         <ChainEye snapshot={hunt.snapshot} onClose={hunt.toggleChainEye} />
       ) : null}

@@ -593,7 +593,7 @@
 
   .hunt.playing .hunt-viewport {
     margin-top: 4px;
-    height: clamp(240px, 44vh, 460px);
+    height: clamp(260px, 52vh, 520px);
   }
 
   .hunt.playing .hud {
@@ -608,6 +608,24 @@
     grid-template-columns: repeat(3, 44px);
     grid-template-rows: repeat(3, 44px);
   }
+
+  /*
+   * A pad is a cross, so the corners of its square are empty: about half the width of a phone
+   * sitting beside it doing nothing, while the buttons wrapped underneath and pushed the map up.
+   * They go in that space instead, two across, and the map takes back the line they cost.
+   */
+  .hunt.playing .hud-actions {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 8px;
+  }
+
+  .hunt.playing .hud-actions button {
+    min-height: 44px;
+    padding: 10px 8px;
+  }
 }
 
 .moment {
@@ -615,25 +633,48 @@
   border-color: var(--stamp);
 }
 
-.saw {
-  display: grid;
-  gap: 14px;
+/* Say "arrow keys" to somebody holding a keyboard and "the pad" to somebody holding a phone. */
+.only-touch {
+  display: none;
 }
 
-@media (min-width: 560px) {
-  .saw {
-    grid-template-columns: auto 1fr;
-    align-items: start;
+@media (pointer: coarse) {
+  .only-keyboard {
+    display: none;
+  }
+
+  .only-touch {
+    display: inline;
   }
 }
 
+/*
+ * Over the top right of the map, because a phone shows about a third of the ground at a time and
+ * the closing line is mostly off the edge of it. Not a control: it takes no taps, so tapping
+ * through it still walks you to the tile underneath.
+ */
 .minimap {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
   display: block;
-  width: 160px;
-  height: 96px;
+  width: 120px;
+  height: 72px;
   image-rendering: pixelated;
-  border: 1px solid var(--paper-line);
+  background: #0b0a09;
+  border: 1px solid rgba(232, 226, 214, 0.22);
   border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+@media (min-width: 560px) {
+  .minimap {
+    width: 160px;
+    height: 96px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

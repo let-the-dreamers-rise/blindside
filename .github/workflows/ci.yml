@@ -47,6 +47,11 @@ jobs:
       - name: Compile the contract
         run: pnpm compact
 
+      # A README that points at a file nobody can open is worse than one that says nothing: the
+      # reader assumes the rest is wrong too. Cheap to check, so it is checked.
+      - name: Every path named in the docs exists
+        run: python3 scripts/check-doc-paths.py
+
       - run: pnpm typecheck
 
       - name: Unit and integration tests

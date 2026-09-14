@@ -88,6 +88,13 @@ const Target = ({ hunt }: { readonly hunt: Hunt }) => {
   );
 };
 
+/**
+ * A phone has no arrow keys and no Enter, and a laptop has no pad worth using, so a hint naming
+ * the wrong one is a hint that reads as broken. Asked at render rather than stored: a person who
+ * picks up a tablet keyboard mid-game gets the other wording on the next tick.
+ */
+const coarse = (): boolean => window.matchMedia("(pointer: coarse)").matches;
+
 /** One line under the pad, and only the most pressing one. The order below is the priority. */
 const hint = (hunt: Hunt, target: string | null): string => {
   if (hunt.facts.youOut) {
@@ -106,10 +113,12 @@ const hint = (hunt: Hunt, target: string | null): string => {
     return `${target ?? "They"} stopped. Type what you heard, below.`;
   }
   if (target === null) {
-    return "Arrow keys or the pad to walk, shift to run. Tap somebody to walk up to them. Open your envelope to learn who you are hunting.";
+    return coarse()
+      ? "The pad walks you, and Run is faster and louder. Tap somebody to walk up to them. Open your envelope to learn who you are hunting."
+      : "Arrow keys or the pad to walk, shift to run. Tap somebody to walk up to them. Open your envelope to learn who you are hunting.";
   }
   if (hunt.canTag) {
-    return `You are next to ${target}. Tag them, or press Enter.`;
+    return coarse() ? `You are next to ${target}. Tag them.` : `You are next to ${target}. Tag them, or press Enter.`;
   }
   return `Find ${target}. Rumours arrive below. Somebody is finding you the same way, and running is loud.`;
 };

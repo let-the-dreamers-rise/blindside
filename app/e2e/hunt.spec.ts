@@ -181,6 +181,31 @@ test("a link to a game opens that game, even mid-hunt", async ({ page }) => {
   await expect(page).toHaveURL(/seed=22&players=4&place=park/);
 });
 
+test("a phone is told about the pad, not about arrow keys it does not have", async ({ page }) => {
+  await openHunt(page, 24);
+  await expect(page.getByText(/The pad walks, Run is faster/)).toBeVisible();
+  await expect(page.getByText(/Arrow keys or WASD/)).toBeHidden();
+
+  await page.getByRole("button", { name: "Start the hunt" }).click();
+  await expect(page.getByText(/The pad walks you, and Run is faster/)).toBeVisible();
+});
+
+test("the whole map sits in the corner of the one you can see", async ({ page }) => {
+  const corner = page.getByRole("img", { name: /The map, with you on it/ });
+
+  await openHunt(page, 23);
+  await expect(corner).toBeHidden();
+
+  await page.getByRole("button", { name: "Start the hunt" }).click();
+  await expect(corner).toBeVisible();
+
+  // The public record replaces the map, so the map in the corner goes with it.
+  await page.getByRole("button", { name: "The chain", exact: true }).click();
+  await expect(corner).toBeHidden();
+  await page.getByRole("button", { name: "Back to the map" }).click();
+  await expect(corner).toBeVisible();
+});
+
 test("the other place is a different map with its own buildings", async ({ page }) => {
   await openHunt(page, 19);
   await page.getByRole("group", { name: "Where you are playing" }).getByText("The park").click();

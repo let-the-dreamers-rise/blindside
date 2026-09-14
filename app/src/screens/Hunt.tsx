@@ -6,10 +6,8 @@ import { HuntHud } from "../components/HuntHud.tsx";
 import { HuntMoment } from "../components/HuntMoment.tsx";
 import { HuntOverlays } from "../components/HuntOverlays.tsx";
 import { HuntStage } from "../components/HuntStage.tsx";
-import { Minimap } from "../components/Minimap.tsx";
 import { YourWords } from "../components/WordCode.tsx";
 import type { Dir } from "../hunt/grid.ts";
-import { YOU } from "../hunt/sim.ts";
 import { type Hunt as HuntGame, useHunt } from "../hunt/useHunt.ts";
 import "../ui/hunt.css";
 
@@ -71,8 +69,6 @@ const useKeyboard = (hunt: HuntGame): void => {
 export const Hunt = () => {
   const hunt = useHunt();
   useKeyboard(hunt);
-  const you = hunt.sim.actors[YOU];
-
   return (
     <main
       className={`hunt${hunt.phase === "intro" ? "" : " playing"}${hunt.exposed ? " exposed" : ""}${hunt.behind ? " behind" : ""}`}
@@ -99,19 +95,11 @@ export const Hunt = () => {
       <div className="grid two" style={{ marginTop: 18 }}>
         <section className="card">
           <h2>What you saw</h2>
-          <div className="saw">
-            <Minimap
-              world={hunt.world}
-              you={you?.at ?? null}
-              rumour={hunt.rumourAt}
-              ring={hunt.sim.ring}
-            />
-            <ul className="feed" aria-label="What you saw">
-              {hunt.worldFeed.map((entry) => (
-                <li key={entry.id}>{entry.text}</li>
-              ))}
-            </ul>
-          </div>
+          <ul className="feed" aria-label="What you saw">
+            {hunt.worldFeed.map((entry) => (
+              <li key={entry.id}>{entry.text}</li>
+            ))}
+          </ul>
           <hr style={{ border: 0, borderTop: "1px solid var(--paper-line)", margin: "20px 0" }} />
           <h2>Your words</h2>
           <p className="note" style={{ marginBottom: 14 }}>

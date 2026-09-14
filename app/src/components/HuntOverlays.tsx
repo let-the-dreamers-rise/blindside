@@ -87,8 +87,10 @@ const Intro = ({ hunt }: { readonly hunt: Hunt }) => {
         </button>
       </div>
       <p className="note" style={{ marginTop: 16 }}>
-        Practice takes the roofs off and sends your hunter home. Arrow keys or WASD walk, shift
-        runs, Enter tags, or tap the map. Every tag runs the real compiled contract in this tab.
+        Practice takes the roofs off and sends your hunter home.{" "}
+        <span className="only-keyboard">Arrow keys or WASD walk, shift runs, Enter tags, or tap</span>
+        <span className="only-touch">The pad walks, Run is faster and louder, or tap</span> the
+        map. Every tag runs the real compiled contract in this tab.
       </p>
     </section>
   );

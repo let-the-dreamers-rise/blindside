@@ -86,6 +86,10 @@ There are two places and they play differently. The campus is buildings and crow
 indoors, or in a knot of strangers. The park is a wood down one side and open lawn in the middle,
 where a tree line is the only thing between you and whoever is looking.
 
+The whole place sits in the corner of the screen, with you on it and a circle where the last
+rumour put your target. Nobody else is ever drawn on it, because nobody else's position is ever
+given to it.
+
 Three quarters of a minute in, **the grounds start closing**. The open ground shrinks towards the
 middle and the crowd drifts in with it. Nobody is walled in: step outside the line and there is
 nobody left out there to hide behind, and your hunter is told where you are every few seconds.
@@ -184,7 +188,7 @@ A recorded run, which the app shows on its evidence page:
 | **whole game** | **about 4 minutes 49 seconds** |
 
 Final state: phase `finished`, one player alive, three tags, **pot 0**, seven spent notes. The
-contract address and every transaction id are in `app/src/evidence/local-run.json`.
+contract address and every transaction id are in `app/src/evidence/chain-run.json`.
 
 ## Status
 
@@ -195,7 +199,7 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Crypto and game core tests | 64 passing, 97% statement coverage |
 | The hunt's simulation | 98 unit tests: grid, both maps, sight and what blocks it, bots, catching, crowds, running, rumours, the closing grounds |
 | Does a hunt resolve | Measured, not assumed: whole games played out against the compiled contract at every size, all coming down to one player |
-| Browser tests | 26 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, a shared link and a player's phone |
+| Browser tests | 28 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, a shared link, the map in the corner and a player's phone |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |
