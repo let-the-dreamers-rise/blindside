@@ -293,6 +293,77 @@
   z-index: 200;
 }
 
+/* Deliberately cold next to the campus it covers: a record, not a place. */
+.chain-eye {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow-y: auto;
+  padding: 16px 18px 20px;
+  background: rgba(8, 9, 11, 0.96);
+  border-top: 1px solid rgba(126, 154, 168, 0.28);
+}
+
+.chain-eye-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.chain-eye .stamp {
+  margin: 0;
+}
+
+.chain-eye .tally {
+  margin-bottom: 16px;
+}
+
+.chain-eye .note {
+  margin: 14px 0 8px;
+  max-width: 62ch;
+}
+
+.chain-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chain-card {
+  font-family: var(--mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 5px 9px;
+  border-radius: 3px;
+  color: #9fb4c0;
+  background: rgba(126, 154, 168, 0.09);
+  border: 1px solid rgba(126, 154, 168, 0.22);
+}
+
+.chain-card.spent {
+  color: #7d8a92;
+  text-decoration: line-through;
+  border-style: dashed;
+}
+
+.chain-card.empty {
+  color: var(--paper-dim);
+  border-style: dashed;
+  text-decoration: none;
+}
+
+.chain-eye-verdict {
+  margin: 0 0 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(126, 154, 168, 0.2);
+  color: var(--paper);
+  max-width: 62ch;
+  line-height: 1.5;
+}
+
 .hunt-overlay {
   position: absolute;
   inset: 0;

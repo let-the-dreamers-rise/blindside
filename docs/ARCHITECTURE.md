@@ -196,7 +196,7 @@ allowed to know different things.
 |---|---|---|
 | the simulation (`sim.ts`) | where everyone is, who hunts whom, so its bots can hunt | |
 | the screen (`HuntStage`, `HuntHud`) | where *you* are, who you can see, your own target once you open the envelope | anybody else's target, anybody out of sight |
-| the chain panel (`ChainPanel`) | phase, counts, the pot, spent notes, players as pseudonyms | any name, any link between two people |
+| the chain panel (`ChainPanel`, `ChainEye`) | phase, counts, the pot, spent notes, players as pseudonyms | any name, any link between two people |
 
 The simulation is pure: `step(sim, world, facts, input)` returns the next state and a list of
 events, and nothing in it mutates. `facts` come from the contract, never the other way round:
@@ -215,10 +215,48 @@ number that goes up:
 - **Running.** Shift, or the Run button, is two tiles a tick while your breath lasts. It is also
   loud: your hunter does not see you but learns which way to walk. Spend it all and you walk
   until a quarter of it is back, so there is no stuttering half-sprint to fall back on.
- Bots tag each other only where you are not looking, the way real tags happen in
-corridors, and what you learn about it is what the campus would tell you ("Nina is out") rather
-than what the chain would ("someone was tagged"). The rumour mill runs both ways: every so often
-you hear where your target was last seen, and your hunter hears where you were.
+
+Bots tag each other only where you are not looking, the way real tags happen in corridors, and
+what you learn about it is what the campus would tell you ("Nina is out") rather than what the
+chain would ("someone was tagged"). The rumour mill runs both ways: every so often you hear where
+your target was last seen, and your hunter hears where you were.
+
+### The grounds close
+
+A campus this size hides eight people for a very long time, and a game that ends on a timer is
+not a game. `ring.ts` is a pure function of the tick: three quarters of a minute in, the open
+ground starts shrinking towards the quad, and two and a quarter minutes later that is all there
+is. It is drawn as a lit line with the dark closing in behind it, on the campus and on the little
+map.
+
+Nobody is walled in. Standing outside costs you instead: the crowd has drifted inside without
+you, so there is nobody left out there to be lost among, and every few seconds your hunter is
+told exactly where you are. The strangers are drawn in rather than sent home, so the last minute
+is a packed quad where the only way to know your target is to stand next to them.
+
+That herding broke the endgame the first time it ran. Bots only tag each other out of your sight,
+and a quad everybody has been herded into is a quad where you can see everything, so nothing
+happened. Once the grounds are shut the game comes into the open: the sight rule lifts and the
+last tags are quick and public.
+
+`app/src/hunt/balance.test.ts` is the measurement rather than the intention. It plays whole hunts
+with nobody at the keyboard, every tag through the compiled contract. Hands off, a hunt comes
+down to one player every time. Watched start to finish in practice, where nobody can tag you, it
+plays out every tag it is able to and leaves you and your hunter. Before the grounds closed it
+left five to seven players standing at full time.
+
+### The chain's eye
+
+The contrast only works if somebody looks at both halves of it, and a panel below the fold is a
+panel nobody reads. `ChainEye` is the same contrast one button away: press **The chain** during
+play and the campus is replaced, in place, by everything an observer holding the whole ledger
+can read at that moment. The counts move while you watch. The list of players does not, because
+that list is the whole of what the chain knows about people.
+
+It is built only from `snapshot()`, which reads the ledger: phase, alive count, tag count, pot,
+leaf count, the spent set and the player commitments. The count of who is left **is** public, and
+the screen says so in as many words. Which of them are out, who put them out, and who hunts whom
+are not.
 
 The campus is a block of text in `campus.ts`. Rooms are flood-filled from it, doors are found by
 adjacency, and a test walks every tile from your spawn so a map edit cannot strand anybody.
@@ -255,9 +293,10 @@ Two things that only show up on a real chain:
 | `core/src/test/handover` | five people, one bundle, a tag from spoken words |
 | `core/src/test/cycle` | the host's shuffle, and what the bundle does not leak |
 | `core/src/test/errors` | contract assertions turned into something a player can act on |
-| `app/src/hunt/*.test.ts` | the grid and its paths, the campus, sight, bot behaviour, catching, crowd cover, running and being heard, tips and rumours; a seeded game is the same game twice |
+| `app/src/hunt/*.test.ts` | the grid and its paths, the campus, sight, bot behaviour, catching, crowd cover, running and being heard, tips and rumours, the closing grounds; a seeded game is the same game twice |
+| `app/src/hunt/balance.test.ts` | whole hunts played out against the compiled contract: they resolve, and they never ask for a tag the contract would refuse |
 | `app/src/me/game.test.ts` | a phone reading its target out of a real bundle and checking heard words the way the circuit does |
-| `app/e2e/hunt` | a whole hunt won, a whole hunt lost, wrong words refused by the contract, no names on the chain panel |
+| `app/e2e/hunt` | a whole hunt won, a whole hunt lost, wrong words refused by the contract, no names on the chain panel, the chain's eye before and after a tag |
 | `app/e2e/me` | a player's phone: words kept, bundle read, target opened, heard words checked, everything forgotten |
 | `app/e2e` | the paper sandbox, the four ways out, the evidence and spectator pages |
 

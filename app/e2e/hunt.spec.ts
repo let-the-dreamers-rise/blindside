@@ -115,6 +115,38 @@ test("the chain panel never names a player, whatever the campus saw", async ({ p
   }
 });
 
+test("the chain's eye is the same moment with everything identifying taken out", async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await openHunt(page, 17);
+  await page.getByRole("button", { name: "Practice first" }).click();
+
+  const eye = page.getByRole("region", { name: "What the chain sees" });
+  const pseudonyms = eye.getByTestId("chain-players").locator(".chain-card");
+
+  await page.getByRole("button", { name: "The chain", exact: true }).click();
+  await expect(eye).toBeVisible();
+  await expect(pseudonyms).toHaveCount(8);
+  await expect(eye.getByTestId("chain-spent")).toContainText("nothing retired yet");
+  await page.getByRole("button", { name: "Back to the campus" }).click();
+  await expect(eye).toBeHidden();
+
+  await tagMyTarget(page);
+  await page.getByRole("button", { name: "The chain", exact: true }).click();
+
+  // A tag retires two notes and changes the count of who is left. It changes nothing about the
+  // list of players, because that list is the whole of what the chain knows about people.
+  await expect(eye.getByTestId("chain-spent").locator(".chain-card")).toHaveCount(2);
+  await expect(pseudonyms).toHaveCount(8);
+  await expect(eye.getByText(/is out, and the count above says so/)).toBeVisible();
+
+  const seen = await eye.innerText();
+  for (const name of [...CAST, "You"]) {
+    expect(seen).not.toContain(name);
+  }
+});
+
 test("the wrong five words are refused by the contract, not by the page", async ({ page }) => {
   test.setTimeout(120_000);
   await openHunt(page, 13);

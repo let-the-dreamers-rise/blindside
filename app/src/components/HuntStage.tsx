@@ -17,6 +17,7 @@ import { paintGround } from "../hunt/paint.ts";
 import { spriteUrl } from "../hunt/pixels.ts";
 import { type Actor, YOU } from "../hunt/sim.ts";
 import type { Hunt } from "../hunt/useHunt.ts";
+import { ChainEye } from "./ChainEye.tsx";
 
 type Size = { readonly w: number; readonly h: number };
 
@@ -247,6 +248,9 @@ export const HuntStage = ({ hunt, children }: Props) => {
           <div className="lantern" style={{ background: lanternAt(you.at) }} aria-hidden="true" />
         ) : null}
       </div>
+      {hunt.chainEye ? (
+        <ChainEye snapshot={hunt.snapshot} onClose={hunt.toggleChainEye} />
+      ) : null}
       {children}
     </div>
   );

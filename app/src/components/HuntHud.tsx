@@ -125,6 +125,14 @@ export const HuntHud = ({ hunt }: { readonly hunt: Hunt }) => {
           <button
             type="button"
             className="ghost"
+            onClick={hunt.toggleChainEye}
+            aria-pressed={hunt.chainEye}
+          >
+            {hunt.chainEye ? "The campus" : "The chain"}
+          </button>
+          <button
+            type="button"
+            className="ghost"
             onClick={hunt.toggleMute}
             aria-pressed={hunt.muted}
           >

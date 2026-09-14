@@ -73,6 +73,8 @@ export type HuntView = {
   readonly rumourAt: Point | null;
   /** You are standing off the closing grounds, where there is nobody left to hide among. */
   readonly exposed: boolean;
+  /** The campus is swapped for the public record of the same moment. */
+  readonly chainEye: boolean;
 };
 
 export type Hunt = HuntView & {
@@ -89,6 +91,7 @@ export type Hunt = HuntView & {
   readonly openEnvelope: () => void;
   readonly hold: (dir: Dir | null) => void;
   readonly sprint: (on: boolean) => void;
+  readonly toggleChainEye: () => void;
   readonly tapTile: (tile: Point) => void;
   readonly tapActor: (index: number) => void;
   readonly beginMoment: () => void;
@@ -286,6 +289,7 @@ export const useHunt = (): Hunt => {
     jolt: 0,
     rumourAt: null,
     exposed: false,
+    chainEye: false,
   }));
 
   const entries = useCallback((texts: readonly string[]): readonly FeedEntry[] =>
@@ -408,6 +412,10 @@ export const useHunt = (): Hunt => {
 
   const sprint = useCallback((on: boolean) => {
     sprintRef.current = on;
+  }, []);
+
+  const toggleChainEye = useCallback(() => {
+    setView((prev) => ({ ...prev, chainEye: !prev.chainEye }));
   }, []);
 
   const tapTile = useCallback((tile: Point) => {
@@ -610,6 +618,7 @@ export const useHunt = (): Hunt => {
     openEnvelope,
     hold,
     sprint,
+    toggleChainEye,
     tapTile,
     tapActor,
     beginMoment,

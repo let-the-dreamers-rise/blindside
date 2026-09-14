@@ -78,12 +78,22 @@ you. Buildings hide whoever is inside. Standing in a crowd hides you. Running is
 and your hunter can hear it. When you have somebody, they stop and say five words, once, and you
 type what you heard.
 
+Three quarters of a minute in, **the grounds start closing**. The open ground shrinks to the quad
+around the fountain, and the crowd drifts in with it. Nobody is walled in: step outside the line
+and there is nobody left out there to hide behind, and your hunter is told where you are every
+few seconds. The last minute is eight people in one courtyard, which is where it should end.
+
 Every join, tag, refusal, payout and refund in it runs the **real compiled contract in your
 browser tab**. The campus, the rumours and the other seven players are a game about the real one.
 
-Two feeds sit under the map. *What you saw* is the campus: who went into the Library, who is out,
-where your target was last seen. *What the chain sees* is two spent notes and one new one. The
-same tag, side by side. That contrast is the product.
+Press **The chain** at any point and the campus is replaced, in place, by everything an observer
+holding the whole ledger can read at that moment: the pot, the notes, the spent ones, and eight
+pseudonyms that never change however many people are out. The counts move while you watch; the
+list of people does not. That contrast, in one button, is the product.
+
+Two feeds sit under the map as well. *What you saw* is the campus: who went into the Library, who
+is out, where your target was last seen. *What the chain sees* is two spent notes and one new
+one. The same tag, side by side.
 
 [The paper version](https://let-the-dreamers-rise.github.io/blindside/#/sandbox) is the same
 contract with the buttons showing. Play a whole game, win it, claim the pot. Then press the
