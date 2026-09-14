@@ -15,6 +15,7 @@ import {
   type Input,
   type Sim,
   type SimEvent,
+  GRACE_TICKS,
   STAMINA_MAX,
   TICK_MS,
   YOU,
@@ -268,6 +269,11 @@ const advanceView = (prev: HuntView, change: Change): HuntView => {
   };
 };
 
+const GRACE_OVER =
+  "The first half minute is over. Whoever is hunting you can take you from here, and standing still is how people get taken.";
+const LAST_TWO =
+  "Two left. There is only one arrow it can be now: you are hunting each other, and whoever gets there first takes the pot.";
+const LAST_TWO_WATCHED = "Two left. They are hunting each other. It can only be that now.";
 const CLOSING_NOTE =
   "The grounds are closing. Everybody is drifting in towards the quad, and there will be less and less campus to lose yourself in.";
 const OFF_THE_GROUNDS =
@@ -301,6 +307,7 @@ export const useHunt = (): Hunt => {
   const practiceRef = useRef(false);
   const envelopeRef = useRef(false);
   const litRef = useRef(false);
+  const leftRef = useRef<number | null>(null);
   const nextIdRef = useRef(1);
   const wordsTimerRef = useRef<number | null>(null);
 
@@ -353,14 +360,21 @@ export const useHunt = (): Hunt => {
     const stepped = lit && !litRef.current;
     litRef.current = lit;
     const shutting = before.ring === null && sim.ring !== null;
+    const live = !facts.practice && before.tick < GRACE_TICKS && sim.tick >= GRACE_TICKS;
     const secondsLeft = Math.max(0, GAME_SECONDS - Math.floor((sim.tick * TICK_MS) / 1000));
     const ending = endingOf(engine, secondsLeft);
     const behind = events.some((event) => event.type === "behind");
+    const snapshot = engine.snapshot();
+    // With two left the cycle is two arrows: each of them is hunting the other. It is the one
+    // thing about the shape of the game that becomes public knowledge, and only at the end.
+    const duel = (leftRef.current ?? snapshot.alive) > 2 && snapshot.alive === 2;
+    leftRef.current = snapshot.alive;
     if (settled.caughtBy !== null) {
       speaker.play("caught");
     } else if (behind) {
       speaker.play("behind");
     } else if (
+      live ||
       rumour !== null ||
       events.some(
         (event) => event.type === "tip" || event.type === "heard" || event.type === "exposed",
@@ -372,17 +386,19 @@ export const useHunt = (): Hunt => {
       speaker.play("win");
     }
     const notes = entries([
+      ...(live ? [GRACE_OVER] : []),
       ...(shutting ? [CLOSING_NOTE] : []),
       ...(stepped ? [OFF_THE_GROUNDS] : []),
       ...seen,
       ...settled.notes,
+      ...(duel ? [facts.youOut ? LAST_TWO_WATCHED : LAST_TWO] : []),
       ...(rumour === null ? [] : [rumour.text]),
     ]);
     setView((prev) =>
       advanceView(prev, {
         sim,
         facts: factsOf(engine, practiceRef.current),
-        snapshot: engine.snapshot(),
+        snapshot,
         notes,
         caughtBy: settled.caughtBy,
         ending,
@@ -415,6 +431,7 @@ export const useHunt = (): Hunt => {
     (practice: boolean, players: number = sizeRef.current) => {
       practiceRef.current = practice;
       litRef.current = false;
+      leftRef.current = null;
       // A different size is a different game, so it gets a new contract and a new campus rather
       // than an old one with people taken off it.
       if (players !== sizeRef.current) {
