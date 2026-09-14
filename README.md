@@ -213,6 +213,13 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 | Escrow on the public testnet | Ready and waiting on tokens. `pnpm --filter @blindside/cli address preview` prints the address to fund, and `pnpm --filter @blindside/cli public preview` plays a whole game against the public network once it has them |
 | Real game with real players | Planned before submission |
 
+## Where it runs
+
+The app is a static build with a hash router, so it needs no server and no rewrite rules, and
+`base` is `./` so the same build works from a root domain or a subdirectory without being rebuilt.
+[docs/DEPLOY.md](docs/DEPLOY.md) has the steps for Vercel, where `vercel.json` already carries
+every build setting, and for the GitHub Pages workflow that publishes it today.
+
 ## Building it yourself
 
 Requires Node 22, pnpm 9 and the Compact toolchain (Linux or WSL2; the toolchain does not run
