@@ -24,14 +24,14 @@ export type ChainNetwork = ChainEndpoints & {
 
 const LOCAL_PROOF_SERVER = "http://127.0.0.1:6300";
 
-const publicNetwork = (id: string, label: string, faucet: string): ChainNetwork => ({
+const publicNetwork = (id: string, label: string): ChainNetwork => ({
   id,
   label,
   indexer: `https://indexer.${id}.midnight.network/api/v4/graphql`,
   indexerWS: `wss://indexer.${id}.midnight.network/api/v4/graphql/ws`,
   node: `https://rpc.${id}.midnight.network`,
   proofServer: LOCAL_PROOF_SERVER,
-  faucet,
+  faucet: `https://faucet.${id}.midnight.network`,
 });
 
 /** A whole Midnight network on this machine: node, indexer and prover in Docker. */
@@ -46,18 +46,14 @@ export const LOCAL_NETWORK: ChainNetwork = {
 };
 
 export const NETWORKS: readonly ChainNetwork[] = [
-  publicNetwork(
-    "preview",
-    "Midnight preview",
-    "https://midnight-tmnight-preview.nethermind.dev/",
-  ),
-  publicNetwork(
-    "preprod",
-    "Midnight preprod",
-    "https://midnight-tmnight-preprod.nethermind.dev/",
-  ),
+  publicNetwork("preview", "Midnight preview"),
+  publicNetwork("preprod", "Midnight preprod"),
   LOCAL_NETWORK,
 ];
+
+/** The same faucet on a second host. Worth trying when the first one will not have you. */
+export const faucetMirror = (id: string): string =>
+  `https://midnight-tmnight-${id}.nethermind.dev/`;
 
 export const networkIds = (): readonly string[] => NETWORKS.map((network) => network.id);
 

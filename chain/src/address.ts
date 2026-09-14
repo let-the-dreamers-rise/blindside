@@ -6,9 +6,6 @@ import * as ledger from "@midnight-ntwrk/ledger-v8";
 import { getNetworkId } from "@midnight-ntwrk/midnight-js-network-id";
 import {
   MidnightBech32m,
-  ShieldedAddress,
-  ShieldedCoinPublicKey,
-  ShieldedEncryptionPublicKey,
   UnshieldedAddress,
 } from "@midnight-ntwrk/wallet-sdk-address-format";
 import { Roles } from "@midnight-ntwrk/wallet-sdk-hd";
@@ -44,19 +41,3 @@ export const addressOf = (keystore: UnshieldedKeystore): string =>
 export const addressForSeed = (seed: string): string =>
   addressOf(createKeystore(deriveKeys(seed)[Roles.NightExternal], getNetworkId()));
 
-/**
- * The same wallet's shielded address. A faucet hands out NIGHT, which is unshielded, so the
- * address above is the one to paste; this is here because a faucet that turns down a
- * well formed unshielded address usually wanted this form, and finding that out should not
- * cost a second trip to the machine that holds the seed.
- */
-export const shieldedAddressForSeed = (seed: string): string => {
-  const zswap = ledger.ZswapSecretKeys.fromSeed(deriveKeys(seed)[Roles.Zswap]);
-  return MidnightBech32m.encode(
-    getNetworkId(),
-    new ShieldedAddress(
-      ShieldedCoinPublicKey.fromHexString(zswap.coinPublicKey),
-      ShieldedEncryptionPublicKey.fromHexString(zswap.encryptionPublicKey),
-    ),
-  ).asString();
-};
