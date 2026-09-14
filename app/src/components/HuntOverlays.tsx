@@ -49,7 +49,10 @@ const Intro = ({ hunt }: { readonly hunt: Hunt }) => {
             key={size}
             className={`chip${size === players ? " on" : ""}`}
             aria-pressed={size === players}
-            onClick={() => setPlayers(size)}
+            onClick={() => {
+              setPlayers(size);
+              hunt.preview(size, where);
+            }}
           >
             {size}
             <span>{HOW_LONG[size] ?? ""}</span>
@@ -64,7 +67,10 @@ const Intro = ({ hunt }: { readonly hunt: Hunt }) => {
             key={place.key}
             className={`chip wide${place.key === where.key ? " on" : ""}`}
             aria-pressed={place.key === where.key}
-            onClick={() => setWhere(place)}
+            onClick={() => {
+              setWhere(place);
+              hunt.preview(players, place);
+            }}
           >
             {place.name}
             <span>{place.blurb}</span>

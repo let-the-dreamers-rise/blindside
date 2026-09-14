@@ -114,6 +114,8 @@ export type Hunt = HuntView & {
   /** You are lost in a crowd of strangers: your hunter cannot see you from a distance. */
   readonly hidden: boolean;
   readonly start: (practice: boolean, players?: number, where?: Place) => void;
+  /** Change the game the intro card is sitting on top of, before anybody commits to it. */
+  readonly preview: (players: number, where: Place) => void;
   /** How many are in this game. Always the first few of the cast. */
   readonly size: number;
   readonly openEnvelope: () => void;
@@ -322,6 +324,9 @@ export const useHunt = (): Hunt => {
   const envelopeRef = useRef(false);
   const litRef = useRef(false);
   const leftRef = useRef<number | null>(null);
+  /** How many players the engine in hand was dealt for, and a pending deal for a different size. */
+  const dealtRef = useRef(sizeRef.current);
+  const dealTimerRef = useRef<number | null>(null);
   const nextIdRef = useRef(1);
   const wordsTimerRef = useRef<number | null>(null);
 
@@ -438,8 +443,24 @@ export const useHunt = (): Hunt => {
       if (wordsTimerRef.current !== null) {
         window.clearTimeout(wordsTimerRef.current);
       }
+      if (dealTimerRef.current !== null) {
+        window.clearTimeout(dealTimerRef.current);
+      }
     },
     [],
+  );
+
+  /** A game of this size, joined and started for real. Cancels a deal that was waiting to run. */
+  const deal = useCallback(
+    (players: number) => {
+      if (dealTimerRef.current !== null) {
+        window.clearTimeout(dealTimerRef.current);
+        dealTimerRef.current = null;
+      }
+      engineRef.current = new SandboxRunner(HUNT_CAST.slice(0, players));
+      dealtRef.current = players;
+    },
+    [engineRef],
   );
 
   const start = useCallback(
@@ -447,13 +468,15 @@ export const useHunt = (): Hunt => {
       practiceRef.current = practice;
       litRef.current = false;
       leftRef.current = null;
-      // A different size or a different place is a different game, so it gets a new contract and
-      // a fresh map rather than an old one with people taken off it.
+      // A different size or a different place is a different game, so it gets a fresh map rather
+      // than an old one with people taken off it, and a contract run of its own.
       if (players !== sizeRef.current || where.key !== placeRef.current.key) {
         sizeRef.current = players;
         placeRef.current = where;
-        engineRef.current = new SandboxRunner(HUNT_CAST.slice(0, players));
         simRef.current = newSim(where.world, seedRef.current, players);
+      }
+      if (dealtRef.current !== players) {
+        deal(players);
       }
       rememberGame(seedRef.current, players, where.key);
       speaker.play("open");
@@ -473,7 +496,7 @@ export const useHunt = (): Hunt => {
         ),
       }));
     },
-    [engineRef, simRef, seedRef, sizeRef, entries, speaker],
+    [deal, engineRef, simRef, seedRef, sizeRef, placeRef, entries, speaker],
   );
 
   const openEnvelope = useCallback(() => {
@@ -496,6 +519,43 @@ export const useHunt = (): Hunt => {
   const sprint = useCallback((on: boolean) => {
     sprintRef.current = on;
   }, []);
+
+  /**
+   * The intro card sits over the place it is about, so choosing a size or a place changes the
+   * picture behind it rather than only the label on the chip.
+   *
+   * The map and the people are instant. The contract run is not: a dozen joins and a start is
+   * most of a second of real work, and doing it inside the click freezes the button. So it goes
+   * after the paint, and the status bar catches up with the picture a moment later. The numbers
+   * there are the contract's, which is the whole point of them, so they are never guessed at.
+   */
+  const preview = useCallback(
+    (players: number, where: Place) => {
+      if (players === sizeRef.current && where.key === placeRef.current.key) {
+        return;
+      }
+      sizeRef.current = players;
+      placeRef.current = where;
+      simRef.current = newSim(where.world, seedRef.current, players);
+      setView((prev) => ({ ...prev, sim: simRef.current }));
+      if (dealtRef.current === players) {
+        return;
+      }
+      if (dealTimerRef.current !== null) {
+        window.clearTimeout(dealTimerRef.current);
+      }
+      dealTimerRef.current = window.setTimeout(() => {
+        dealTimerRef.current = null;
+        deal(players);
+        setView((prev) => ({
+          ...prev,
+          snapshot: engineRef.current.snapshot(),
+          facts: factsOf(engineRef.current, false),
+        }));
+      }, 0);
+    },
+    [deal, engineRef, simRef, seedRef, sizeRef, placeRef],
+  );
 
   const toggleChainEye = useCallback(() => {
     setView((prev) => ({ ...prev, chainEye: !prev.chainEye }));
@@ -709,6 +769,7 @@ export const useHunt = (): Hunt => {
     openEnvelope,
     hold,
     sprint,
+    preview,
     toggleChainEye,
     tapTile,
     tapActor,
