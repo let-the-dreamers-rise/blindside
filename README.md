@@ -2,7 +2,9 @@
 
 **Everyone has a target. Nobody knows who has them.**
 
-![A campus at night with eight players on it, the grounds closing to a lit ring around the fountain](docs/shots/desktop/06-the-grounds-close.png)
+![Walking a target down across a campus at night, and the moment they say five words out loud](docs/shots/the-hunt.gif)
+
+*One take, at the speed it plays. Nothing here is a mockup.*
 
 Blindside is a hidden-target tag game on [Midnight](https://midnight.network). You are secretly
 assigned one other player to tag. When you get them, they say **five words** out loud; those words
@@ -88,6 +90,8 @@ Three quarters of a minute in, **the grounds start closing**. The open ground sh
 middle and the crowd drifts in with it. Nobody is walled in: step outside the line and there is
 nobody left out there to hide behind, and your hunter is told where you are every few seconds.
 The last minute is everybody in one courtyard, which is where it should end.
+
+![The same campus with the grounds shut to a lit ring around the fountain, and two players stranded outside it in the dark](docs/shots/desktop/06-the-grounds-close.png)
 
 Every join, tag, refusal, payout and refund in it runs the **real compiled contract in your
 browser tab**. The place, the rumours and everybody else on it are a game about the real one.

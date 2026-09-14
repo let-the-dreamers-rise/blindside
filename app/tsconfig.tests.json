@@ -1,0 +1,11 @@
+// The specs that drive a browser run under Node, not under Vite, so they get their own project:
+// node's builtins instead of the DOM globals, and no `vite/client`. Without this they are the
+// only TypeScript in the repo nothing typechecks, which is exactly where a rename goes unnoticed
+// until a run fails minutes later.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["e2e/**/*.ts", "shots/**/*.ts", "playwright.config.ts", "playwright.shots.config.ts"]
+}

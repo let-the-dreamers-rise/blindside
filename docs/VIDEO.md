@@ -96,4 +96,6 @@ them. Tag. The five words in the bubble. Type them.*
 - The chain view is the star. Give it a full beat after the first tag.
 - No gun imagery, no crosshairs, no red spatter. The word is "tag".
 - `pnpm --filter @blindside/app shots` writes the same frames to `docs/shots`, desktop and phone,
-  by playing the game rather than mocking it up. Use them for thumbnails and the deck.
+  by playing the game rather than mocking it up. Use them for thumbnails and the deck. It also
+  writes `docs/shots/the-hunt.gif`: one take of a target walked down and tagged, timed to the rate
+  the frames actually came out at, so the loop plays at the speed the game does.
