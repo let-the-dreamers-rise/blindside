@@ -87,7 +87,12 @@ export const paintGround = (canvas: HTMLCanvasElement, world: World): void => {
 const MINI = 4;
 
 /** The whole campus at four pixels a tile, with you on it and nobody else. */
-export const paintMinimap = (canvas: HTMLCanvasElement, world: World, you: Point | null): void => {
+export const paintMinimap = (
+  canvas: HTMLCanvasElement,
+  world: World,
+  you: Point | null,
+  rumour: Point | null = null,
+): void => {
   const ctx = canvas.getContext("2d");
   if (ctx === null) {
     return;
@@ -100,6 +105,13 @@ export const paintMinimap = (canvas: HTMLCanvasElement, world: World, you: Point
       tile === "water" ? "#2c5f86" : tile === "wall" || tile === "door" ? "#6b5a48" : tile === "floor" ? "#3d3126" : (world.walkable[indexOf(world, at)] ?? false) ? "#2a2e26" : "#141812";
     ctx.fillRect(at.x * MINI, at.y * MINI, MINI, MINI);
   });
+  if (rumour !== null) {
+    ctx.strokeStyle = "rgba(232, 193, 112, 0.85)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(rumour.x * MINI + MINI / 2, rumour.y * MINI + MINI / 2, MINI * 2, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   if (you !== null) {
     ctx.fillStyle = "#c2392f";
     ctx.fillRect(you.x * MINI - 1, you.y * MINI - 1, MINI + 2, MINI + 2);

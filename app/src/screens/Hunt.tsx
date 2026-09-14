@@ -28,10 +28,14 @@ const typing = (event: KeyboardEvent): boolean =>
   event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
 
 const useKeyboard = (hunt: HuntGame): void => {
-  const { hold, beginMoment, cancelMoment, canTag, phase } = hunt;
+  const { hold, sprint, beginMoment, cancelMoment, canTag, phase } = hunt;
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
       if (typing(event)) {
+        return;
+      }
+      if (event.key === "Shift") {
+        sprint(true);
         return;
       }
       const dir = KEYS[event.key];
@@ -46,6 +50,9 @@ const useKeyboard = (hunt: HuntGame): void => {
       }
     };
     const up = (event: KeyboardEvent) => {
+      if (event.key === "Shift") {
+        sprint(false);
+      }
       if (KEYS[event.key] !== undefined) {
         hold(null);
       }
@@ -56,8 +63,9 @@ const useKeyboard = (hunt: HuntGame): void => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       hold(null);
+      sprint(false);
     };
-  }, [hold, beginMoment, cancelMoment, canTag, phase]);
+  }, [hold, sprint, beginMoment, cancelMoment, canTag, phase]);
 };
 
 export const Hunt = () => {
@@ -87,7 +95,7 @@ export const Hunt = () => {
         <section className="card">
           <h2>What you saw</h2>
           <div className="saw">
-            <Minimap world={hunt.world} you={you?.at ?? null} />
+            <Minimap world={hunt.world} you={you?.at ?? null} rumour={hunt.rumourAt} />
             <ul className="feed" aria-label="What you saw">
               {hunt.worldFeed.map((entry) => (
                 <li key={entry.id}>{entry.text}</li>

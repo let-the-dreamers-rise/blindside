@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type PointerEvent, type ReactNode, useEffect, useRef, useState } from "react";
+
 import { SPRITE_HEIGHT, SPRITE_WIDTH, TILE } from "../hunt/art.ts";
 import { type Room, type World, roomOf } from "../hunt/campus.ts";
 import type { Point } from "../hunt/grid.ts";
@@ -45,25 +46,46 @@ const Roof = ({ room, hidden }: { readonly room: Room; readonly hidden: boolean 
   );
 };
 
+/** Everybody on the campus stands at the same offset, sorted so the nearer ones are in front. */
+const place = (actor: Actor) => ({
+  transform: `translate(${actor.at.x * TILE + (TILE - SPRITE_WIDTH) / 2}px, ${actor.at.y * TILE + TILE - SPRITE_HEIGHT}px)`,
+  zIndex: 2 + actor.at.y,
+});
+
+/** A stranger. Not in the game, not tappable, and never named. */
+const Stranger = ({ actor }: { readonly actor: Actor }) => (
+  <div className="actor stranger" style={place(actor)} aria-hidden="true">
+    <span className="shadow" />
+    <img
+      src={spriteUrl(actor.index, actor.frame, false)}
+      alt=""
+      width={SPRITE_WIDTH}
+      height={SPRITE_HEIGHT}
+      style={{ transform: `scaleX(${actor.facing})` }}
+      draggable={false}
+    />
+  </div>
+);
+
 type PersonProps = {
   readonly actor: Actor;
   readonly name: string;
   readonly out: boolean;
   readonly isTarget: boolean;
+  readonly hidden: boolean;
+  readonly running: boolean;
   readonly bubble: string | undefined;
   readonly onTap: () => void;
 };
 
-const Person = ({ actor, name, out, isTarget, bubble, onTap }: PersonProps) => {
+const Person = ({ actor, name, out, isTarget, hidden, running, bubble, onTap }: PersonProps) => {
   const isYou = actor.index === YOU;
   const label = isYou ? "You" : out ? `${name}, out` : `Walk to ${name}`;
   return (
     <button
       type="button"
-      className={`actor${isYou ? " you" : ""}${out ? " out" : ""}`}
-      style={{
-        transform: `translate(${actor.at.x * TILE + (TILE - SPRITE_WIDTH) / 2}px, ${actor.at.y * TILE + TILE - SPRITE_HEIGHT}px)`,
-      }}
+      className={`actor${isYou ? " you" : ""}${out ? " out" : ""}${hidden ? " hidden-in-crowd" : ""}`}
+      style={place(actor)}
       aria-label={label}
       disabled={isYou || out}
       onClick={onTap}
@@ -76,6 +98,8 @@ const Person = ({ actor, name, out, isTarget, bubble, onTap }: PersonProps) => {
           {bubble}
         </span>
       )}
+      <span className="shadow" />
+      {running ? <span className="dust" aria-hidden="true" /> : null}
       <img
         src={spriteUrl(actor.index, actor.frame, out)}
         alt=""
@@ -92,7 +116,8 @@ const Person = ({ actor, name, out, isTarget, bubble, onTap }: PersonProps) => {
 type Props = { readonly hunt: Hunt; readonly children?: ReactNode };
 
 export const HuntStage = ({ hunt, children }: Props) => {
-  const { world, sim, facts, visible, names, targetIndex, bubbles } = hunt;
+  const { world, sim, facts, visible, names, targetIndex, bubbles, jolt } = hunt;
+  const [shaking, setShaking] = useState(false);
   const groundRef = useRef<HTMLCanvasElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -103,6 +128,15 @@ export const HuntStage = ({ hunt, children }: Props) => {
       paintGround(groundRef.current, world);
     }
   }, [world]);
+
+  useEffect(() => {
+    if (jolt === 0) {
+      return;
+    }
+    setShaking(true);
+    const timer = window.setTimeout(() => setShaking(false), 380);
+    return () => window.clearTimeout(timer);
+  }, [jolt]);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -137,7 +171,10 @@ export const HuntStage = ({ hunt, children }: Props) => {
   };
 
   return (
-    <div className="hunt-viewport" ref={viewportRef}>
+    <div
+      className={`hunt-viewport${shaking ? " jolt" : ""}${hunt.phase === "moment" ? " listening" : ""}`}
+      ref={viewportRef}
+    >
       <div
         className="hunt-stage"
         ref={stageRef}
@@ -158,6 +195,9 @@ export const HuntStage = ({ hunt, children }: Props) => {
         {world.rooms.map((room, index) => (
           <Roof key={room.name} room={room} hidden={roofsOff || inside === index} />
         ))}
+        {sim.extras.map((extra) => (
+          <Stranger key={extra.index} actor={extra} />
+        ))}
         {sim.actors
           .filter((actor) => visible.has(actor.index))
           .map((actor) => (
@@ -167,6 +207,8 @@ export const HuntStage = ({ hunt, children }: Props) => {
               name={names[actor.index] ?? "someone"}
               out={!(facts.alive[actor.index] ?? false)}
               isTarget={actor.index === targetIndex}
+              hidden={actor.index === YOU && hunt.hidden}
+              running={actor.index === YOU && sim.sprinting}
               bubble={bubbles.get(actor.index)}
               onTap={() => hunt.tapActor(actor.index)}
             />

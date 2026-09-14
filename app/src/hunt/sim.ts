@@ -11,6 +11,7 @@ import {
   type Dir,
   type Point,
   adjacent,
+  chebyshev,
   findPath,
   findPathToAdjacent,
   keyOf,
@@ -22,6 +23,19 @@ import { type Rng, nextRandom, pick, seedRng } from "./rng.ts";
 import { canSee } from "./sight.ts";
 
 export const TICK_MS = 150;
+/** Strangers on the campus who are not in the game. Cover to hide in, and noise to read past. */
+export const EXTRAS = 10;
+const EXTRA_OFFSET = 100;
+/** Two strangers close enough and a hunter loses you unless they are almost on top of you. */
+export const CROWD_COVER = 2;
+export const CROWD_RANGE = 2;
+/** Sprinting: two tiles a tick while it lasts, and it can be heard from here. */
+export const STAMINA_MAX = 100;
+export const SPRINT_DRAIN = 3;
+export const STAMINA_REGEN = 1;
+/** Once you are spent you have to get some back before you can run again. */
+export const SPRINT_READY = 25;
+export const HEARING = 13;
 /** Bots stroll: one step every third tick. You take one every tick, so you can outrun anybody. */
 export const BOT_STEP_EVERY = 3;
 /** Your hunter, once it has seen you, moves faster than a stroll and slower than you. */
@@ -64,6 +78,10 @@ export type Sim = {
   readonly tick: number;
   readonly rng: Rng;
   readonly actors: readonly Actor[];
+  /** Strangers. They are not in the cycle, cannot be tagged, and never carry a name. */
+  readonly extras: readonly Actor[];
+  readonly stamina: number;
+  readonly sprinting: boolean;
   readonly lastBotTag: number;
   readonly follow: number | null;
   readonly heard: number;
@@ -82,41 +100,66 @@ export type Input = {
   readonly dir: Dir | null;
   readonly tapped: Point | null;
   readonly follow: number | null;
+  readonly sprint: boolean;
 };
 
-export const NO_INPUT: Input = { dir: null, tapped: null, follow: null };
+export const NO_INPUT: Input = { dir: null, tapped: null, follow: null, sprint: false };
 
 export type SimEvent =
   | { readonly type: "botTag"; readonly hunter: number; readonly victim: number }
   | { readonly type: "caught"; readonly hunter: number }
-  | { readonly type: "tip"; readonly hunter: number };
+  | { readonly type: "tip"; readonly hunter: number }
+  | { readonly type: "heard"; readonly hunter: number }
+  | { readonly type: "step"; readonly sprinting: boolean };
 
 export type Stepped = { readonly sim: Sim; readonly events: readonly SimEvent[] };
 
-export const newSim = (world: World, seed: number, count: number): Sim => {
+const blankActor = (index: number, at: Point): Actor => ({
+  index,
+  at,
+  facing: 1,
+  frame: 0,
+  path: [],
+  idle: 0,
+  lastSeen: null,
+  seenAt: -1,
+  closeFor: 0,
+  coolUntil: 0,
+});
+
+/** Strangers start anywhere outdoors, drawn from the seeded generator like everything else. */
+const spreadExtras = (world: World, rng: Rng, count: number): readonly [readonly Actor[], Rng] =>
+  Array.from({ length: count }).reduce<readonly [readonly Actor[], Rng]>(
+    ([extras, state], _, index) => {
+      const [tile, next] = pick(state, world.open);
+      return [[...extras, blankActor(EXTRA_OFFSET + index, tile ?? { x: 0, y: 0 })], next];
+    },
+    [[], rng],
+  );
+
+export const newSim = (world: World, seed: number, count: number, extraCount = EXTRAS): Sim => {
   if (count > world.spawns.length) {
     throw new Error(`the campus has room for ${world.spawns.length} players`);
   }
+  const [extras, rng] = spreadExtras(world, seedRng(seed), extraCount);
   return {
     tick: 0,
-    rng: seedRng(seed),
-    actors: world.spawns.slice(0, count).map((at, index) => ({
-      index,
-      at,
-      facing: 1,
-      frame: 0,
-      path: [],
-      idle: 0,
-      lastSeen: null,
-      seenAt: -1,
-      closeFor: 0,
-      coolUntil: 0,
-    })),
+    rng,
+    actors: world.spawns.slice(0, count).map((at, index) => blankActor(index, at)),
+    extras,
+    stamina: STAMINA_MAX,
+    sprinting: false,
     lastBotTag: 0,
     follow: null,
     heard: 0,
   };
 };
+
+/** Strangers standing close enough to be lost among. */
+export const crowdAround = (sim: Sim, at: Point): number =>
+  sim.extras.filter((extra) => chebyshev(extra.at, at) <= CROWD_RANGE).length;
+
+export const inCrowd = (sim: Sim, at: Point): boolean => crowdAround(sim, at) >= CROWD_COVER;
 
 /** For tests and for placing people deliberately. */
 export const withActorAt = (sim: Sim, index: number, at: Point): Sim => ({
@@ -192,29 +235,77 @@ const planYou = (
   return { ...you, path: findPathToAdjacent(world, you.at, other.at, occupied) ?? [] };
 };
 
-const stepYou = (sim: Sim, world: World, facts: Facts, input: Input): Sim => {
-  const you = sim.actors[YOU];
-  if (you === undefined || facts.youOut || !(facts.alive[YOU] ?? false)) {
-    return sim;
-  }
-  const occupied = occupiedBy(sim, facts, YOU);
+/** One step, however it was asked for. Returns the actor and whether the tile changed. */
+const moveYouOnce = (
+  sim: Sim,
+  world: World,
+  occupied: ReadonlySet<string>,
+  you: Actor,
+  input: Input,
+  follow: number | null,
+): readonly [Actor, boolean] => {
   if (input.dir !== null) {
     const next = moved(you.at, input.dir);
     const can = walkableAt(world, next) && !occupied.has(keyOf(next));
-    const turned = { ...you, path: [], facing: facingFor(you.at, next, you.facing) };
-    return { ...sim, follow: null, actors: replace(sim.actors, can ? stepTo(you, next, []) : turned) };
+    return can
+      ? [stepTo(you, next, []), true]
+      : [{ ...you, path: [], facing: facingFor(you.at, next, you.facing) }, false];
   }
-  const follow = input.tapped !== null ? null : (input.follow ?? sim.follow);
   const planned = planYou(sim, world, you, occupied, input, follow);
-  return { ...sim, follow, actors: replace(sim.actors, advance(planned, occupied)) };
+  const stepped = advance(planned, occupied);
+  return [stepped, !same(stepped.at, you.at)];
+};
+
+type YouStepped = { readonly sim: Sim; readonly moved: boolean; readonly sprinted: boolean };
+
+const stepYou = (sim: Sim, world: World, facts: Facts, input: Input): YouStepped => {
+  const you = sim.actors[YOU];
+  if (you === undefined || facts.youOut || !(facts.alive[YOU] ?? false)) {
+    return { sim: { ...sim, sprinting: false }, moved: false, sprinted: false };
+  }
+  const occupied = occupiedBy(sim, facts, YOU);
+  const follow = input.dir !== null || input.tapped !== null ? null : (input.follow ?? sim.follow);
+  const [first, movedOnce] = moveYouOnce(sim, world, occupied, you, input, follow);
+
+  // Sprinting is a second step in the same tick, and it costs. Standing still costs nothing.
+  // Running it to nothing means walking until you have some back, rather than a limping step
+  // every other tick.
+  const enough = sim.sprinting ? sim.stamina > 0 : sim.stamina >= SPRINT_READY;
+  const canSprint = input.sprint && enough && movedOnce;
+  const [second, movedTwice] = canSprint
+    ? moveYouOnce({ ...sim, actors: replace(sim.actors, first) }, world, occupied, first, input, follow)
+    : ([first, false] as const);
+  const sprinted = canSprint && movedTwice;
+  const stamina = sprinted
+    ? Math.max(0, sim.stamina - SPRINT_DRAIN)
+    : Math.min(STAMINA_MAX, sim.stamina + STAMINA_REGEN);
+
+  return {
+    sim: {
+      ...sim,
+      follow: input.dir !== null ? null : follow,
+      stamina,
+      sprinting: sprinted,
+      actors: replace(sim.actors, second),
+    },
+    moved: movedOnce,
+    sprinted,
+  };
 };
 
 // ----------------------------------------------------------------- bots
 
-const perceive = (sim: Sim, world: World, actor: Actor, prey: Actor | null): Actor =>
-  prey !== null && canSee(world, actor.at, prey.at)
-    ? { ...actor, lastSeen: prey.at, seenAt: sim.tick }
-    : actor;
+/**
+ * A hunter loses its prey in a crowd: a stranger or two between them is enough at any distance
+ * but arm's length. This is the one place where where you stand beats how fast you run.
+ */
+const perceive = (sim: Sim, world: World, actor: Actor, prey: Actor | null): Actor => {
+  if (prey === null || !canSee(world, actor.at, prey.at)) {
+    return actor;
+  }
+  const covered = inCrowd(sim, prey.at) && !adjacent(actor.at, prey.at);
+  return covered ? actor : { ...actor, lastSeen: prey.at, seenAt: sim.tick };
+};
 
 const pickGoal = (world: World, rng: Rng): readonly [Point, Rng] => {
   const [roll, afterRoll] = nextRandom(rng);
@@ -348,12 +439,52 @@ const tipOff = (acc: Stepped, facts: Facts): Stepped => {
   };
 };
 
+/** The strangers. They only ever wander, and nothing about the game touches them. */
+const stepExtras = (sim: Sim, world: World): Sim => {
+  const blocked = new Set<string>();
+  return sim.extras.reduce<Sim>((acc, extra) => {
+    if ((acc.tick + extra.index) % (BOT_STEP_EVERY + 1) !== 0) {
+      return acc;
+    }
+    const stepped = wander({ sim: { ...acc, actors: [extra] }, events: [] }, world, extra, blocked);
+    const next = stepped.sim.actors[0] ?? extra;
+    return {
+      ...acc,
+      rng: stepped.sim.rng,
+      extras: acc.extras.map((each) => (each.index === extra.index ? next : each)),
+    };
+  }, sim);
+};
+
+/** Sprinting carries. Your hunter does not see you, but it knows which way to walk. */
+const noise = (acc: Stepped, world: World, facts: Facts, sprinted: boolean): Stepped => {
+  const you = acc.sim.actors[YOU];
+  const hunter = yourHunter(facts);
+  const actor = hunter === null ? undefined : acc.sim.actors[hunter];
+  if (!sprinted || facts.practice || you === undefined || actor === undefined) {
+    return acc;
+  }
+  if (acc.sim.tick < GRACE_TICKS || chebyshev(actor.at, you.at) > HEARING) {
+    return acc;
+  }
+  const told = { ...actor, lastSeen: you.at, seenAt: acc.sim.tick };
+  return {
+    sim: { ...acc.sim, actors: replace(acc.sim.actors, told) },
+    events: [...acc.events, { type: "heard", hunter: actor.index }],
+  };
+};
+
 export const step = (sim: Sim, world: World, facts: Facts, input: Input): Stepped => {
   const ticked = { ...sim, tick: sim.tick + 1 };
-  const start: Stepped = { sim: stepYou(ticked, world, facts, input), events: [] };
-  const bots = start.sim.actors
+  const you = stepYou(ticked, world, facts, input);
+  const start: Stepped = {
+    sim: stepExtras(you.sim, world),
+    events: you.moved ? [{ type: "step", sprinting: you.sprinted }] : [],
+  };
+  const heard = noise(start, world, facts, you.sprinted);
+  const bots = heard.sim.actors
     .slice(1)
-    .reduce((acc, actor) => stepBot(acc, actor.index, world, facts), start);
+    .reduce((acc, actor) => stepBot(acc, actor.index, world, facts), heard);
   return tipOff(bots, facts);
 };
 
@@ -370,10 +501,10 @@ export const visibleFromYou = (sim: Sim, world: World, facts: Facts): ReadonlySe
   );
 };
 
-export const yourHunter = (facts: Facts): number | null => {
+export function yourHunter(facts: Facts): number | null {
   const index = facts.targets.findIndex((target, who) => target === YOU && (facts.alive[who] ?? false));
   return index === -1 ? null : index;
-};
+}
 
 export const isAt = (sim: Sim, index: number, at: Point): boolean => {
   const actor = sim.actors[index];

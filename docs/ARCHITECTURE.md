@@ -183,7 +183,17 @@ target the event goes to the same `tag` circuit your own tags go to. The bots ca
 the contract would refuse, because they do not do anything the contract does not do.
 
 Sight is one rule for everybody, `canSee` in `sight.ts`: indoors you see your room, outdoors you
-see nine tiles. Bots tag each other only where you are not looking, the way real tags happen in
+see nine tiles. Three things bend it, and each one is a decision a player makes rather than a
+number that goes up:
+
+- **Buildings.** Step through a door and the room's roof stays on for everybody outside it.
+- **The crowd.** Ten strangers walk the campus who are not in the game and can never be tagged.
+  Stand with two of them close by and your hunter loses you at any distance but arm's length.
+  Hiding is a place you stand, not a button.
+- **Running.** Shift, or the Run button, is two tiles a tick while your breath lasts. It is also
+  loud: your hunter does not see you but learns which way to walk. Spend it all and you walk
+  until a quarter of it is back, so there is no stuttering half-sprint to fall back on.
+ Bots tag each other only where you are not looking, the way real tags happen in
 corridors, and what you learn about it is what the campus would tell you ("Nina is out") rather
 than what the chain would ("someone was tagged"). The rumour mill runs both ways: every so often
 you hear where your target was last seen, and your hunter hears where you were.
@@ -223,7 +233,7 @@ Two things that only show up on a real chain:
 | `core/src/test/handover` | five people, one bundle, a tag from spoken words |
 | `core/src/test/cycle` | the host's shuffle, and what the bundle does not leak |
 | `core/src/test/errors` | contract assertions turned into something a player can act on |
-| `app/src/hunt/*.test.ts` | the grid and its paths, the campus, sight, bot behaviour, catching, tips and rumours; a seeded game is the same game twice |
+| `app/src/hunt/*.test.ts` | the grid and its paths, the campus, sight, bot behaviour, catching, crowd cover, running and being heard, tips and rumours; a seeded game is the same game twice |
 | `app/src/me/game.test.ts` | a phone reading its target out of a real bundle and checking heard words the way the circuit does |
 | `app/e2e/hunt` | a whole hunt won, a whole hunt lost, wrong words refused by the contract, no names on the chain panel |
 | `app/e2e/me` | a player's phone: words kept, bundle read, target opened, heard words checked, everything forgotten |

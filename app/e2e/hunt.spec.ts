@@ -43,13 +43,28 @@ const walkUpTo = async (page: Page, name: string): Promise<void> => {
 };
 
 /**
+ * Presses Tag, and presses it again if the target wandered out of reach between the button
+ * lighting up and the press landing. A person walks away from you; a test has to allow for it.
+ */
+const openTheMoment = async (page: Page, name: string): Promise<void> => {
+  const said = page.getByLabel("What they said");
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    await walkUpTo(page, name);
+    await page.getByRole("button", { name: `Tag ${name}` }).click();
+    if (await said.isVisible({ timeout: 1_500 }).catch(() => false)) {
+      return;
+    }
+  }
+  throw new Error(`never got close enough to ${name}`);
+};
+
+/**
  * Walks up to the target and tags them: they stop, the five words appear in their speech
  * bubble, and what you type is checked by the real contract. Returns the name that was tagged.
  */
 const tagMyTarget = async (page: Page): Promise<string> => {
   const name = await myTarget(page);
-  await walkUpTo(page, name);
-  await page.getByRole("button", { name: `Tag ${name}` }).click();
+  await openTheMoment(page, name);
 
   const bubble = page.getByTestId("bubble");
   await expect(bubble).toBeVisible();
@@ -105,14 +120,46 @@ test("the wrong five words are refused by the contract, not by the page", async 
   await openHunt(page, 13);
   await page.getByRole("button", { name: "Practice first" }).click();
   const name = await myTarget(page);
-  await walkUpTo(page, name);
-  await page.getByRole("button", { name: `Tag ${name}` }).click();
+  await openTheMoment(page, name);
 
   const said = page.getByLabel("What they said");
   await said.fill("abandon ability able about above");
   await page.locator("form").getByRole("button", { name: `Tag ${name}` }).click();
   await expect(page.getByRole("alert")).toContainText("not your target");
   await expect(statistic(page, "still in")).toContainText("8");
+});
+
+test("the campus is full of people who are not in the game", async ({ page }) => {
+  await openHunt(page, 15);
+  await page.getByRole("button", { name: "Practice first" }).click();
+
+  // Ten strangers, none of them tappable and none of them named: eight players, no more.
+  await expect(page.locator(".actor.stranger")).toHaveCount(10);
+  await expect(page.locator(".actor.stranger").first()).toHaveAttribute("aria-hidden", "true");
+  await expect(page.getByRole("button", { name: /^Walk to / })).toHaveCount(7);
+});
+
+test("running spends your breath and walking gets it back", async ({ page }) => {
+  test.setTimeout(90_000);
+  await openHunt(page, 16);
+  await page.getByRole("button", { name: "Practice first" }).click();
+
+  const breath = page.getByRole("progressbar", { name: "Breath" });
+  const now = async (): Promise<number> => Number(await breath.getAttribute("aria-valuenow"));
+  await expect(breath).toHaveAttribute("aria-valuenow", "100");
+
+  // Held down together, because running on the spot costs nothing. The campus is only so wide,
+  // so this asks for a clear drain rather than an empty bar.
+  const run = page.getByRole("button", { name: "Run" });
+  const west = page.getByRole("button", { name: "Walk left" });
+  await west.dispatchEvent("pointerdown");
+  await run.dispatchEvent("pointerdown");
+  await expect.poll(now, { timeout: 30_000 }).toBeLessThan(85);
+
+  await run.dispatchEvent("pointerup");
+  const spent = await now();
+  await expect.poll(now, { timeout: 30_000 }).toBeGreaterThan(spent);
+  await west.dispatchEvent("pointerup");
 });
 
 test("standing still gets you caught, and being caught is a real tag", async ({ page }) => {

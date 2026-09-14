@@ -71,10 +71,12 @@ self-loop is the proof of victory.
 
 **[let-the-dreamers-rise.github.io/blindside](https://let-the-dreamers-rise.github.io/blindside/)**
 
-**The hunt** is a campus at night, drawn in pixels, with eight players on it. One of them is
-hunting you and you do not know which. You are hunting one of them: open your envelope, listen to
-the rumours, get to them before your hunter gets to you. Buildings hide whoever is inside. When
-you have somebody, they stop and say five words, once, and you type what you heard.
+**The hunt** is a campus at night, drawn in pixels, with eight players on it and ten strangers who
+are not in the game. One of the eight is hunting you and you do not know which. You are hunting
+one of them: open your envelope, listen to the rumours, get to them before your hunter gets to
+you. Buildings hide whoever is inside. Standing in a crowd hides you. Running is fast and loud,
+and your hunter can hear it. When you have somebody, they stop and say five words, once, and you
+type what you heard.
 
 Every join, tag, refusal, payout and refund in it runs the **real compiled contract in your
 browser tab**. The campus, the rumours and the other seven players are a game about the real one.
@@ -159,8 +161,8 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Compact contract, 8 circuits | Compiles on 0.31.1 |
 | Contract tests | 50 passing, 94% statement coverage |
 | Crypto and game core tests | 64 passing, 97% statement coverage |
-| The hunt's simulation | 35 unit tests: grid, campus, sight, bots, catching, rumours |
-| Browser tests | 19 passing on a phone viewport, including a hunt won, a hunt lost, and a player's phone |
+| The hunt's simulation | 48 unit tests: grid, campus, sight, bots, catching, crowds, running, rumours |
+| Browser tests | 21 passing on a phone viewport, including a hunt won, a hunt lost, and a player's phone |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A whole game from a browser tab | Deployed, played and paid out against a local node |

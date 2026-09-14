@@ -19,8 +19,28 @@
   position: absolute;
   left: 0;
   top: 0;
-  transition: transform 130ms linear;
+  transition: transform 150ms linear;
   will-change: transform;
+}
+
+.hunt-viewport.jolt {
+  animation: jolt 380ms ease-out;
+}
+
+@keyframes jolt {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3px, 2px);
+  }
+  45% {
+    transform: translate(3px, -2px);
+  }
+  70% {
+    transform: translate(-2px, -1px);
+  }
 }
 
 .hunt-ground {
@@ -84,6 +104,50 @@
 
 .actor.out {
   opacity: 0.55;
+}
+
+.actor.stranger {
+  cursor: default;
+  filter: saturate(0.35) brightness(0.72);
+}
+
+.actor.hidden-in-crowd img {
+  opacity: 0.72;
+}
+
+.shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  filter: blur(1px);
+}
+
+.dust {
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(239, 233, 221, 0.35);
+  animation: puff 320ms ease-out infinite;
+}
+
+@keyframes puff {
+  from {
+    opacity: 0.5;
+    transform: translateX(-50%) scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.6);
+  }
 }
 
 .actor img {
@@ -173,6 +237,22 @@
   z-index: 3;
 }
 
+/* While somebody is saying their five words, the rest of the campus stops mattering. */
+.hunt-viewport.listening .hunt-ground,
+.hunt-viewport.listening .roof,
+.hunt-viewport.listening .actor.stranger {
+  filter: brightness(0.45) saturate(0.4);
+  transition: filter 220ms ease;
+}
+
+.hunt-viewport.listening .actor:not(.stranger) {
+  opacity: 0.5;
+}
+
+.hunt-viewport.listening .actor:has(.bubble) {
+  opacity: 1;
+}
+
 .hunt-overlay {
   position: absolute;
   inset: 0;
@@ -250,6 +330,30 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.hud-actions .run {
+  touch-action: none;
+}
+
+.stamina {
+  flex: 1 1 120px;
+  min-width: 100px;
+  height: 8px;
+  border: 1px solid var(--paper-line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stamina span {
+  display: block;
+  height: 100%;
+  background: var(--paper-dim);
+  transition: width 150ms linear;
+}
+
+.stamina.running span {
+  background: var(--stamp);
 }
 
 .hud-hint {
@@ -336,5 +440,11 @@
   .hunt-stage,
   .actor {
     transition: none;
+  }
+
+  .hunt-viewport.jolt,
+  .dust,
+  .marker {
+    animation: none;
   }
 }

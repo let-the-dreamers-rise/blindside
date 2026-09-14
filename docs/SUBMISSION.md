@@ -86,8 +86,8 @@ inside the proof.
 |---|---|
 | Contract tests | 50, covering the lifecycle, every rejection by its player-facing message, what the ledger contains after a tag, and the four ways a real game breaks |
 | Crypto and game core | 64, including the end to end proof that five spoken words yield exactly what the tag circuit checks |
-| The hunt's simulation | 35, pure and seeded: the same seed is the same game twice |
-| Browser tests | 19, on a phone viewport, including a hunt won to the payout, a hunt lost to your hunter, and a player's phone reading a real bundle |
+| The hunt's simulation | 48, pure and seeded: the same seed is the same game twice |
+| Browser tests | 21, on a phone viewport, including a hunt won to the payout, a hunt lost to your hunter, and a player's phone reading a real bundle |
 | Coverage gates | 80 percent, currently 94 percent statements on the engine and 97 on the core |
 | CI | compiles the contract from source rather than trusting the committed circuits, then typechecks, tests, builds and plays the browser game |
 

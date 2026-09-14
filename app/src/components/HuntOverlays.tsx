@@ -1,17 +1,14 @@
 // The beginning and the endings, laid over the campus.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Hunt } from "../hunt/useHunt.ts";
+import { GAME_SECONDS, type Hunt } from "../hunt/useHunt.ts";
+import { HOW_IT_WORKS } from "../screens/HuntIntroCopy.tsx";
 
 const Intro = ({ hunt }: { readonly hunt: Hunt }) => (
   <section className="card">
     <p className="stamp">Eight players</p>
     <h2 style={{ marginTop: 14 }}>One of them is hunting you.</h2>
-    <p>
-      You are hunting one of them. Open your envelope to find out who, listen for rumours, and get
-      to them before your own hunter gets to you. Buildings hide whoever is inside. When you have
-      somebody, they say five words and you type what you heard.
-    </p>
+    <p>You are hunting one of them. {HOW_IT_WORKS}</p>
     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
       <button type="button" onClick={() => hunt.start(false)}>
         Start the hunt
@@ -21,8 +18,8 @@ const Intro = ({ hunt }: { readonly hunt: Hunt }) => (
       </button>
     </div>
     <p className="note" style={{ marginTop: 16 }}>
-      Practice takes the roofs off and sends your hunter home. Arrow keys or WASD walk, Enter
-      tags, or tap the map. Every tag runs the real compiled contract in this tab.
+      Practice takes the roofs off and sends your hunter home. Arrow keys or WASD walk, shift
+      runs, Enter tags, or tap the map. Every tag runs the real compiled contract in this tab.
     </p>
   </section>
 );
@@ -58,13 +55,31 @@ const Won = ({ hunt }: { readonly hunt: Hunt }) => (
   </section>
 );
 
+const Scoreboard = ({ hunt }: { readonly hunt: Hunt }) => (
+  <div className="tally" style={{ margin: "18px 0" }}>
+    <div>
+      <strong>{hunt.snapshot.tags}</strong>
+      tags in the game
+    </div>
+    <div>
+      <strong>{hunt.snapshot.nullifiers.length}</strong>
+      spent notes
+    </div>
+    <div>
+      <strong>{Math.max(0, GAME_SECONDS - hunt.secondsLeft)}s</strong>
+      it took
+    </div>
+  </div>
+);
+
 const Paid = ({ hunt }: { readonly hunt: Hunt }) => (
   <section className="card">
     <p className="stamp">Paid out</p>
     <h2 style={{ marginTop: 14 }}>The pot is yours.</h2>
+    <Scoreboard hunt={hunt} />
     <p>
-      {hunt.snapshot.tags} tags, {hunt.snapshot.nullifiers.length} spent notes, and the chain
-      still does not know who tagged whom. The organizer never held the money.
+      Every one of those tags was a hidden note spent and a new one created. The chain still does
+      not know who tagged whom, and the organizer never held the money.
     </p>
     <button type="button" className="ghost" onClick={hunt.playAgain}>
       Play again
@@ -78,6 +93,7 @@ const Over = ({ hunt }: { readonly hunt: Hunt }) => {
     <section className="card">
       <p className="stamp">Over</p>
       <h2 style={{ marginTop: 14 }}>{name} was the last one standing.</h2>
+      <Scoreboard hunt={hunt} />
       <p>The contract paid them. It did not need anybody's permission, and it could not have paid anybody else.</p>
       <button type="button" className="ghost" onClick={hunt.playAgain}>
         Play again

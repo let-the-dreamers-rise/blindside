@@ -7,14 +7,17 @@ import { type FeedEntry, SandboxRunner, type Snapshot } from "../sandbox/engine.
 import { createSpeaker } from "./audio.ts";
 import { CAMPUS, type World } from "./campus.ts";
 import { type Dir, type Point, adjacent, chebyshev } from "./grid.ts";
+
 import { ASKING_ABOUT_YOU, RUMOUR_EVERY, rumourAbout, sightings } from "./rumours.ts";
 import {
   type Facts,
   type Input,
   type Sim,
   type SimEvent,
+  STAMINA_MAX,
   TICK_MS,
   YOU,
+  inCrowd,
   newSim,
   step,
   visibleFromYou,
@@ -63,6 +66,10 @@ export type HuntView = {
   readonly busy: string | null;
   readonly muted: boolean;
   readonly secondsLeft: number;
+  /** Set for a moment after a tag, so the campus can lurch. */
+  readonly jolt: number;
+  /** Where the last rumour put your target. The only place the little map ever points. */
+  readonly rumourAt: Point | null;
 };
 
 export type Hunt = HuntView & {
@@ -71,9 +78,14 @@ export type Hunt = HuntView & {
   readonly visible: ReadonlySet<number>;
   readonly targetIndex: number | null;
   readonly canTag: boolean;
+  readonly stamina: number;
+  readonly staminaFull: number;
+  /** You are lost in a crowd of strangers: your hunter cannot see you from a distance. */
+  readonly hidden: boolean;
   readonly start: (practice: boolean) => void;
   readonly openEnvelope: () => void;
   readonly hold: (dir: Dir | null) => void;
+  readonly sprint: (on: boolean) => void;
   readonly tapTile: (tile: Point) => void;
   readonly tapActor: (index: number) => void;
   readonly beginMoment: () => void;
@@ -96,6 +108,7 @@ type Change = {
   readonly caughtBy: number | null;
   readonly ending: Ending;
   readonly secondsLeft: number;
+  readonly rumourAt: Point | null;
 };
 
 const factsOf = (engine: SandboxRunner, practice: boolean): Facts => {
@@ -136,12 +149,20 @@ const settle = (
       if (event.type === "caught") {
         return { ...acc, caughtBy: event.hunter };
       }
-      return { ...acc, notes: [...acc.notes, ASKING_ABOUT_YOU] };
+      if (event.type === "heard") {
+        return { ...acc, notes: [...acc.notes, "Running feet. Somebody heard you."] };
+      }
+      if (event.type === "tip") {
+        return { ...acc, notes: [...acc.notes, ASKING_ABOUT_YOU] };
+      }
+      return acc;
     },
     { caughtBy: null, notes: [] },
   );
 
-const rumourNow = (sim: Sim, facts: Facts, envelopeOpen: boolean): string | null => {
+type Rumour = { readonly text: string; readonly at: Point };
+
+const rumourNow = (sim: Sim, facts: Facts, envelopeOpen: boolean): Rumour | null => {
   const target = facts.targets[YOU] ?? null;
   const actor = target === null ? undefined : sim.actors[target];
   if (!envelopeOpen || actor === undefined || sim.tick % RUMOUR_EVERY !== 0) {
@@ -150,7 +171,10 @@ const rumourNow = (sim: Sim, facts: Facts, envelopeOpen: boolean): string | null
   if (visibleFromYou(sim, CAMPUS, facts).has(actor.index)) {
     return null;
   }
-  return rumourAbout(CAMPUS, HUNT_CAST[actor.index] ?? "Your target", actor.at);
+  return {
+    text: rumourAbout(CAMPUS, HUNT_CAST[actor.index] ?? "Your target", actor.at),
+    at: actor.at,
+  };
 };
 
 /** The three ways a game stops on its own. Each one really runs the contract. */
@@ -183,6 +207,7 @@ const advanceView = (prev: HuntView, change: Change): HuntView => {
     facts: change.facts,
     snapshot: change.snapshot,
     secondsLeft: change.secondsLeft,
+    rumourAt: change.rumourAt ?? prev.rumourAt,
     worldFeed: prepend(prev.worldFeed, change.notes),
     caughtBy: caught ? change.caughtBy : prev.caughtBy,
     winner: change.ending?.winner ?? prev.winner,
@@ -206,6 +231,7 @@ export const useHunt = (): Hunt => {
   const simRef = useLazyRef(() => newSim(CAMPUS, seedFromHash(), HUNT_CAST.length));
   const speaker = useMemo(createSpeaker, []);
   const heldRef = useRef<Dir | null>(null);
+  const sprintRef = useRef(false);
   const pendingRef = useRef<{ tapped: Point | null; follow: number | null }>({ tapped: null, follow: null });
   const practiceRef = useRef(false);
   const envelopeRef = useRef(false);
@@ -227,6 +253,8 @@ export const useHunt = (): Hunt => {
     busy: null,
     muted: speaker.muted(),
     secondsLeft: GAME_SECONDS,
+    jolt: 0,
+    rumourAt: null,
   }));
 
   const entries = useCallback((texts: readonly string[]): readonly FeedEntry[] =>
@@ -240,7 +268,11 @@ export const useHunt = (): Hunt => {
     const engine = engineRef.current;
     const before = simRef.current;
     const facts = factsOf(engine, practiceRef.current);
-    const input: Input = { dir: heldRef.current, ...pendingRef.current };
+    const input: Input = {
+      dir: heldRef.current,
+      sprint: sprintRef.current,
+      ...pendingRef.current,
+    };
     pendingRef.current = { tapped: null, follow: null };
     const { sim, events } = step(before, CAMPUS, facts, input);
     simRef.current = sim;
@@ -251,13 +283,13 @@ export const useHunt = (): Hunt => {
     const ending = endingOf(engine, secondsLeft);
     if (settled.caughtBy !== null) {
       speaker.play("caught");
-    } else if (rumour !== null || events.some((event) => event.type === "tip")) {
+    } else if (rumour !== null || events.some((event) => event.type === "tip" || event.type === "heard")) {
       speaker.play("rumour");
     }
     if (ending?.phase === "over" || ending?.phase === "draw") {
       speaker.play("win");
     }
-    const notes = entries([...seen, ...settled.notes, ...(rumour === null ? [] : [rumour])]);
+    const notes = entries([...seen, ...settled.notes, ...(rumour === null ? [] : [rumour.text])]);
     setView((prev) =>
       advanceView(prev, {
         sim,
@@ -267,6 +299,7 @@ export const useHunt = (): Hunt => {
         caughtBy: settled.caughtBy,
         ending,
         secondsLeft,
+        rumourAt: rumour?.at ?? null,
       }),
     );
   }, [engineRef, simRef, speaker, entries]);
@@ -314,12 +347,17 @@ export const useHunt = (): Hunt => {
     setView((prev) => ({
       ...prev,
       envelopeOpen: true,
+      rumourAt: null,
       worldFeed: prepend(prev.worldFeed, entries([`Your target is ${name}. Only this screen knows.`])),
     }));
   }, [engineRef, entries, speaker]);
 
   const hold = useCallback((dir: Dir | null) => {
     heldRef.current = dir;
+  }, []);
+
+  const sprint = useCallback((on: boolean) => {
+    sprintRef.current = on;
   }, []);
 
   const tapTile = useCallback((tile: Point) => {
@@ -355,7 +393,11 @@ export const useHunt = (): Hunt => {
     if (target === null || you === undefined || them === undefined || words === null) {
       return;
     }
-    if (chebyshev(you.at, them.at) > TAG_REACH || !visibleFromYou(simRef.current, CAMPUS, factsOf(engine, practiceRef.current)).has(target)) {
+    // They walk while you reach for the button. Pressing it when they have drifted should start
+    // you after them rather than do nothing at all.
+    const inSight = visibleFromYou(simRef.current, CAMPUS, factsOf(engine, practiceRef.current)).has(target);
+    if (chebyshev(you.at, them.at) > TAG_REACH || !inSight) {
+      pendingRef.current = { tapped: null, follow: inSight ? target : null };
       return;
     }
     speaker.play("words");
@@ -421,8 +463,10 @@ export const useHunt = (): Hunt => {
           ...prev,
           phase: snapshot.youWon ? "won" : "playing",
           moment: null,
+          jolt: Date.now(),
           bubbles: new Map(),
           envelopeOpen: false,
+          rumourAt: null,
           snapshot,
           facts: factsOf(engine, practiceRef.current),
           winner: snapshot.youWon ? YOU : prev.winner,
@@ -502,9 +546,13 @@ export const useHunt = (): Hunt => {
     visible,
     targetIndex,
     canTag,
+    stamina: view.sim.stamina,
+    staminaFull: STAMINA_MAX,
+    hidden: you !== undefined && !view.facts.youOut && inCrowd(view.sim, you.at),
     start,
     openEnvelope,
     hold,
+    sprint,
     tapTile,
     tapActor,
     beginMoment,

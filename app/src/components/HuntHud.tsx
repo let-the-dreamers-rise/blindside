@@ -8,16 +8,39 @@ import type { Hunt } from "../hunt/useHunt.ts";
 const clock = (seconds: number): string =>
   `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
-const Dpad = ({ hold }: { readonly hold: (dir: Dir | null) => void }) => {
-  const press = (dir: Dir) => ({
-    onPointerDown: (event: PointerEvent<HTMLButtonElement>) => {
-      event.preventDefault();
+const Stamina = ({ now, full, running }: { readonly now: number; readonly full: number; readonly running: boolean }) => (
+  <div
+    className={`stamina${running ? " running" : ""}`}
+    role="progressbar"
+    aria-label="Breath"
+    aria-valuenow={now}
+    aria-valuemin={0}
+    aria-valuemax={full}
+  >
+    <span style={{ width: `${Math.round((now / full) * 100)}%` }} />
+  </div>
+);
+
+/**
+ * Press and hold, for a thumb. The capture keeps the button held while the thumb slides off it;
+ * a synthetic event with no real pointer behind it cannot be captured, and does not need to be.
+ */
+const holding = (on: () => void, off: () => void) => ({
+  onPointerDown: (event: PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    try {
       event.currentTarget.setPointerCapture(event.pointerId);
-      hold(dir);
-    },
-    onPointerUp: () => hold(null),
-    onPointerCancel: () => hold(null),
-  });
+    } catch {
+      // No pointer to capture.
+    }
+    on();
+  },
+  onPointerUp: off,
+  onPointerCancel: off,
+});
+
+const Dpad = ({ hold }: { readonly hold: (dir: Dir | null) => void }) => {
+  const press = (dir: Dir) => holding(() => hold(dir), () => hold(null));
   return (
     <div className="dpad" aria-label="Walk">
       <span />
@@ -93,6 +116,14 @@ export const HuntHud = ({ hunt }: { readonly hunt: Hunt }) => {
           </button>
           <button
             type="button"
+            className="ghost run"
+            aria-label="Run"
+            {...holding(() => hunt.sprint(true), () => hunt.sprint(false))}
+          >
+            Run
+          </button>
+          <button
+            type="button"
             className="ghost"
             onClick={hunt.toggleMute}
             aria-pressed={hunt.muted}
@@ -100,17 +131,20 @@ export const HuntHud = ({ hunt }: { readonly hunt: Hunt }) => {
             {hunt.muted ? "Sound off" : "Sound on"}
           </button>
         </div>
+        <Stamina now={hunt.stamina} full={hunt.staminaFull} running={hunt.sim.sprinting} />
       </div>
       <p className="note hud-hint">
         {hunt.facts.youOut
           ? "You are out. Everyone is visible now."
-          : hunt.phase === "moment"
-            ? `${target ?? "They"} stopped. Type what you heard, below.`
-            : target === null
-            ? "Arrow keys or the pad to walk. Tap somebody to walk up to them. Open your envelope to learn who you are hunting."
-            : hunt.canTag
-              ? `You are next to ${target}. Tag them, or press Enter.`
-              : `Find ${target}. Rumours arrive below. Somebody is finding you the same way.`}
+          : hunt.hidden
+            ? "You are lost in the crowd. Nobody can pick you out from a distance while you stand here."
+            : hunt.phase === "moment"
+              ? `${target ?? "They"} stopped. Type what you heard, below.`
+              : target === null
+                ? "Arrow keys or the pad to walk, shift to run. Tap somebody to walk up to them. Open your envelope to learn who you are hunting."
+                : hunt.canTag
+                  ? `You are next to ${target}. Tag them, or press Enter.`
+                  : `Find ${target}. Rumours arrive below. Somebody is finding you the same way, and running is loud.`}
       </p>
     </div>
   );
