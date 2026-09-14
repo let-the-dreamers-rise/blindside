@@ -181,8 +181,9 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Compact contract, 8 circuits | Compiles on 0.31.1 |
 | Contract tests | 50 passing, 94% statement coverage |
 | Crypto and game core tests | 64 passing, 97% statement coverage |
-| The hunt's simulation | 48 unit tests: grid, campus, sight, bots, catching, crowds, running, rumours |
-| Browser tests | 21 passing on a phone viewport, including a hunt won, a hunt lost, and a player's phone |
+| The hunt's simulation | 81 unit tests: grid, campus, sight and what blocks it, bots, catching, crowds, running, rumours, the closing grounds |
+| Does a hunt resolve | Measured, not assumed: whole games played out against the compiled contract at every size, all coming down to one player |
+| Browser tests | 24 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, and a player's phone |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |

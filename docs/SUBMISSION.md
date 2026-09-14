@@ -12,18 +12,23 @@ inherit their target. The last player standing proves it and the contract pays o
 people already play this every year over group chats and spreadsheets, with the money moving
 through an organizer's personal payment app.
 
-You can play it before you read any of that. The hunt is a pixel campus at night with eight
-players on it and ten strangers who are not in the game: one of the eight is hunting you and you
-do not know which. It is a game, and it is also the clearest way we found to show what the chain
-does and does not learn, because the two feeds sit side by side under the map. The campus knows
-who went into the Library. The chain knows that two notes were spent.
+You can play it before you read any of that. The hunt is a pixel campus at night with four, eight
+or twelve players on it and ten strangers who are not in the game: one of the players is hunting
+you and you do not know which. Buildings block sight, standing in a crowd hides you, running is
+loud, and three quarters of a minute in the grounds start closing until everybody is in one
+courtyard and it has to end.
+
+It is a game, and it is also the clearest way we found to show what the chain does and does not
+learn. Press **The chain** while you play and the campus is replaced, in place, by everything an
+observer holding the whole ledger can read at that moment. The counts move while you watch. The
+list of people does not, because that list is the whole of what the chain knows about people.
 
 ## What a judge can check in five minutes
 
 | | |
 |---|---|
-| Play the hunt, no wallet | [the hunt](https://let-the-dreamers-rise.github.io/blindside/#/hunt): a pixel campus at night, eight players, one of them hunting you. Every tag, refusal, payout and refund runs the real compiled contract in the browser tab |
-| See what the chain does not | under the map, "What you saw" against "What the chain sees": the campus names people, the chain never does |
+| Play the hunt, no wallet | [the hunt](https://let-the-dreamers-rise.github.io/blindside/#/hunt): a pixel campus at night, one of the others hunting you. Pick four players for a game that fits in ninety seconds. Every tag, refusal, payout and refund runs the real compiled contract in the browser tab |
+| See what the chain does not | press **The chain** mid-game: the same moment with everything identifying taken out. Three players out, the record says three are out, and nothing says which three or who put them there |
 | Play the paper version | [the sandbox](https://let-the-dreamers-rise.github.io/blindside/#/sandbox), the same contract with the buttons showing |
 | Be a player on the night | [the phone page](https://let-the-dreamers-rise.github.io/blindside/#/me): your words, the bundle, your target, and a check on the words you heard. No server |
 | Run one yourself | the console at `#/live` deploys, takes joins, starts a game and publishes the bundle from the tab. Settling a tag from a browser is refused by proof-server 8.1.0 and the CLI does it instead; both are written up rather than papered over |
@@ -93,8 +98,9 @@ inside the proof.
 |---|---|
 | Contract tests | 50, covering the lifecycle, every rejection by its player-facing message, what the ledger contains after a tag, and the four ways a real game breaks |
 | Crypto and game core | 64, including the end to end proof that five spoken words yield exactly what the tag circuit checks |
-| The hunt's simulation | 48, pure and seeded: the same seed is the same game twice |
-| Browser tests | 21, on a phone viewport, including a hunt won to the payout, a hunt lost to your hunter, and a player's phone reading a real bundle |
+| The hunt's simulation | 81, pure and seeded: the same seed is the same game twice |
+| Does the game actually resolve | whole hunts played out with nobody at the keyboard, at every size, every tag through the compiled contract. It is a measurement, not an intention: before the grounds closed it left five to seven players standing at full time |
+| Browser tests | 24, on a phone viewport, including a hunt won to the payout, a hunt lost to your hunter, the chain's view before and after a tag, and a player's phone reading a real bundle |
 | Coverage gates | 80 percent, currently 94 percent statements on the engine and 97 on the core |
 | CI | compiles the contract from source rather than trusting the committed circuits, then typechecks, tests, builds and plays the browser game |
 
