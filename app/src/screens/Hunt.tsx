@@ -85,8 +85,8 @@ export const Hunt = () => {
 
         <h1 style={{ marginTop: 18 }}>The hunt</h1>
         <p className="lede">
-          A campus at night, and everybody on it has a target. One of them is hunting you. You are
-          hunting one of them. Find yours first.
+          {hunt.place.name} at night, and everybody on it has a target. One of them is hunting you.
+          You are hunting one of them. Find yours first.
         </p>
       </header>
 
@@ -129,9 +129,9 @@ export const Hunt = () => {
 
       <p className="note" style={{ marginTop: 20 }}>
         Sandbox honesty: every join, tag, claim and refund on this page runs the real compiled
-        contract, so every rule and every refusal is the contract's. The campus, the rumours and
-        the other seven players are a game about the real one. Proofs and settlement are
-        simulated here; on a chain each tag is a zero-knowledge proof.{" "}
+        contract, so every rule and every refusal is the contract's. The place, the rumours and
+        everybody else on it are a game about the real one. Proofs and settlement are simulated
+        here; on a chain each tag is a zero-knowledge proof.{" "}
         <a href="#/sandbox">The paper version</a> has the same contract and the four ways out.
       </p>
     </main>

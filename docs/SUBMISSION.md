@@ -12,11 +12,11 @@ inherit their target. The last player standing proves it and the contract pays o
 people already play this every year over group chats and spreadsheets, with the money moving
 through an organizer's personal payment app.
 
-You can play it before you read any of that. The hunt is a pixel campus at night with four, eight
-or twelve players on it and ten strangers who are not in the game: one of the players is hunting
-you and you do not know which. Buildings block sight, standing in a crowd hides you, running is
-loud, and three quarters of a minute in the grounds start closing until everybody is in one
-courtyard and it has to end.
+You can play it before you read any of that. The hunt is a pixel place at night, a campus or a
+park, with four, eight or twelve players on it and ten strangers who are not in the game: one of
+the players is hunting you and you do not know which. Buildings and trees block sight, standing
+in a crowd hides you, running is loud, and three quarters of a minute in the grounds start
+closing until everybody is in one courtyard and it has to end.
 
 It is a game, and it is also the clearest way we found to show what the chain does and does not
 learn. Press **The chain** while you play and the campus is replaced, in place, by everything an
@@ -98,9 +98,9 @@ inside the proof.
 |---|---|
 | Contract tests | 50, covering the lifecycle, every rejection by its player-facing message, what the ledger contains after a tag, and the four ways a real game breaks |
 | Crypto and game core | 64, including the end to end proof that five spoken words yield exactly what the tag circuit checks |
-| The hunt's simulation | 81, pure and seeded: the same seed is the same game twice |
+| The hunt's simulation | 98, pure and seeded: the same seed is the same game twice, and every structural test runs against both maps |
 | Does the game actually resolve | whole hunts played out with nobody at the keyboard, at every size, every tag through the compiled contract. It is a measurement, not an intention: before the grounds closed it left five to seven players standing at full time |
-| Browser tests | 24, on a phone viewport, including a hunt won to the payout, a hunt lost to your hunter, the chain's view before and after a tag, and a player's phone reading a real bundle |
+| Browser tests | 25, on a phone viewport, including a hunt won to the payout, a hunt lost to your hunter, the chain's view before and after a tag, both maps, and a player's phone reading a real bundle |
 | Coverage gates | 80 percent, currently 94 percent statements on the engine and 97 on the core |
 | CI | compiles the contract from source rather than trusting the committed circuits, then typechecks, tests, builds and plays the browser game |
 

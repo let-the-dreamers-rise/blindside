@@ -6,7 +6,8 @@
 
 import { describe, expect, it } from "vitest";
 import { SandboxRunner } from "../sandbox/engine.ts";
-import { CAMPUS } from "./campus.ts";
+import { CAMPUS, type World } from "./campus.ts";
+import { PLACES } from "./places.ts";
 import { NO_INPUT, type Facts, type Sim, YOU, newSim, step } from "./sim.ts";
 
 const CAST: readonly string[] = [
@@ -51,6 +52,7 @@ const playItOut = (
   seed: number,
   practice: boolean,
   size: number = ORDINARY,
+  world: World = CAMPUS,
 ): Run & { readonly left: number; readonly survivors: readonly number[] } => {
   const engine = new SandboxRunner(CAST.slice(0, size));
   const run = Array.from({ length: WHOLE_GAME }).reduce<Run>(
@@ -62,7 +64,7 @@ const playItOut = (
       if (facts.alive.filter((yes) => yes).length <= 1) {
         return { ...acc, finishedAt: acc.sim.tick };
       }
-      const next = step(acc.sim, CAMPUS, facts, NO_INPUT);
+      const next = step(acc.sim, world, facts, NO_INPUT);
       const refused = next.events.reduce((count, event) => {
         const pair =
           event.type === "botTag"
@@ -82,7 +84,7 @@ const playItOut = (
       }, acc.refused);
       return { sim: next.sim, finishedAt: null, refused };
     },
-    { sim: newSim(CAMPUS, seed, size), finishedAt: null, refused: 0 },
+    { sim: newSim(world, seed, size), finishedAt: null, refused: 0 },
   );
   return {
     ...run,
@@ -120,6 +122,26 @@ describe("a hunt watched from start to finish", () => {
   it("plays out every tag it can, leaving you and whoever is hunting you", () => {
     expect(games.map((game) => game.left)).toEqual(SEEDS.map(() => 2));
     games.forEach((game) => expect(game.survivors).toContain(YOU));
+  });
+});
+
+describe.each(PLACES)("a hunt on $name", ({ world }) => {
+  const few = SEEDS.slice(0, 3);
+  const hands = few.map((seed) => playItOut(seed, false, ORDINARY, world));
+  const watched = few.map((seed) => playItOut(seed, true, ORDINARY, world));
+
+  it("comes down to one player with nobody at the keyboard", () => {
+    expect(hands.map((game) => game.left)).toEqual(few.map(() => 1));
+  });
+
+  it("plays out every tag it can when it is watched all the way through", () => {
+    expect(watched.map((game) => game.left)).toEqual(few.map(() => 2));
+  });
+
+  it("never asks the contract for a tag it would refuse", () => {
+    expect([...hands, ...watched].map((game) => game.refused)).toEqual(
+      [...few, ...few].map(() => 0),
+    );
   });
 });
 

@@ -5,8 +5,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type FeedEntry, SandboxRunner, type Snapshot } from "../sandbox/engine.ts";
 import { createSpeaker } from "./audio.ts";
-import { CAMPUS, type World } from "./campus.ts";
+import type { World } from "./campus.ts";
 import { type Dir, type Point, adjacent, chebyshev } from "./grid.ts";
+import { DEFAULT_PLACE, type Place, placeOf } from "./places.ts";
 
 import { outsideRing } from "./ring.ts";
 import { ASKING_ABOUT_YOU, RUMOUR_EVERY, rumourAbout, sightings } from "./rumours.ts";
@@ -102,6 +103,8 @@ export type HuntView = {
 
 export type Hunt = HuntView & {
   readonly world: World;
+  /** Where this hunt is happening. */
+  readonly place: Place;
   readonly names: readonly string[];
   readonly visible: ReadonlySet<number>;
   readonly targetIndex: number | null;
@@ -110,7 +113,7 @@ export type Hunt = HuntView & {
   readonly staminaFull: number;
   /** You are lost in a crowd of strangers: your hunter cannot see you from a distance. */
   readonly hidden: boolean;
-  readonly start: (practice: boolean, players?: number) => void;
+  readonly start: (practice: boolean, players?: number, where?: Place) => void;
   /** How many are in this game. Always the first few of the cast. */
   readonly size: number;
   readonly openEnvelope: () => void;
@@ -161,12 +164,17 @@ const sizeFromHash = (): number => {
   return SIZES.includes(asked) ? asked : DEFAULT_SIZE;
 };
 
+const placeFromHash = (): Place => {
+  const match = /place=([a-z]+)/.exec(window.location.hash);
+  return placeOf(match?.[1] ?? DEFAULT_PLACE);
+};
+
 /**
  * A seeded game is the same game twice, so the seed and the size belong in the address bar:
  * what somebody shares is the night they played, not a new one that happens to look like it.
  */
-const rememberGame = (seed: number, players: number): void => {
-  const wanted = `#/hunt?seed=${seed}&players=${players}`;
+const rememberGame = (seed: number, players: number, place: string): void => {
+  const wanted = `#/hunt?seed=${seed}&players=${players}&place=${place}`;
   if (window.location.hash !== wanted) {
     window.history.replaceState(null, "", wanted);
   }
@@ -213,17 +221,22 @@ const settle = (
 
 type Rumour = { readonly text: string; readonly at: Point };
 
-const rumourNow = (sim: Sim, facts: Facts, envelopeOpen: boolean): Rumour | null => {
+const rumourNow = (
+  world: World,
+  sim: Sim,
+  facts: Facts,
+  envelopeOpen: boolean,
+): Rumour | null => {
   const target = facts.targets[YOU] ?? null;
   const actor = target === null ? undefined : sim.actors[target];
   if (!envelopeOpen || actor === undefined || sim.tick % RUMOUR_EVERY !== 0) {
     return null;
   }
-  if (visibleFromYou(sim, CAMPUS, facts).has(actor.index)) {
+  if (visibleFromYou(sim, world, facts).has(actor.index)) {
     return null;
   }
   return {
-    text: rumourAbout(CAMPUS, HUNT_CAST[actor.index] ?? "Your target", actor.at),
+    text: rumourAbout(world, HUNT_CAST[actor.index] ?? "Your target", actor.at),
     at: actor.at,
   };
 };
@@ -298,8 +311,9 @@ const delay = (ms: number): Promise<void> => new Promise((resolve) => window.set
 export const useHunt = (): Hunt => {
   const seedRef = useLazyRef(seedFromHash);
   const sizeRef = useLazyRef(sizeFromHash);
+  const placeRef = useLazyRef(placeFromHash);
   const engineRef = useLazyRef(() => new SandboxRunner(HUNT_CAST.slice(0, sizeRef.current)));
-  const simRef = useLazyRef(() => newSim(CAMPUS, seedRef.current, sizeRef.current));
+  const simRef = useLazyRef(() => newSim(placeRef.current.world, seedRef.current, sizeRef.current));
   const speaker = useMemo(createSpeaker, []);
   const heldRef = useRef<Dir | null>(null);
   const sprintRef = useRef(false);
@@ -350,11 +364,12 @@ export const useHunt = (): Hunt => {
       ...pendingRef.current,
     };
     pendingRef.current = { tapped: null, follow: null };
-    const { sim, events } = step(before, CAMPUS, facts, input);
+    const world = placeRef.current.world;
+    const { sim, events } = step(before, world, facts, input);
     simRef.current = sim;
-    const seen = sightings(CAMPUS, before, sim, facts, HUNT_CAST);
+    const seen = sightings(world, before, sim, facts, HUNT_CAST);
     const settled = settle(engine, events);
-    const rumour = rumourNow(sim, facts, envelopeRef.current);
+    const rumour = rumourNow(world, sim, facts, envelopeRef.current);
     // Said once when it begins and once each time you walk off it, not every time it bites.
     const lit = standingOut(sim, facts);
     const stepped = lit && !litRef.current;
@@ -428,18 +443,19 @@ export const useHunt = (): Hunt => {
   );
 
   const start = useCallback(
-    (practice: boolean, players: number = sizeRef.current) => {
+    (practice: boolean, players: number = sizeRef.current, where: Place = placeRef.current) => {
       practiceRef.current = practice;
       litRef.current = false;
       leftRef.current = null;
-      // A different size is a different game, so it gets a new contract and a new campus rather
-      // than an old one with people taken off it.
-      if (players !== sizeRef.current) {
+      // A different size or a different place is a different game, so it gets a new contract and
+      // a fresh map rather than an old one with people taken off it.
+      if (players !== sizeRef.current || where.key !== placeRef.current.key) {
         sizeRef.current = players;
+        placeRef.current = where;
         engineRef.current = new SandboxRunner(HUNT_CAST.slice(0, players));
-        simRef.current = newSim(CAMPUS, seedRef.current, players);
+        simRef.current = newSim(where.world, seedRef.current, players);
       }
-      rememberGame(seedRef.current, players);
+      rememberGame(seedRef.current, players, where.key);
       speaker.play("open");
       const opening = practice
         ? "Practice: nobody is hunting you and the roofs are off."
@@ -520,7 +536,11 @@ export const useHunt = (): Hunt => {
     }
     // They walk while you reach for the button. Pressing it when they have drifted should start
     // you after them rather than do nothing at all.
-    const inSight = visibleFromYou(simRef.current, CAMPUS, factsOf(engine, practiceRef.current)).has(target);
+    const inSight = visibleFromYou(
+      simRef.current,
+      placeRef.current.world,
+      factsOf(engine, practiceRef.current),
+    ).has(target);
     if (chebyshev(you.at, them.at) > TAG_REACH || !inSight) {
       pendingRef.current = { tapped: null, follow: inSight ? target : null };
       return;
@@ -656,11 +676,12 @@ export const useHunt = (): Hunt => {
   /** The same players, the same campus, the same night. */
   const shareLink = useCallback(
     (): string =>
-      `${window.location.origin}${window.location.pathname}#/hunt?seed=${seedRef.current}&players=${sizeRef.current}`,
-    [seedRef, sizeRef],
+      `${window.location.origin}${window.location.pathname}#/hunt?seed=${seedRef.current}&players=${sizeRef.current}&place=${placeRef.current.key}`,
+    [seedRef, sizeRef, placeRef],
   );
 
-  const visible = useMemo(() => visibleFromYou(view.sim, CAMPUS, view.facts), [view.sim, view.facts]);
+  const world = placeRef.current.world;
+  const visible = useMemo(() => visibleFromYou(view.sim, world, view.facts), [view.sim, world, view.facts]);
   const targetIndex = view.envelopeOpen && !view.facts.youOut ? (view.facts.targets[YOU] ?? null) : null;
   const you = view.sim.actors[YOU];
   const them = targetIndex === null ? undefined : view.sim.actors[targetIndex];
@@ -674,7 +695,8 @@ export const useHunt = (): Hunt => {
 
   return {
     ...view,
-    world: CAMPUS,
+    world,
+    place: placeRef.current,
     names: HUNT_CAST.slice(0, sizeRef.current),
     size: sizeRef.current,
     visible,

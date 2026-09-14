@@ -129,7 +129,7 @@ test("the chain's eye is the same moment with everything identifying taken out",
   await expect(eye).toBeVisible();
   await expect(pseudonyms).toHaveCount(8);
   await expect(eye.getByTestId("chain-spent")).toContainText("nothing retired yet");
-  await page.getByRole("button", { name: "Back to the campus" }).click();
+  await page.getByRole("button", { name: "Back to the map" }).click();
   await expect(eye).toBeHidden();
 
   await tagMyTarget(page);
@@ -165,6 +165,18 @@ test("a game is a link: the seed and the size go in the address bar", async ({ p
   await page.goto("/#/hunt");
   await page.getByRole("button", { name: "Practice first" }).click();
   await expect(page).toHaveURL(/#\/hunt\?seed=\d+&players=8/);
+});
+
+test("the other place is a different map with its own buildings", async ({ page }) => {
+  await openHunt(page, 19);
+  await page.getByRole("group", { name: "Where you are playing" }).getByText("The park").click();
+  // Not practice: practice takes the roofs off, and the roofs are what carry the names.
+  await page.getByRole("button", { name: "Start the hunt" }).click();
+
+  await expect(page).toHaveURL(/place=park/);
+  await expect(page.getByText("Bandstand")).toBeVisible();
+  await expect(page.getByText("Boathouse")).toBeVisible();
+  await expect(page.getByText("Library")).toHaveCount(0);
 });
 
 test("a smaller game is a smaller game all the way down to the contract", async ({ page }) => {

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useState } from "react";
+import { PLACES } from "../hunt/places.ts";
 import { GAME_SECONDS, SIZES, type Hunt } from "../hunt/useHunt.ts";
 import { HOW_IT_WORKS } from "../screens/HuntIntroCopy.tsx";
 
@@ -34,6 +35,7 @@ const HOW_LONG: Readonly<Record<number, string>> = {
 
 const Intro = ({ hunt }: { readonly hunt: Hunt }) => {
   const [players, setPlayers] = useState(hunt.size);
+  const [where, setWhere] = useState(hunt.place);
   return (
     <section className="card">
       <p className="stamp">{players} players</p>
@@ -55,11 +57,26 @@ const Intro = ({ hunt }: { readonly hunt: Hunt }) => {
         ))}
       </div>
 
+      <div className="sizes" role="group" aria-label="Where you are playing">
+        {PLACES.map((place) => (
+          <button
+            type="button"
+            key={place.key}
+            className={`chip wide${place.key === where.key ? " on" : ""}`}
+            aria-pressed={place.key === where.key}
+            onClick={() => setWhere(place)}
+          >
+            {place.name}
+            <span>{place.blurb}</span>
+          </button>
+        ))}
+      </div>
+
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
-        <button type="button" onClick={() => hunt.start(false, players)}>
+        <button type="button" onClick={() => hunt.start(false, players, where)}>
           Start the hunt
         </button>
-        <button type="button" className="ghost" onClick={() => hunt.start(true, players)}>
+        <button type="button" className="ghost" onClick={() => hunt.start(true, players, where)}>
           Practice first
         </button>
       </div>

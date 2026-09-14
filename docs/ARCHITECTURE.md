@@ -273,8 +273,21 @@ leaf count, the spent set and the player commitments. The count of who is left *
 the screen says so in as many words. Which of them are out, who put them out, and who hunts whom
 are not.
 
-The campus is a block of text in `campus.ts`. Rooms are flood-filled from it, doors are found by
-adjacency, and a test walks every tile from your spawn so a map edit cannot strand anybody.
+### Two places
+
+A place is a block of text, a list of rooms, a list of landmarks and where people start. Rooms are
+flood-filled from the text, doors are found by adjacency, and everything else is worked out.
+`places.ts` lists them and the address bar carries which one you are on.
+
+The campus is buildings and crowds. The park is a wood down the west side, a lake, and open lawn
+in the middle, which plays differently for one reason: trees stop sight, so on the park the thing
+between you and whoever is looking is a tree line rather than a wall, and the lawn in the middle
+is the most dangerous ground in either place.
+
+Every structural test runs against every place, so a new map is checked the day it is added
+rather than the day somebody notices a courtyard nobody can walk into: forty by twenty-four, one
+door per building onto walkable ground, twelve spawns, no two on a tile, no tile cut off from any
+other. The balance test plays whole games on both.
 
 ## Two ways to run it
 

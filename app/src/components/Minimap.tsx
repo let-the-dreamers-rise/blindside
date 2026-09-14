@@ -32,7 +32,7 @@ export const Minimap = ({ world, you, rumour, ring }: Props) => {
       className="minimap"
       width={world.width * 4}
       height={world.height * 4}
-      aria-label="The campus, with you on it and the last place your target was heard of"
+      aria-label="The map, with you on it and the last place your target was heard of"
     />
   );
 };

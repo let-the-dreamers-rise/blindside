@@ -71,17 +71,21 @@ self-loop is the proof of victory.
 
 **[let-the-dreamers-rise.github.io/blindside](https://let-the-dreamers-rise.github.io/blindside/)**
 
-**The hunt** is a campus at night, drawn in pixels, with four, eight or twelve players on it and
+**The hunt** is a place at night, drawn in pixels, with four, eight or twelve players on it and
 ten strangers who are not in the game. One of them is hunting you and you do not know which. You
 are hunting one of them: open your envelope, listen to the rumours, get to them before your
-hunter gets to you. Buildings hide whoever is inside, and anybody who puts one between themselves and you.
-Standing in a crowd hides you. Running is fast and loud, and your hunter can hear it. When you have somebody, they stop and say five words, once, and you
-type what you heard.
+hunter gets to you. Buildings and trees hide whoever is behind them. Standing in a crowd hides
+you. Running is fast and loud, and your hunter can hear it. When you have somebody, they stop and
+say five words, once, and you type what you heard.
 
-Three quarters of a minute in, **the grounds start closing**. The open ground shrinks to the quad
-around the fountain, and the crowd drifts in with it. Nobody is walled in: step outside the line
-and there is nobody left out there to hide behind, and your hunter is told where you are every
-few seconds. The last minute is eight people in one courtyard, which is where it should end.
+There are two places and they play differently. The campus is buildings and crowds: you hide
+indoors, or in a knot of strangers. The park is a wood down one side and open lawn in the middle,
+where a tree line is the only thing between you and whoever is looking.
+
+Three quarters of a minute in, **the grounds start closing**. The open ground shrinks towards the
+middle and the crowd drifts in with it. Nobody is walled in: step outside the line and there is
+nobody left out there to hide behind, and your hunter is told where you are every few seconds.
+The last minute is everybody in one courtyard, which is where it should end.
 
 Every join, tag, refusal, payout and refund in it runs the **real compiled contract in your
 browser tab**. The campus, the rumours and the other seven players are a game about the real one.
@@ -181,9 +185,9 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 | Compact contract, 8 circuits | Compiles on 0.31.1 |
 | Contract tests | 50 passing, 94% statement coverage |
 | Crypto and game core tests | 64 passing, 97% statement coverage |
-| The hunt's simulation | 81 unit tests: grid, campus, sight and what blocks it, bots, catching, crowds, running, rumours, the closing grounds |
+| The hunt's simulation | 98 unit tests: grid, both maps, sight and what blocks it, bots, catching, crowds, running, rumours, the closing grounds |
 | Does a hunt resolve | Measured, not assumed: whole games played out against the compiled contract at every size, all coming down to one player |
-| Browser tests | 24 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, and a player's phone |
+| Browser tests | 25 passing on a phone viewport, including a hunt won, a hunt lost, the chain's view, both maps, and a player's phone |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |

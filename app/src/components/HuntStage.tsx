@@ -1,4 +1,4 @@
-// The campus, the people on it, and the camera that follows you.
+// The place, the people on it, and the camera that follows you.
 // SPDX-License-Identifier: Apache-2.0
 
 import {

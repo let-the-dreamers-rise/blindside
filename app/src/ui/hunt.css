@@ -335,6 +335,11 @@
   cursor: pointer;
 }
 
+.chip.wide {
+  min-width: 128px;
+  font-size: 0.94rem;
+}
+
 .chip span {
   font-size: 0.66rem;
   letter-spacing: 0.08em;

@@ -29,7 +29,7 @@ export const ChainEye = ({ snapshot, onClose }: Props) => {
       <div className="chain-eye-head">
         <p className="stamp">The whole public record</p>
         <button type="button" className="ghost" onClick={onClose}>
-          Back to the campus
+          Back to the map
         </button>
       </div>
 
