@@ -67,12 +67,24 @@ The chain sees two nullifiers that cannot be tied back to the notes they retire,
 It does not see A, B, or C. The last tag leaves the winner pointing at themselves, and that
 self-loop is the proof of victory.
 
-## Try it in two minutes, without a wallet
+## Play it in two minutes, without a wallet
 
 **[let-the-dreamers-rise.github.io/blindside](https://let-the-dreamers-rise.github.io/blindside/)**
 
-The sandbox runs the **real compiled contract in your browser tab**. Every rule and every refusal
-in it is the contract's, not a mock. Play a whole game, win it, claim the pot. Then press the
+**The hunt** is a campus at night, drawn in pixels, with eight players on it. One of them is
+hunting you and you do not know which. You are hunting one of them: open your envelope, listen to
+the rumours, get to them before your hunter gets to you. Buildings hide whoever is inside. When
+you have somebody, they stop and say five words, once, and you type what you heard.
+
+Every join, tag, refusal, payout and refund in it runs the **real compiled contract in your
+browser tab**. The campus, the rumours and the other seven players are a game about the real one.
+
+Two feeds sit under the map. *What you saw* is the campus: who went into the Library, who is out,
+where your target was last seen. *What the chain sees* is two spent notes and one new one. The
+same tag, side by side. That contrast is the product.
+
+[The paper version](https://let-the-dreamers-rise.github.io/blindside/#/sandbox) is the same
+contract with the buttons showing. Play a whole game, win it, claim the pot. Then press the
 buttons under "When it goes wrong" and watch the pot come back out of a game nobody finished.
 
 The same site has an [evidence page](https://let-the-dreamers-rise.github.io/blindside/#/evidence)
@@ -84,7 +96,7 @@ Or run it yourself:
 
 ```bash
 pnpm install
-pnpm --filter @blindside/app dev     # then press "Play a game right now"
+pnpm --filter @blindside/app dev     # then press "Play the hunt"
 ```
 
 ## A whole game, from a browser tab
@@ -133,12 +145,13 @@ contract address and every transaction id are in `app/src/evidence/local-run.jso
 |---|---|
 | Compact contract, 8 circuits | Compiles on 0.31.1 |
 | Contract tests | 50 passing, 94% statement coverage |
-| Crypto and game core tests | 53 passing, 97% statement coverage |
-| Browser tests | 12 passing on a phone viewport |
+| Crypto and game core tests | 64 passing, 97% statement coverage |
+| The hunt's simulation | 35 unit tests: grid, campus, sight, bots, catching, rumours |
+| Browser tests | 16 passing on a phone viewport, including a hunt won and a hunt lost |
 | Full game on a local chain | Deployed, played and paid out |
 | Spoken-word handover | Shipped: sandbox, chain runner and tests |
 | A whole game from a browser tab | Deployed, played and paid out against a local node |
-| Mobile web app | Sandbox, rules, evidence and spectator pages shipped |
+| Mobile web app | The hunt, the paper sandbox, rules, evidence and spectator pages shipped |
 | Escrow on the public testnet | Next |
 | Real game with real players | Planned before submission |
 
@@ -172,6 +185,7 @@ core/src/game/bundle.ts          one line of text that carries a whole game
 core/src/errors.ts               contract assertions turned into game rules
 chain/src/                       wallet, providers and signing, shared by the CLI
                                  and the browser console
+app/src/hunt/                    the pixel game: campus, sight, simulation, rumours
 app/src/                         the mobile web client, sandbox and evidence
 cli/src/e2e-local.ts             a whole game against a local Midnight chain
 ```

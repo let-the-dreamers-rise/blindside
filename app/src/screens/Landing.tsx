@@ -16,8 +16,8 @@ export const Landing = () => (
     </p>
 
     <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "28px 0 36px" }}>
-      <button onClick={() => { window.location.hash = "#/sandbox"; }}>
-        Play a game right now
+      <button onClick={() => { window.location.hash = "#/hunt"; }}>
+        Play the hunt
       </button>
       <button
         className="ghost"
@@ -104,6 +104,8 @@ export const Landing = () => (
           <a href="#/evidence">A whole game, played on a Midnight node</a>
           <br />
           <a href="#/watch">Watch a live game from the chain alone</a>
+          <br />
+          <a href="#/sandbox">The paper version: the same contract, and the four ways out</a>
         </p>
       </section>
     </div>

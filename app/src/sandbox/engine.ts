@@ -56,10 +56,11 @@ export class SandboxRunner {
   private resigned = false;
   private refunded = new Set<string>();
 
-  constructor() {
-    this.players = CAST.map((name) => new Player(name));
+  /** The first name in the cast is always the person at the keyboard. */
+  constructor(cast: readonly string[] = CAST) {
+    this.players = cast.map((name) => new Player(name));
     this.players.forEach((player, index) => {
-      this.names.set(player.key, CAST[index] ?? "Player");
+      this.names.set(player.key, cast[index] ?? "Player");
     });
 
     this.players.forEach((player) => this.game.join(player));
@@ -164,6 +165,64 @@ export class SandboxRunner {
 
   claim(): void {
     this.game.claimVictory(this.you);
+    this.claimed = true;
+    this.say("The pot was claimed by the last player standing.");
+  }
+
+  // ------------------------------------------------------------ the hunt
+  //
+  // The pixel game needs to know the whole map so its bots can hunt, which is exactly what the
+  // screen must never be told. These answer by index, never by name, and the screen only ever
+  // learns the name of its own target.
+
+  nameAt(index: number): string {
+    const player = this.players[index];
+    return player === undefined ? "someone" : this.nameOf(player.commitment);
+  }
+
+  /** Who each player is hunting, as indexes into the cast. Null once they are out. */
+  edges(): readonly (number | null)[] {
+    return this.players.map((player) => {
+      const target = this.targetOf(player);
+      return target === null ? null : this.players.indexOf(target);
+    });
+  }
+
+  aliveFlags(): readonly boolean[] {
+    return this.players.map((player) => this.alive(player));
+  }
+
+  /** The words this player would say if tagged. The hunt shows them only at the moment. */
+  wordsAt(index: number): readonly string[] | null {
+    const player = this.players[index];
+    return player === undefined || !this.alive(player) ? null : [...wordsFrom(player.sk)];
+  }
+
+  /**
+   * One player tags another, both by index. This is how a bot's tag, or your own hunter
+   * catching you, reaches the real contract: the same circuit, the same refusals.
+   */
+  tagBetween(hunter: number, victim: number): void {
+    const from = this.players[hunter];
+    const to = this.players[victim];
+    if (from === undefined || to === undefined || this.targetOf(from) !== to) {
+      throw new Error("that is not a tag the contract would accept");
+    }
+    const before = this.nullifierCount();
+    this.game.tag(from, to);
+    this.say(
+      "Someone was tagged.",
+      `The chain gained ${this.nullifierCount() - before} spent notes and one new note. It did not learn who.`,
+    );
+  }
+
+  /** The last player standing claims, whoever it is. A bot's win empties the pot too. */
+  claimBy(index: number): void {
+    const winner = this.players[index];
+    if (winner === undefined) {
+      throw new Error("no such player");
+    }
+    this.game.claimVictory(winner);
     this.claimed = true;
     this.say("The pot was claimed by the last player standing.");
   }

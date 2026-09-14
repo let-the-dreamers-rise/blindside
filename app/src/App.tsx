@@ -21,6 +21,9 @@ const Rules = lazy(async () => ({
 const Live = lazy(async () => ({
   default: (await import("./screens/Live.tsx")).Live,
 }));
+const Hunt = lazy(async () => ({
+  default: (await import("./screens/Hunt.tsx")).Hunt,
+}));
 
 const currentRoute = (): string => window.location.hash || "#/";
 
@@ -41,6 +44,13 @@ export const App = () => {
     return () => window.removeEventListener("hashchange", onChange);
   }, []);
 
+  if (route.startsWith("#/hunt")) {
+    return (
+      <Suspense fallback={<Loading what="Loading the campus..." />}>
+        <Hunt />
+      </Suspense>
+    );
+  }
   if (route.startsWith("#/sandbox")) {
     return (
       <Suspense fallback={<Loading what="Loading the contract..." />}>

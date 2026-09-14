@@ -11,6 +11,8 @@
     "preview": "vite preview",
     "artifact": "pnpm build && node scripts/artifact-page.mjs",
     "test": "playwright test",
+    "test:unit": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:install": "playwright install --with-deps chromium",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
@@ -46,8 +48,10 @@
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
     "@vitejs/plugin-react": "4.3.4",
+    "@vitest/coverage-v8": "4.1.0",
     "typescript": "6.0.2",
     "vite": "6.0.7",
-    "vite-plugin-wasm": "3.4.1"
+    "vite-plugin-wasm": "3.4.1",
+    "vitest": "4.1.0"
   }
 }

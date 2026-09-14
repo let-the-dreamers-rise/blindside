@@ -164,6 +164,33 @@ What the console cannot do is hide the players from itself: it makes every playe
 tab, so one person can run a whole game and be watched doing it. That is the same limit the
 organizer already has in this version, said out loud on the page.
 
+## The hunt: three views of one game
+
+The pixel game in `app/src/hunt/` exists to make one thing visible: the gap between what happens
+on the ground and what the chain is told. It is built as three layers that are deliberately
+allowed to know different things.
+
+| Layer | Knows | Must never be shown |
+|---|---|---|
+| the simulation (`sim.ts`) | where everyone is, who hunts whom, so its bots can hunt | |
+| the screen (`HuntStage`, `HuntHud`) | where *you* are, who you can see, your own target once you open the envelope | anybody else's target, anybody out of sight |
+| the chain panel (`ChainPanel`) | phase, counts, the pot, spent notes, players as pseudonyms | any name, any link between two people |
+
+The simulation is pure: `step(sim, world, facts, input)` returns the next state and a list of
+events, and nothing in it mutates. `facts` come from the contract, never the other way round:
+who is alive and who hunts whom are read from the ledger each tick, and when a bot reaches its
+target the event goes to the same `tag` circuit your own tags go to. The bots cannot do anything
+the contract would refuse, because they do not do anything the contract does not do.
+
+Sight is one rule for everybody, `canSee` in `sight.ts`: indoors you see your room, outdoors you
+see nine tiles. Bots tag each other only where you are not looking, the way real tags happen in
+corridors, and what you learn about it is what the campus would tell you ("Nina is out") rather
+than what the chain would ("someone was tagged"). The rumour mill runs both ways: every so often
+you hear where your target was last seen, and your hunter hears where you were.
+
+The campus is a block of text in `campus.ts`. Rooms are flood-filled from it, doors are found by
+adjacency, and a test walks every tile from your spawn so a map edit cannot strand anybody.
+
 ## Two ways to run it
 
 **Sandbox.** The compiled contract runs in the browser tab through the simulator. Every rule and
@@ -196,7 +223,9 @@ Two things that only show up on a real chain:
 | `core/src/test/handover` | five people, one bundle, a tag from spoken words |
 | `core/src/test/cycle` | the host's shuffle, and what the bundle does not leak |
 | `core/src/test/errors` | contract assertions turned into something a player can act on |
-| `app/e2e` | a whole game in a browser, on a phone viewport |
+| `app/src/hunt/*.test.ts` | the grid and its paths, the campus, sight, bot behaviour, catching, tips and rumours; a seeded game is the same game twice |
+| `app/e2e/hunt` | a whole hunt won, a whole hunt lost, wrong words refused by the contract, no names on the chain panel |
+| `app/e2e` | the paper sandbox, the four ways out, the evidence and spectator pages |
 
 Coverage is gated at 80 percent for the game engine and the crypto core. CI compiles the contract
 from source rather than trusting the committed circuits.

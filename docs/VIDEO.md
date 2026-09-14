@@ -12,19 +12,24 @@ no mockups, no sped-up footage without saying so.
 > standing wins the pot. Two things have always been broken about it: somebody has to hold the
 > money, and somebody has to hold the list.
 
-## 0:12 - 0:40  Play it
+## 0:12 - 0:45  Play it
 
-*Tap "Play a game right now". Open the envelope. Tag. Open, tag. Open, tag. Win. Claim.*
+*Tap "Play the hunt". Start. Open the envelope. Walk. A rumour arrives. Find them. Tag. The
+five words in the bubble. Type them. Cut to the two feeds under the map.*
 
-> This is running the real compiled contract, in this browser tab. No wallet, no chain, nothing
-> installed. Open your target. Tag them. You inherit theirs.
+> This is the game, on a campus at night. Eight players. One of them is hunting me and I do not
+> know which. I am hunting Riya. I do not know where she is either, but the campus talks: she
+> was last seen near the Gym.
 >
-> And here is the whole point, on the right. That is everything the chain learned from that tag:
-> two spent notes and one new one. Not my name, not theirs, not the link between us.
+> There. Tag. She stops, she says five words, once, and I type what I heard. Now the two feeds.
+> The left one is what the campus knows: Riya is out, Zoe went into the Hall. The right one is
+> everything the chain learned from the same tag: two spent notes and one new one. Not my name,
+> not hers, not the link between us.
 
-*Pause on the chain panel for a beat. Then claim the pot.*
+*Pause on the chain panel for a beat. Cut to the win, then claim the pot.*
 
-> Last one standing proves it and the contract pays out. Nobody handed me anything.
+> Every tag in that game ran the real compiled contract, in this tab. Last one standing proves
+> it and the contract pays out. Nobody handed me anything.
 
 ## 0:40 - 1:05  The part everyone skips
 

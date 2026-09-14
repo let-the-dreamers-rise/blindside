@@ -5,7 +5,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const openSandbox = async (page: Page): Promise<void> => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Play a game right now" }).click();
+  await page.getByRole("link", { name: /The paper version/ }).click();
   await expect(page.getByRole("heading", { name: "Sandbox game" })).toBeVisible();
 };
 
