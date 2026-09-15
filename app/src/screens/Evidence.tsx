@@ -10,7 +10,23 @@ type Step = {
 };
 
 const steps = run.steps as readonly Step[];
-const total = steps.reduce((sum, step) => sum + step.seconds, 0);
+
+// Opening the wallet means catching up on the chain's history, which on a public network takes
+// far longer than the game does and is not a cost the game pays twice. Counting it in the
+// headline number would say a four player game takes half an hour, which is not what happened.
+const SYNC = "wallet ready";
+const waitedForTheChain = steps.find((step) => step.label === SYNC)?.seconds ?? 0;
+const onChain = steps.reduce(
+  (sum, step) => (step.label === SYNC ? sum : sum + step.seconds),
+  0,
+);
+
+/** Seconds as the shape of the number people actually say out loud. */
+const clock = (seconds: number): string => {
+  const whole = Math.round(seconds);
+  const minutes = Math.floor(whole / 60);
+  return minutes === 0 ? `${whole}s` : `${minutes}m ${whole % 60}s`;
+};
 
 const shorten = (value: string): string =>
   value.length <= 22 ? value : `${value.slice(0, 12)}…${value.slice(-8)}`;
@@ -64,11 +80,17 @@ export const Evidence = () => (
           left in the pot
         </div>
         <div>
-          <strong>{Math.round(total)}s</strong>
-          start to finish
+          <strong>{clock(onChain)}</strong>
+          of chain time
         </div>
       </div>
 
+      <p className="note" style={{ marginTop: 16 }}>
+        {steps.length - 1} transactions, each one proved and waited on until the node called it
+        final. Before any of them, the wallet spent {clock(waitedForTheChain)} catching up on the
+        chain's history, which is what it costs to open a wallet on a network that has been running
+        without you.
+      </p>
       <p className="note" style={{ marginTop: 16 }}>
         Contract address on the {run.network} network
       </p>
