@@ -9,7 +9,7 @@
     "stack:down": "docker compose -f standalone.yml down",
     "local": "tsx src/e2e-local.ts",
     "address": "tsx src/public-address.ts",
-    "public": "tsx src/e2e-public.ts",
+    "public": "NODE_OPTIONS=--max-old-space-size=7168 tsx src/e2e-public.ts",
     "fixture:phone": "tsx src/fixture-phone.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

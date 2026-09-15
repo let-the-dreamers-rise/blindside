@@ -15,6 +15,14 @@ const total = steps.reduce((sum, step) => sum + step.seconds, 0);
 const shorten = (value: string): string =>
   value.length <= 22 ? value : `${value.slice(0, 12)}…${value.slice(-8)}`;
 
+/** A chain on somebody's laptop and a chain the world can see are not the same claim. */
+const onAPublicNetwork = run.network !== "undeployed";
+
+/** The command that produced this file, which depends on where it was produced. */
+const ranWith = onAPublicNetwork
+  ? `pnpm --filter @blindside/cli public ${run.network}`
+  : "pnpm --filter @blindside/cli local";
+
 /**
  * The sandbox proves the rules. This page proves the chain: the same contract deployed to a
  * Midnight node, a whole game played through it, and what each step cost in wall-clock time.
@@ -28,9 +36,12 @@ export const Evidence = () => (
     <h1 style={{ marginTop: 18 }}>A real game, on a real chain</h1>
     <p className="lede">
       The sandbox runs the contract without a chain, which is enough to show the rules but not
-      enough to believe them. This is the output of <code>pnpm --filter @blindside/cli local</code>,
-      which deploys the contract to a Midnight node and plays a four player game through it, every
-      step a real zero-knowledge proof.
+      enough to believe them. This is the output of <code>{ranWith}</code>, which deploys the
+      contract{" "}
+      {onAPublicNetwork
+        ? `to Midnight's public ${run.network} network`
+        : "to a Midnight node"}{" "}
+      and plays a four player game through it, every step a real zero-knowledge proof.
     </p>
 
     <section className="card" style={{ marginTop: 24 }}>
@@ -64,8 +75,15 @@ export const Evidence = () => (
       <div className="chain-row">{run.contractAddress}</div>
       <p className="note" style={{ marginTop: 14 }}>
         Recorded {new Date(run.recordedAt).toUTCString()}. Reproduce it with{" "}
-        <code>pnpm --filter @blindside/cli stack:up</code> then{" "}
-        <code>pnpm --filter @blindside/cli local</code>.
+        {onAPublicNetwork ? null : (
+          <>
+            <code>pnpm --filter @blindside/cli stack:up</code> then{" "}
+          </>
+        )}
+        <code>{ranWith}</code>
+        {onAPublicNetwork
+          ? ", once a faucet has funded the address it prints."
+          : "."}
       </p>
     </section>
 

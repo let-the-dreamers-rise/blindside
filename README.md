@@ -210,7 +210,7 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |
 | Mobile web app | The hunt, the phone page, the paper sandbox, rules, evidence and spectator pages |
 | A real game on phones | Phone page for players plus the console to settle; proving from the phone is next |
-| Escrow on the public testnet | Ready and waiting on tokens. `pnpm --filter @blindside/cli address preview` prints the address to fund, and `pnpm --filter @blindside/cli public preview` plays a whole game against the public network once it has them |
+| Escrow on the public testnet | Funded, attempted, and stopped short. The wallet sync on preprod runs out of memory about twenty-two minutes in, still climbing at 6 GB on a 16 GB machine, and never reaches the deploy. Measured rather than assumed, and written up in [docs/SUBMISSION.md](docs/SUBMISSION.md). The same code plays a whole game against a local node |
 | Real game with real players | Planned before submission |
 
 ## Where it runs

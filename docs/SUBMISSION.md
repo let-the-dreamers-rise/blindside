@@ -130,13 +130,27 @@ Stated plainly, because a privacy product that overclaims is worse than one that
   sandbox and watches real games.
 - **Test tokens only.** Real money needs mainnet and a legal review first.
 
-## The one thing waiting on somebody else
+## The public network run, and where it stopped
 
-The public testnet run is written and tested; it needs test tokens in one address.
-`pnpm --filter @blindside/cli address preview` prints it, the Nethermind preview faucet is behind
-a bot check a person has to pass, and `pnpm --filter @blindside/cli public preview` then plays a
-whole game against the public network. The same code already plays a whole game against a local
-node, which is what the evidence page shows.
+The wallet is funded on preprod. The run does not finish, and it is worth saying exactly where it
+stops rather than leaving it as a checkbox.
+
+`pnpm --filter @blindside/cli public preprod` opens the wallet and waits for it to sync before it
+will sign anything. On a public network that means syncing real history, and the SDK holds the
+synced state in the Node heap. It dies of an out-of-memory about twenty-two minutes in, on a
+machine with 16 GB, having never reached the deploy. The growth was still climbing when V8 gave
+up: 1.6 GB at four minutes, 3.3 GB at nine, 4.2 GB at fourteen, 6.0 GB at twenty.
+
+Two things came out of chasing it, and both are in the code because they are right either way.
+The wallet was keeping a transaction history nothing in this project ever reads, which on a
+public network grows with the chain; it now uses the SDK's no-op store. And the runner asks for a
+7 GB heap, because the default 2 GB dies six minutes in, at the point where it still looks like it
+is working. Neither is enough. This is a property of syncing a public Midnight network from a
+laptop, not of anything in this contract.
+
+What the evidence page shows is therefore a local node, indexer and proof server: a real chain,
+real transactions, real proofs, four minutes fifty end to end. The contract code, the proofs and
+the escrow are identical on either; what differs is how much chain there is to catch up on first.
 
 ## Next
 

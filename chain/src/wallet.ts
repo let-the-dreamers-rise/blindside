@@ -14,7 +14,7 @@ import { DustWallet } from "@midnight-ntwrk/wallet-sdk-dust-wallet";
 import { Roles } from "@midnight-ntwrk/wallet-sdk-hd";
 import { ShieldedWallet } from "@midnight-ntwrk/wallet-sdk-shielded";
 import {
-  InMemoryTransactionHistoryStorage,
+  NoOpTransactionHistoryStorage,
   PublicKey,
   UnshieldedWallet,
   createKeystore,
@@ -57,7 +57,11 @@ const configurationFor = ({
   indexerClientConnection: { indexerHttpUrl: indexer, indexerWsUrl: indexerWS },
   provingServerUrl: new URL(proofServer),
   relayURL: new URL(node.replace(/^http/, "ws")),
-  txHistoryStorage: new InMemoryTransactionHistoryStorage(),
+  // Nothing here ever reads the wallet's transaction history: a run keeps the identifiers the
+  // node hands back and writes its own record. Holding the history as well costs memory that
+  // grows with the chain, which on a public network is the difference between a run finishing
+  // and a run being killed part way through the sync.
+  txHistoryStorage: new NoOpTransactionHistoryStorage(),
   costParameters: DUST_COST_PARAMETERS,
 });
 
