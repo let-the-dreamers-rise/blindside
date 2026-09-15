@@ -170,30 +170,38 @@ What it takes to make midnight-js run in a browser at all is four fixes that all
 they are written down in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#running-a-chain-from-a-browser-tab)
 so the next person does not have to find them.
 
-## A whole game, on a real chain
+## A whole game, on the public network
 
-The sandbox shows the rules. This shows the chain. One command brings up a Midnight node, an
-indexer and a proof server, deploys the contract and plays a four player game through it, every
-step a real zero-knowledge proof:
+The sandbox shows the rules. This shows the chain, and not a chain on somebody's laptop: Midnight's
+public **preview** network, ten transactions anybody can go and look up.
+
+```bash
+pnpm --filter @blindside/cli address preview   # fund what it prints
+pnpm --filter @blindside/cli public preview
+```
+
+The recorded run the app shows on its evidence page:
+
+| Step | Time |
+|---|---|
+| deploy | 19.8s |
+| join, four players | 21.8s each |
+| start game | 31.1s |
+| tag | 29.1s each |
+| claim victory | 25.3s |
+| **ten transactions** | **4 minutes 10 seconds of chain time** |
+
+Contract `23c3a6c6bcef2fc8980f7c509de48257970634158be81317c3b3c6166d2c5350`. Final state: phase
+`finished`, one player alive, three tags, **pot 0**, seven spent notes. Every transaction id is in
+`app/src/evidence/chain-run.json`.
+
+The same code plays the same game against a local node, which is faster to iterate on and needs no
+faucet:
 
 ```bash
 pnpm --filter @blindside/cli stack:up
 pnpm --filter @blindside/cli local
 ```
-
-A recorded run, which the app shows on its evidence page:
-
-| Step | Time |
-|---|---|
-| deploy | 20.3s |
-| join, four players | 23.8s each |
-| start game | 29.2s |
-| tag | 30.1s each |
-| claim victory | 23.9s |
-| **whole game** | **about 4 minutes 49 seconds** |
-
-Final state: phase `finished`, one player alive, three tags, **pot 0**, seven spent notes. The
-contract address and every transaction id are in `app/src/evidence/chain-run.json`.
 
 ## Status
 
@@ -210,7 +218,7 @@ contract address and every transaction id are in `app/src/evidence/chain-run.jso
 | A game from a browser tab | Deploy, join, start and the bundle work; settling a tag is refused by the proof server |
 | Mobile web app | The hunt, the phone page, the paper sandbox, rules, evidence and spectator pages |
 | A real game on phones | Phone page for players plus the console to settle; proving from the phone is next |
-| Escrow on the public testnet | Funded, attempted, and stopped short. The wallet sync on preprod runs out of memory about twenty-two minutes in, still climbing at 6 GB on a 16 GB machine, and never reaches the deploy. Measured rather than assumed, and written up in [docs/SUBMISSION.md](docs/SUBMISSION.md). The same code plays a whole game against a local node |
+| Escrow on the public testnet | Done. A whole game on Midnight's public preview network: deploy, four joins, a start, three tags and a payout, ten transactions, four minutes ten seconds of chain time, pot drained to zero. Contract `23c3a6c6bcef…6d2c5350`, every id on the evidence page |
 | Real game with real players | Planned before submission |
 
 ## Where it runs

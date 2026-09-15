@@ -84,9 +84,10 @@ was.
 - **One engine**: the simulator the tests drive is the same one the browser sandbox drives.
 - **Escrow**: entry fees arrive through `receiveUnshielded`, payouts leave through
   `sendUnshielded` to an address bound at join. There is no organizer withdrawal.
-- **A full game on a real chain**: deploy, four joins, a start, three tags and a payout against a
-  Midnight node, indexer and proof server, about four minutes fifty seconds end to end, recorded
-  in `app/src/evidence/chain-run.json` and shown in the app.
+- **A full game on Midnight's public preview network**: deploy, four joins, a start, three tags
+  and a payout. Ten transactions, four minutes ten seconds of chain time, pot drained to zero,
+  recorded in `app/src/evidence/chain-run.json` and shown in the app. The same code plays the same
+  game against a local node.
 
 Two problems that only appear on a real chain, both fixed and both commented in the code: signing
 unshielded inputs writes to a copy of the intents map unless it is assigned back, and a circuit
@@ -130,29 +131,47 @@ Stated plainly, because a privacy product that overclaims is worse than one that
   sandbox and watches real games.
 - **Test tokens only.** Real money needs mainnet and a legal review first.
 
-## The public network run, and where it stopped
+## A whole game on the public network
 
-The wallet is funded on preprod. The run does not finish, and it is worth saying exactly where it
-stops rather than leaving it as a checkbox.
+Blindside plays end to end on Midnight's public **preview** network. Not a local node and not a
+screenshot: ten transactions against a chain anybody can query.
 
-`pnpm --filter @blindside/cli public preprod` opens the wallet and waits for it to sync before it
-will sign anything. On a public network that means syncing real history, and the SDK holds the
-synced state in the Node heap. It dies of an out-of-memory about twenty-two minutes in, on a
-machine with 16 GB, having never reached the deploy. The growth was still climbing when V8 gave
-up: 1.6 GB at four minutes, 3.3 GB at nine, 4.2 GB at fourteen, 6.0 GB at twenty.
+| | |
+|---|---|
+| Contract | `23c3a6c6bcef2fc8980f7c509de48257970634158be81317c3b3c6166d2c5350` |
+| What ran | deploy, four joins, a start, three tags, claim victory, payout |
+| Chain time | 4 minutes 10 seconds for ten transactions, every one a real zero-knowledge proof |
+| Pot | 4,000,000 in, 0 left once the winner was paid |
+| Spent notes | seven, none of them traceable to a player |
 
-Two things came out of chasing it, and both are in the code because they are right either way.
-The wallet was keeping a transaction history nothing in this project ever reads, which on a
-public network grows with the chain; it now uses the SDK's no-op store. And the runner asks for a
-7 GB heap, because the default 2 GB dies six minutes in, at the point where it still looks like it
-is working. Neither is enough. This is a property of syncing a public Midnight network from a
-laptop, not of anything in this contract.
+`pnpm --filter @blindside/cli public preview` reproduces it against a funded wallet. The app's
+evidence page renders that file, so what a judge reads there is the output of the run rather than
+a description of one.
 
-What the evidence page shows is therefore a local node, indexer and proof server: a real chain,
-real transactions, real proofs, four minutes fifty end to end. The contract code, the proofs and
-the escrow are identical on either; what differs is how much chain there is to catch up on first.
+Getting there was its own piece of engineering, and it earns a paragraph because it is the part
+nobody warns you about. Opening a wallet on a public network syncs real history before it will
+sign anything, and the SDK holds that state in the Node heap: on the default 2 GB heap the run
+dies six minutes in, at the point where it still looks like it is working. Two fixes are in the
+code. The wallet was keeping a transaction history nothing here ever reads, which grows with the
+chain, so it uses the SDK's no-op store now; and the runner asks for a 7 GB heap. Preprod's
+history is still too large for a 16 GB laptop, climbing through 6 GB at twenty minutes and never
+reaching the deploy. Preview syncs in twenty-seven minutes and 2.7 GB. That is a property of how
+much chain there is to catch up on, not of the contract, and the same code runs on either.
 
-## Next
+## Next, and what the later waves build
 
-Host-blind assignment, so nobody holds the map: a public pseudonymous cycle with encrypted
-dossiers. Sponsored fees, so a player needs no tokens at all. More than sixteen players.
+Wave 1 is a game you can play and a contract that provably pays the last survivor. What comes
+after it is already shaped, and each piece is a wave's worth of work:
+
+- **Host-blind assignment.** Today the organizer builds the cycle, so the organizer knows the map.
+  They cannot fake a tag and cannot touch the pot, but they can see who hunts whom. Removing that
+  means a public pseudonymous cycle with encrypted dossiers, and it is the largest privacy gain
+  left on the table.
+- **Sponsored fees**, so a player needs no tokens and no wallet of their own to be in a game.
+- **More than sixteen players**, which is a Merkle depth and a batching problem rather than a new
+  idea.
+- **The game itself.** The hunt is the front door and deserves to keep growing: more places than a
+  campus and a park, more ways to hide and to be found, spectating that stays honest about what it
+  gives away, and a season that runs across a whole school rather than one evening.
+- **A real game, on a real campus, with real people and a real pot.** It is the only test that
+  matters, and it is what we want the next wave to be.
